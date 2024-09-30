@@ -5,9 +5,10 @@ league_oauth2_server:
         encryption_key: '%env(resolve:OAUTH_ENCRYPTION_KEY)%'
     resource_server:
         public_key: '%env(resolve:OAUTH_PUBLIC_KEY)%'
+    role_prefix: ROLE_OAUTH2_
     scopes:
-        available: ['email']
-        default: ['email']
+        available: [EMAIL]
+        default: [EMAIL]
     persistence:
         doctrine: null
 
