@@ -1,2 +1,1 @@
-# symfony
-Symfony based JACQ
+# Symfony based JACQ
