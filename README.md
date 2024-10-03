@@ -13,3 +13,4 @@ and facultative "encryption key" via ```php -r 'echo base64_encode(random_bytes(
   * install dependencies ```composer install```
   * proceed Doctrine migration ```symfony console doctrine:migrations:migrate```
   * create test user ```php bin/console app:bootstrap```
+

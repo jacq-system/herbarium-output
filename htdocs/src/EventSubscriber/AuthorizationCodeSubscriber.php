@@ -3,6 +3,7 @@
 namespace App\EventSubscriber;
 
 use League\Bundle\OAuth2ServerBundle\Event\AuthorizationRequestResolveEvent;
+use League\Bundle\OAuth2ServerBundle\OAuth2Events;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -30,7 +31,7 @@ class AuthorizationCodeSubscriber implements EventSubscriberInterface
     }
 
     public function onLeagueOauth2ServerEventAuthorizationRequestResolve(AuthorizationRequestResolveEvent $event): void
-    {
+    {die("ddd");
         $request = $this->requestStack->getCurrentRequest();
         $user = $this->security->getUser();
         $this->saveTargetPath($request->getSession(), $this->firewallName, $request->getUri());
@@ -49,7 +50,7 @@ class AuthorizationCodeSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            'league.oauth2_server.event.authorization_request_resolve' => 'onLeagueOauth2ServerEventAuthorizationRequestResolve',
+            OAuth2Events::AUTHORIZATION_REQUEST_RESOLVE => 'onLeagueOauth2ServerEventAuthorizationRequestResolve',
         ];
     }
 }
