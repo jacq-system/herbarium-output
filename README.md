@@ -8,5 +8,8 @@ openssl genrsa -aes128 -passout pass:jacq -out private.pem 2048
 openssl rsa -in private.pem -passin pass:jacq -pubout -out public.pem
 ```
 and facultative "encryption key" via ```php -r 'echo base64_encode(random_bytes(32)), PHP_EOL;'``` + update al this info in .env file
-* proceed Doctrine migration ```symfony console doctrine:migrations:migrate```
-* create test user ```php bin/console app:bootstrap```
+
+* ```docker exec -it app-sjacq bash```
+  * install dependencies ```composer install```
+  * proceed Doctrine migration ```symfony console doctrine:migrations:migrate```
+  * create test user ```php bin/console app:bootstrap```
