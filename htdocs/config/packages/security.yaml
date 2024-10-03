@@ -11,7 +11,7 @@ security:
                 property: email
     firewalls:
         api_token:
-            pattern: ^/token$
+            pattern: ^/api/token$
             security: false
         api:
             pattern: ^/api
@@ -49,6 +49,7 @@ security:
         - { path: ^/authorize, roles: PUBLIC_ACCESS } #OAuthBundle
         - { path: ^/token, role: PUBLIC_ACCESS } #OAuthBundle
         - { path: ^/login, role: PUBLIC_ACCESS }
+        - { path: ^/.well-known, roles: PUBLIC_ACCESS }
         - { path: ^/api, role: ROLE_OAUTH2_PROFILE }
         - { path: ^/, role: ROLE_USER }
 

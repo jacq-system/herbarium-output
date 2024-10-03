@@ -31,7 +31,7 @@ class AuthorizationCodeSubscriber implements EventSubscriberInterface
     }
 
     public function onLeagueOauth2ServerEventAuthorizationRequestResolve(AuthorizationRequestResolveEvent $event): void
-    {die("ddd");
+    {
         $request = $this->requestStack->getCurrentRequest();
         $user = $this->security->getUser();
         $this->saveTargetPath($request->getSession(), $this->firewallName, $request->getUri());

@@ -47,7 +47,7 @@ class BootstrapCommand extends Command
         $clientName = 'Test Client';
         $clientId = 'testclient';
         $clientSecret = 'testpass';
-        $scopes = ['EMAIL'];
+        $scopes = ['profile', 'specimen_read', 'specimen_write'];
         $grantTypes = ['authorization_code', 'refresh_token'];
         $redirectUris = explode(',', $input->getOption('redirect-uris'));
 

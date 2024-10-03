@@ -21,7 +21,7 @@ class HomeController extends AbstractController
         ]);
     }
 
-    #[Route('/api/test', name: 'api_test')]
+    #[Route('/api/test', name: 'app_api_test')]
     public function apiTest(): Response
     {
         /** @var User $user */
