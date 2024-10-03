@@ -113,8 +113,8 @@ class LoginController extends AbstractController
                 $consents->setExpires(new \DateTimeImmutable('+30 days'));
                 $consents->setIpAddress($request->getClientIp());
                 $user->addOAuth2UserConsent($consents);
-                $this->em->getManager()->persist($consents);
-                $this->em->getManager()->flush();
+                $this->managerRegistry->getManager()->persist($consents);
+                $this->managerRegistry->getManager()->flush();
             }
             if ($request->request->get('consent') === 'no') {
                 $request->getSession()->set('consent_granted', false);
