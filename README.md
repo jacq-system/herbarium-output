@@ -11,7 +11,7 @@ and facultative "encryption key" via ```php -r 'echo base64_encode(random_bytes(
 
 Install and build assets:
 ```shell
-./npm.sh && ./npm.sh run build
+cd htdocs && ./npm.sh && ./npm.sh run build
 ```
 
 Setup app:

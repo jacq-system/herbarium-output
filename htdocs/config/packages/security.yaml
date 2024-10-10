@@ -50,7 +50,7 @@ security:
         - { path: ^/token, role: PUBLIC_ACCESS } #OAuthBundle
         - { path: ^/login, role: PUBLIC_ACCESS }
         - { path: ^/.well-known, roles: PUBLIC_ACCESS }
-        - { path: ^/api, role: ROLE_OAUTH2_PROFILE }x
+        - { path: ^/api, role: ROLE_OAUTH2_PROFILE }
         - { path: ^/, role: ROLE_USER }
 
 when@test:
