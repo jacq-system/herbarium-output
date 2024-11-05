@@ -13,18 +13,18 @@
                 {% endif %}
 
                 <div class="input-field">
-                    <label for="username"><strong>Email address</strong></label>
+                    <label for="username"><strong>Username</strong></label>
                     <input
                         class="validate {% if error %}{{ error.messageKey == 'Invalid credentials.' ? "invalid" : "" }}{% endif %}"
-                        tabindex="1" type="email" required id="username" name="_username" value="{{ last_username }}">
-                    <span class="helper-text" data-error="Invalid email address or password." data-success=""></span>
+                        tabindex="1" type="text" required id="username" name="_username" value="{{ last_username }}">
+                    <span class="helper-text" data-error="Invalid username or password." data-success=""></span>
                 </div>
                 <div>
                     <label for="password"><strong>Password</strong></label>
                     <input
                         class="validate {% if error %}{{ error.messageKey == 'Invalid credentials.' ? "invalid" : "" }}{% endif %}"
                         tabindex="2" type="password" required id="password" name="_password">
-                    <span class="helper-text" data-error="Invalid email address or password." data-success=""></span>
+                    <span class="helper-text" data-error="Invalid username address or password." data-success=""></span>
                 </div>
                 <p>
                     <a href="#" tabindex="5">Forgot your password?</a>

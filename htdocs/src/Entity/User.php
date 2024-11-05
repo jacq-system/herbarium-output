@@ -10,25 +10,37 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+#[ORM\Table(name: 'tbl_herbardb_users', schema: 'herbarinput_log')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(name: 'userId')]
     private ?int $id = null;
 
-    #[ORM\Column(length: 180)]
+    #[ORM\Column(name: 'active')]
+    private bool $active;
+
+    #[ORM\Column(name: 'username')]
+    private string $username;
+
+    #[ORM\Column(name: 'firstname')]
+    private string $firstname;
+
+    #[ORM\Column(name: 'surname')]
+    private string $surname;
+
+    #[ORM\Column(name: 'emailadress')]
     private ?string $email = null;
 
-    /**
-     * @var list<string> The user roles
-     */
-    #[ORM\Column]
-    private array $roles = [];
+//    /**
+//     * @var list<string> The user roles
+//     */
+//    #[ORM\Column]
+//    private array $roles = [];
 
-    #[ORM\Column]
-    private ?string $password = null;
+    #[ORM\Column(name: 'pw')]
+    private string $password;
 
     #[ORM\OneToMany(targetEntity: OAuth2UserConsent::class, mappedBy: 'user', orphanRemoval: true)]
     private Collection $oAuth2UserConsents;
@@ -36,11 +48,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->oAuth2UserConsents = new ArrayCollection();
-    }
-
-    public function getSalt(): ?string
-    {
-        return null;
     }
 
     public function getId(): ?int
@@ -77,22 +84,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getRoles(): array
     {
-        $roles = $this->roles;
+        //TODO - tbl_herbardb_groups are de facto roles (or the individual permisions in groups can be understood as roles
+//        $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
     }
 
-    /**
-     * @param list<string> $roles
-     */
-    public function setRoles(array $roles): static
-    {
-        $this->roles = $roles;
-
-        return $this;
-    }
+//    /**
+//     * @param list<string> $roles
+//     */
+//    public function setRoles(array $roles): static
+//    {
+//        $this->roles = $roles;
+//
+//        return $this;
+//    }
 
     /**
      * @see PasswordAuthenticatedUserInterface
@@ -147,4 +155,49 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(bool $active): static
+    {
+        $this->active = $active;
+        return $this;
+    }
+
+    public function getUsername(): string
+    {
+        return $this->username;
+    }
+
+    public function setUsername(string $username): static
+    {
+        $this->username = $username;
+        return $this;
+    }
+
+    public function getFirstname(): string
+    {
+        return $this->firstname;
+    }
+
+    public function setFirstname(string $firstname): static
+    {
+        $this->firstname = $firstname;
+        return $this;
+    }
+
+    public function getSurname(): string
+    {
+        return $this->surname;
+    }
+
+    public function setSurname(string $surname): static
+    {
+        $this->surname = $surname;
+        return $this;
+    }
+
 }
