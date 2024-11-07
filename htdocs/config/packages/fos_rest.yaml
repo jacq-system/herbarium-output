@@ -21,6 +21,6 @@ fos_rest:
     format_listener:
         enabled: true
         rules:
-            - { path: ^/services/,  methods: [GET], prefer_extension: true, fallback_format: json, priorities: [html, xml, json] } #https://github.com/FriendsOfSymfony/FOSRestBundle/issues/650#issuecomment-31449035
+            - { path: ^/services/,  methods: [GET], prefer_extension: true, fallback_format: json, priorities: [xml, json] }
 #            - { path: ^/api/, priorities: [ html, json, xml ], fallback_format: ~, prefer_extension: true }
-#            - { path: '^/', priorities: [ 'html', '*/*' ], fallback_format: html, prefer_extension: true }
+            - { path: '^/', priorities: [ 'html', '*/*' ], fallback_format: html, prefer_extension: true } #https://github.com/FriendsOfSymfony/FOSRestBundle/issues/650#issuecomment-31449035

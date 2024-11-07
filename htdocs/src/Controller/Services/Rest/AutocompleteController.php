@@ -6,24 +6,23 @@ use FOS\RestBundle\Controller\AbstractFOSRestController;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\MediaType;
-use OpenApi\Attributes\Parameter;
+use OpenApi\Attributes\PathParameter;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 
 class AutocompleteController extends AbstractFOSRestController
 {
     #[Get(
-        path: '/services/rest/autocomplete/scientificNames',
+        path: '/services/rest/autocomplete/scientificNames/{term}',
         summary: 'Search for fitting scientific names and return them',
         tags: ['autocomplete'],
         parameters: [
-            new Parameter(
+            new PathParameter(
                 name: 'term',
-                description: 'Scientific name of taxon',
-                in: 'query',
+                description: 'part of a scientific name to autocomplete',
+                in: 'path',
                 required: true,
                 schema: new Schema(type: 'string'),
                 example: 'Aster'
@@ -73,8 +72,8 @@ class AutocompleteController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/autocomplete/scientificNames.{_format}', defaults: ['_format' => 'json'], methods: ['GET'])]
-    public function scientificNames(#[MapQueryParameter] string $term): Response
+    #[Route('/services/rest/autocomplete/scientificNames/{term}.{_format}', defaults: ['_format' => 'json'],  methods: ['GET'])]
+    public function scientificNames(string $term): Response
     {
         $data = [
             'message' => $term,

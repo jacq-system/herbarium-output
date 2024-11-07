@@ -1,7 +1,7 @@
 nelmio_api_doc:
     documentation:
         info:
-            title: JACQ
+            title: JACQ API documentation
             description: distributed herbarium collection system
             version: 1.0.0
     areas: # to filter documented areas
