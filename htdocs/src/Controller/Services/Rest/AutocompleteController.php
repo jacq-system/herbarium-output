@@ -33,7 +33,7 @@ class AutocompleteController extends AbstractFOSRestController
             new \OpenApi\Attributes\Response(
                 response: 200,
                 description: 'List of taxa names',
-                content: new MediaType(
+                content: [new MediaType(
                     mediaType: 'application/json',
                     schema: new Schema(
                         type: 'array',
@@ -48,7 +48,24 @@ class AutocompleteController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                )
+                ),
+                    new MediaType(
+                        mediaType: 'application/xml',
+                        schema: new Schema(
+                            type: 'array',
+                            items: new Items(
+                                properties: [
+                                    new Property(property: 'label', type: 'string', example: 'scientific name'),
+                                    new Property(property: 'value', type: 'string', example: 'scientific name'),
+                                    new Property(property: 'id', type: 'integer', example: 1),
+                                    new Property(property: 'uuid', type: 'object', example: '{"href": "url to get the uuid"}')
+
+                                ],
+                                type: 'object'
+                            )
+                        )
+                    )
+                ]
             ),
             new \OpenApi\Attributes\Response(
                 response: 400,
@@ -56,7 +73,7 @@ class AutocompleteController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/autocomplete/scientificNames.{_format}', defaults: ['_format' => 'json'])]
+    #[Route('/services/rest/autocomplete/scientificNames.{_format}', defaults: ['_format' => 'json'], methods: ['GET'])]
     public function scientificNames(#[MapQueryParameter] string $term): Response
     {
         $data = [
