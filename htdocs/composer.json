@@ -4,30 +4,33 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.3",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "doctrine/dbal": "^3",
         "doctrine/doctrine-bundle": "^2.13",
         "doctrine/doctrine-migrations-bundle": "^3.3",
         "doctrine/orm": "^3.2",
+        "friendsofsymfony/rest-bundle": "^3.7",
+        "jms/serializer-bundle": "^5.5",
         "league/oauth2-server-bundle": "^0.9",
-        "symfony/asset": "7.1.*",
-        "symfony/console": "7.1.*",
-        "symfony/dotenv": "7.1.*",
+        "nelmio/api-doc-bundle": "^4.33",
+        "symfony/asset": "^7.1",
+        "symfony/console": "^7.1",
+        "symfony/dotenv": "^7.1",
         "symfony/flex": "^2",
-        "symfony/framework-bundle": "7.1.*",
-        "symfony/rate-limiter": "7.1.*",
-        "symfony/runtime": "7.1.*",
-        "symfony/security-bundle": "7.1.*",
-        "symfony/twig-bundle": "7.1.*",
+        "symfony/framework-bundle": "^7.1",
+        "symfony/rate-limiter": "^7.1",
+        "symfony/runtime": "^7.1",
+        "symfony/security-bundle": "^7.1",
+        "symfony/twig-bundle": "^7.1",
         "symfony/webpack-encore-bundle": "^2.2",
-        "symfony/yaml": "7.1.*"
+        "symfony/yaml": "^7.1"
     },
     "require-dev": {
         "symfony/maker-bundle": "^1.61",
-        "symfony/stopwatch": "7.1.*",
-        "symfony/web-profiler-bundle": "7.1.*"
+        "symfony/stopwatch": "^7.1",
+        "symfony/web-profiler-bundle": "^7.1"
     },
     "config": {
         "allow-plugins": {

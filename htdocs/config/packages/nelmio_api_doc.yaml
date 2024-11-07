@@ -1,0 +1,11 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: JACQ
+            description: distributed herbarium collection system
+            version: 1.0.0
+    areas: # to filter documented areas
+        path_patterns:
+            - ^/services(?!/doc$) # Accepts routes under /api except /api/doc
+#        host_patterns: # document only routes with a host of the form api.*
+#            - ^/services\.

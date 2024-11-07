@@ -49,6 +49,7 @@ security:
         - { path: ^/authorize, roles: IS_AUTHENTICATED_REMEMBERED } #OAuthBundle
         - { path: ^/token, role: PUBLIC_ACCESS } #OAuthBundle
         - { path: ^/login, role: PUBLIC_ACCESS }
+        - { path: ^/services, role: PUBLIC_ACCESS }
         - { path: ^/.well-known, roles: PUBLIC_ACCESS }
         - { path: ^/api, role: ROLE_OAUTH2_PROFILE }
         - { path: ^/, role: ROLE_USER }
