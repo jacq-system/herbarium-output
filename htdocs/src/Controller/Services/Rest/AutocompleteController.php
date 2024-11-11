@@ -2,6 +2,7 @@
 
 namespace App\Controller\Services\Rest;
 
+use App\Service\TaxonNameService;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\Items;
@@ -11,9 +12,14 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class AutocompleteController extends AbstractFOSRestController
 {
+    public function __construct(protected readonly TaxonNameService $taxaNamesService)
+    {
+    }
+
     #[Get(
         path: '/services/rest/autocomplete/scientificNames/{term}',
         summary: 'Search for fitting scientific names and return them',
@@ -38,11 +44,10 @@ class AutocompleteController extends AbstractFOSRestController
                         type: 'array',
                         items: new Items(
                             properties: [
-                                new Property(property: 'label', type: 'string', example: 'scientific name'),
-                                new Property(property: 'value', type: 'string', example: 'scientific name'),
-                                new Property(property: 'id', type: 'integer', example: 1),
-                                new Property(property: 'uuid', type: 'object', example: '{"href": "url to get the uuid"}')
-
+                                new Property(property: 'label', description: 'scientific name', type: 'string', example: 'Aster L.'),
+                                new Property(property: 'value', description: 'scientific name', type: 'string', example: 'Aster L.'),
+                                new Property(property: 'id', description: 'ID of taxon name', type: 'integer', example: 16885),
+                                new Property(property: 'uuid', description: 'URL to UUID service', type: 'object', example: '{"href": "url to get the uuid"}')
                             ],
                             type: 'object'
                         )
@@ -54,11 +59,10 @@ class AutocompleteController extends AbstractFOSRestController
                             type: 'array',
                             items: new Items(
                                 properties: [
-                                    new Property(property: 'label', type: 'string', example: 'scientific name'),
-                                    new Property(property: 'value', type: 'string', example: 'scientific name'),
-                                    new Property(property: 'id', type: 'integer', example: 1),
-                                    new Property(property: 'uuid', type: 'object', example: '{"href": "url to get the uuid"}')
-
+                                    new Property(property: 'label', description: 'scientific name', type: 'string', example: 'Aster L.'),
+                                    new Property(property: 'value', description: 'scientific name', type: 'string', example: 'Aster L.'),
+                                    new Property(property: 'id', description: 'ID of taxon name', type: 'integer', example: 16885),
+                                    new Property(property: 'uuid', description: 'URL to UUID service', type: 'object', example: '{"href": "url to get the uuid"}')
                                 ],
                                 type: 'object'
                             )
@@ -72,14 +76,21 @@ class AutocompleteController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/autocomplete/scientificNames/{term}.{_format}', defaults: ['_format' => 'json'],  methods: ['GET'])]
+    #[Route('/services/rest/autocomplete/scientificNames/{term}.{_format}', defaults: ['_format' => 'json'], methods: ['GET'])]
     public function scientificNames(string $term): Response
     {
-        $data = [
-            'message' => $term,
-            'email' => "hh",
-        ];
-        $view = $this->view($data, 200);
+        $results = [];
+        $data = $this->taxaNamesService->autocompleteStartsWith($term);
+        foreach ($data as $row) {
+            $results[] = array(
+                "label" => $row['ScientificName'],
+                "value" => $row['ScientificName'],
+                "id" => $row['taxonID'],
+                "uuid" => array('href' => $this->generateUrl('services_rest_scinames_uuid', ['taxonID' => $row['taxonID']], UrlGeneratorInterface::ABSOLUTE_URL))
+            );
+        }
+        $view = $this->view($results, 200);
+
         return $this->handleView($view);
     }
 
