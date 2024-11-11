@@ -50,4 +50,27 @@ readonly class TaxonNameService
 
         }
     }
+
+    public function fulltextSearch(string $term): array
+    {
+        $words = preg_split('/\s+/', $term);
+        if (empty($words)) {
+            return [];
+        }
+        $searchTerm = '+' . implode(" +", $words);
+        $sql = <<<SQL
+                SELECT taxonID, scientificName, taxonName
+                FROM `tbl_tax_sciname`
+                WHERE
+                    MATCH(scientificName) against(:searchTerm IN BOOLEAN MODE)
+                    OR MATCH(taxonName) against(:searchTerm IN BOOLEAN MODE)
+                ORDER BY scientificName
+                SQL;
+        return $this->entityManager->getConnection()->executeQuery($sql, ['searchTerm' => $searchTerm])->fetchAllAssociative();
+    }
+
+    public function findByUuid(string $uuid): ?int
+    {
+     return NULL; //TODO
+    }
 }
