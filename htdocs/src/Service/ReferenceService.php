@@ -84,11 +84,11 @@ readonly class ReferenceService
     }
 
     /**
-     * TODO code kept in original concept, refactoring just syntax - having no idea what is going on :-)
+     * TODO refactoring mostly syntax - having no idea what is going on :-)
      */
     public function getNameReferences(int $taxonID, int $excludeReferenceId = 0, int $insertSeries = 0): array
     {
-        $results =[];
+        $results = [];
         // direct integration of tbl_lit_... for (much) faster sorting whe using ORDER BY
         // only select entries which are part of a classification, so either tc.tax_syn_ID or has_children_syn.tax_syn_ID must not be NULL
         //ONLY_FULL_GROUP_BY,
@@ -115,39 +115,19 @@ readonly class ReferenceService
         }
         $sql .= " GROUP BY ts.source_citationID
               ORDER BY la.autor, l.jahr, le.autor, l.suptitel, lp.periodical, l.vol, l.part, l.pp";
-        $dbRows =  $this->entityManager->getConnection()->executeQuery($sql, ['taxonID' => $taxonID, 'insertSeries'=>$insertSeries, 'excludeReferenceId'=>$excludeReferenceId])->fetchAllAssociative();
+        $dbRows = $this->entityManager->getConnection()->executeQuery($sql, ['taxonID' => $taxonID, 'insertSeries' => $insertSeries, 'excludeReferenceId' => $excludeReferenceId])->fetchAllAssociative();
         foreach ($dbRows as $dbRow) {
             // check for exclude id
             if ($dbRow['referenceId'] != $excludeReferenceId) {
-
-                // check if there are any classification children of the taxonID according to this reference?
-                $sqlQueryChild = "SELECT ts.taxonID
-                                       FROM tbl_tax_synonymy ts
-                                        LEFT JOIN tbl_tax_classification tc ON ts.tax_syn_ID = tc.tax_syn_ID
-                                       WHERE ts.source_citationID = :referenceID
-                                        AND ts.acc_taxon_ID IS NULL
-                                        AND tc.parent_taxonID = :taxonID";
-                $child = $this->entityManager->getConnection()->executeQuery($sqlQueryChild, ['taxonID' => $taxonID, 'referenceID'=>$dbRow['referenceId']])->fetchAssociative();
-                if ($child) {
-                    $hasChildren = true;
-                } else {
-                    $sqlQueryChild = "SELECT ts.taxonID
-                                       FROM tbl_tax_synonymy ts
-                                       WHERE ts.source_citationID = :referenceID
-                                        AND ts.acc_taxon_ID = $taxonID";
-                    $child = $this->entityManager->getConnection()->executeQuery($sqlQueryChild, ['referenceID'=>$dbRow['referenceId']])->fetchAssociative();
-                    $hasChildren = (bool)$child;
-                }
-
                 $results[] = array(
                     "referenceName" => $dbRow['referenceName'],
-                    "referenceId"   => intval($dbRow['referenceId']),
+                    "referenceId" => intval($dbRow['referenceId']),
                     "referenceType" => "citation",
-                    "taxonID"       => $taxonID,
-                    "uuid"          => array('href' => $this->router->generate('services_rest_scinames_uuid', ['taxonID' => $taxonID], UrlGeneratorInterface::ABSOLUTE_URL)),
-                    "hasChildren"   => $hasChildren,
-                    "hasType"       => false, //TODO always false?
-                    "hasSpecimen"   => false //TODO always false?
+                    "taxonID" => $taxonID,
+                    "uuid" => array('href' => $this->router->generate('services_rest_scinames_uuid', ['taxonID' => $taxonID], UrlGeneratorInterface::ABSOLUTE_URL)),
+                    "hasChildren" => $this->hasClassificationChildren($taxonID, $dbRow['referenceId']),
+                    "hasType" => false, //TODO always false?
+                    "hasSpecimen" => false //TODO always false?
                 );
             }
         }
@@ -169,12 +149,33 @@ readonly class ReferenceService
                  AND ts.taxonID = :taxonID
                 GROUP BY ts.source_citationID
                 ORDER BY la.autor, l.jahr, le.autor, l.suptitel, lp.periodical, l.vol, l.part, l.pp";
-        $dbSyns =  $this->entityManager->getConnection()->executeQuery($sqlSyns, ['taxonID' => $taxonID, 'excludeReferenceId'=>$excludeReferenceId])->fetchAllAssociative();
+        $dbSyns = $this->entityManager->getConnection()->executeQuery($sqlSyns, ['taxonID' => $taxonID, 'excludeReferenceId' => $excludeReferenceId])->fetchAllAssociative();
 
         foreach ($dbSyns as $dbSyn) {
-            // check if the accepted taxon is part of a classification
-            // only select entries which are part of a classification, so either tc.tax_syn_ID or has_children_syn.tax_syn_ID must not be NULL
-            $sqlQuerySynonym = "SELECT count(ts.source_citationID AS referenceId)
+            if ($this->isAcceptedTaxonPartOfClassification($dbSyn['referenceId'], $dbSyn['acceptedId'])) {
+                $results[] = array(
+                    "referenceName" => '= ' . $dbSyn['referenceName'],  //  mark the reference Name as synonym
+                    "referenceId" => intval($dbSyn['referenceId']),
+                    "referenceType" => "citation",
+                    "taxonID" => $taxonID,
+                    "uuid" => array('href' => $this->router->generate('services_rest_scinames_uuid', ['taxonID' => $taxonID], UrlGeneratorInterface::ABSOLUTE_URL)),
+                    "hasChildren" => false,
+                    "hasType" => false,
+                    "hasSpecimen" => false,
+                );
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * check if the accepted taxon is part of a classification
+     * only select entries which are part of a classification, so either tc.tax_syn_ID or has_children_syn.tax_syn_ID must not be NULL
+     */
+    protected function isAcceptedTaxonPartOfClassification(int $referenceId, int $acceptedId): bool
+    {
+        $sqlQuerySynonym = "SELECT count(ts.source_citationID AS referenceId)
                                     FROM tbl_tax_synonymy ts
                                      LEFT JOIN tbl_tax_classification tc ON ts.tax_syn_ID = tc.tax_syn_ID
                                      LEFT JOIN tbl_tax_classification has_children ON has_children.parent_taxonID = ts.taxonID
@@ -184,23 +185,35 @@ readonly class ReferenceService
                                      AND ts.acc_taxon_ID IS NULL
                                      AND ts.taxonID = :acceptedId
                                      AND (tc.tax_syn_ID IS NOT NULL OR has_children_syn.tax_syn_ID IS NOT NULL)";
-            $rowCount = $this->entityManager->getConnection()->executeQuery($sqlQuerySynonym, ['reference' => $dbSyn['referenceId'], 'acceptedId'=>$dbSyn['acceptedId']])->fetchOne();
-            // and add the entry only if the accepted taxon is part of a classification
-            if ($rowCount > 0) {
-                $results[] = array(
-                    "referenceName" => '= ' . $dbSyn['referenceName'],  //  mark the reference Name as synonym
-                    "referenceId"   => intval($dbSyn['referenceId']),
-                    "referenceType" => "citation",
-                    "taxonID"       => $taxonID,
-                    "uuid"          => array('href' => $this->router->generate('services_rest_scinames_uuid', ['taxonID' => $taxonID], UrlGeneratorInterface::ABSOLUTE_URL)),
-                    "hasChildren"   => false,
-                    "hasType"       => false,
-                    "hasSpecimen"   => false,
-                );
-            }
+        $rowCount = $this->entityManager->getConnection()->executeQuery($sqlQuerySynonym, ['reference' => $referenceId, 'acceptedId' => $acceptedId])->fetchOne();
+        if ($rowCount > 0) {
+            return true;
         }
-
-        return $results;
+        return false;
     }
 
+    /**
+     * check if there are any classification children of the taxonID according to this reference
+     */
+    protected function hasClassificationChildren(int $taxonID, int $referenceID): bool
+    {
+        $sqlQueryChild = "SELECT ts.taxonID
+                                       FROM tbl_tax_synonymy ts
+                                        LEFT JOIN tbl_tax_classification tc ON ts.tax_syn_ID = tc.tax_syn_ID
+                                       WHERE ts.source_citationID = :referenceID
+                                        AND ts.acc_taxon_ID IS NULL
+                                        AND tc.parent_taxonID = :taxonID";
+        $child = $this->entityManager->getConnection()->executeQuery($sqlQueryChild, ['taxonID' => $taxonID, 'referenceID' => $referenceID])->fetchAssociative();
+        if ($child !== false) {
+            $hasChildren = true;
+        } else {
+            $sqlQueryChild = "SELECT ts.taxonID
+                                       FROM tbl_tax_synonymy ts
+                                       WHERE ts.source_citationID = :referenceID
+                                        AND ts.acc_taxon_ID = $taxonID";
+            $child = $this->entityManager->getConnection()->executeQuery($sqlQueryChild, ['referenceID' => $referenceID])->fetchAssociative();
+            $hasChildren = (bool) $child;
+        }
+        return $hasChildren;
+    }
 }
