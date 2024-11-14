@@ -518,4 +518,81 @@ class ClassificationController extends AbstractFOSRestController
         return $this->handleView($view);
     }
 
+    #[Get(
+        path: '/services/rest/classification/periodicalStatistics/{referenceID}',
+        summary: 'Get statistics information of a given reference',
+        tags: ['classification'],
+        parameters: [
+            new PathParameter(
+                name: 'referenceID',
+                description: 'ID of reference',
+                in: 'path',
+                required: true,
+                schema: new Schema(type: 'integer'),
+                example: 31070
+            )
+        ],
+        responses: [
+            new \OpenApi\Attributes\Response(
+                response: 200,
+                description: 'number of children',
+                content: [new MediaType(
+                    mediaType: 'application/json',
+                    schema: new Schema(type: 'array',
+                        items: new Items(
+                            properties: [
+                                new Property(property: "nrAccTaxa", type: "integer", example: 492),
+                                new Property(property: "nrSynonyms", type: "integer", example: 34),
+                                new Property(
+                                    property: "ranks",
+                                    type: "array",
+                                    items: new Items(
+                                        properties: [
+                                            new Property(property: "rank", type: "string", example: "divisions"),
+                                            new Property(property: "nrAccTaxa", type: "integer", example: 1),
+                                            new Property(property: "nrSynTaxa", type: "integer", example: 0),
+                                        ]
+                                    )
+                                )
+                            ]),
+                    )
+                ),
+                    new MediaType(
+                        mediaType: 'application/xml',
+                        schema: new Schema(type: 'array',
+                            items: new Items(
+                                properties: [
+                                    new Property(property: "nrAccTaxa", type: "integer", example: 492),
+                                    new Property(property: "nrSynonyms", type: "integer", example: 34),
+                                    new Property(
+                                        property: "ranks",
+                                        type: "array",
+                                        items: new Items(
+                                            properties: [
+                                                new Property(property: "rank", type: "string", example: "divisions"),
+                                                new Property(property: "nrAccTaxa", type: "integer", example: 1),
+                                                new Property(property: "nrSynTaxa", type: "integer", example: 0),
+                                            ]
+                                        )
+                                    )
+                                ]),
+                        )
+                    )
+                ]
+            ),
+            new \OpenApi\Attributes\Response(
+                response: 400,
+                description: 'Bad Request'
+            )
+        ]
+    )]
+    #[Route('/services/rest/classification/periodicalStatistics/{referenceID}.{_format}', name: "services_rest_classification_periodicalStatistics", defaults: ['_format' => 'json'], methods: ['GET'])]
+    public function periodicalStatistics(int $referenceID): Response
+    {
+        $data = $this->referenceService->getPeriodicalStatistics($referenceID);
+        $view = $this->view($data, 200);
+
+        return $this->handleView($view);
+    }
+
 }

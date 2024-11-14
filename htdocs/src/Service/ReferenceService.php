@@ -709,4 +709,74 @@ readonly class ReferenceService
 
         return $resultNumber;
     }
+
+    /**
+     * Get statistics information of a given reference
+     */
+    public function getPeriodicalStatistics(int $referenceID):array
+    {
+        $results = array();
+
+        $sql = "SELECT count(*) AS number
+                  FROM tbl_tax_synonymy
+                  WHERE source_citationID = :referenceID
+                   AND acc_taxon_ID IS NULL";
+        $results["nrAccTaxa"] = $this->entityManager->getConnection()->executeQuery($sql, ['referenceID' => $referenceID])->fetchOne();
+
+
+        $sql = "SELECT count(*) AS number
+               FROM tbl_tax_synonymy
+               WHERE source_citationID = :referenceID
+                AND acc_taxon_ID IS NOT NULL";
+        $results["nrSynonyms"] = $this->entityManager->getConnection()->executeQuery($sql, ['referenceID' => $referenceID])->fetchOne();
+
+
+        $sql = "SELECT tr.rank_plural, tr.rank_hierarchy, count(tr.tax_rankID) AS number
+                   FROM tbl_tax_synonymy ts
+                    LEFT JOIN tbl_tax_species tsp ON ts.taxonID = tsp.taxonID
+                    LEFT JOIN tbl_tax_rank tr ON tsp.tax_rankID = tr.tax_rankID
+                   WHERE source_citationID = :referenceID
+                    AND acc_taxon_ID IS NULL
+                   GROUP BY tr.tax_rankID
+                   ORDER BY tr.rank_hierarchy";
+        $dbRowsAcc = $this->entityManager->getConnection()->executeQuery($sql, ['referenceID' => $referenceID])->fetchAllAssociative();
+
+        $sql = "SELECT tr.rank_plural, tr.rank_hierarchy, count(tr.tax_rankID) AS number
+                   FROM tbl_tax_synonymy ts
+                    LEFT JOIN tbl_tax_species tsp ON ts.taxonID = tsp.taxonID
+                    LEFT JOIN tbl_tax_rank tr ON tsp.tax_rankID = tr.tax_rankID
+                   WHERE source_citationID = :referenceID
+                    AND acc_taxon_ID IS NOT NULL
+                   GROUP BY tr.tax_rankID
+                   ORDER BY tr.rank_hierarchy";
+        $dbRowsSyn = $this->entityManager->getConnection()->executeQuery($sql, ['referenceID' => $referenceID])->fetchAllAssociative();
+
+
+        $rows = array();
+        foreach( $dbRowsAcc as $dbRow ) {
+            $rows[$dbRow['rank_hierarchy']]['acc'] = array("rank" => $dbRow['rank_plural'], "number" => $dbRow['number']);
+        }
+        foreach( $dbRowsSyn as $dbRow ) {
+            $rows[$dbRow['rank_hierarchy']]['syn'] = array("rank" => $dbRow['rank_plural'], "number" => $dbRow['number']);
+        }
+
+        $results["ranks"] = array();
+        foreach ($rows as $row) {
+            if (isset($row['acc'])) {
+                $buffer['rank'] = $row['acc']['rank'];
+                $buffer['nrAccTaxa'] = $row['acc']['number'];
+            } else {
+                $buffer['nrAccTaxa'] = 0;
+            }
+            if (isset($row['syn'])) {
+                $buffer['rank'] = $row['syn']['rank'];
+                $buffer['nrSynTaxa'] = $row['syn']['number'];
+            } else {
+                $buffer['nrSynTaxa'] = 0;
+            }
+            $results["ranks"][] = $buffer;
+        }
+
+        return $results;
+    }
 }
