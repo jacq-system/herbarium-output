@@ -653,4 +653,60 @@ readonly class ReferenceService
         // return results
         return $parent;
     }
+
+    /**
+     * Get number of classification children who have children themselves of a given taxonID according to a given reference of type citation
+     *
+     * @param int $referenceID ID of reference (citation)
+     * @param ?int $taxonID ID of taxon
+     */
+    public function getNumberOfChildrenWithChildrenCitation (int $referenceID, ?int $taxonID = 0): int
+    {
+        $resultNumber = 0;
+        $stack = array();
+
+        $stack[] = intval($taxonID);
+        do {
+            $taxonID = array_pop($stack);
+
+            // basic query
+            $sql = "SELECT ts.taxonID,
+                       max(`has_children`.`tax_syn_ID` IS NOT NULL) AS `hasChildren`,
+                       max(`has_synonyms`.`tax_syn_ID` IS NOT NULL) AS `hasSynonyms`,
+                       max(`has_basionym`.`basID` IS NOT NULL) AS `hasBasionym`
+                FROM tbl_tax_synonymy ts
+                 LEFT JOIN tbl_tax_species tsp ON ts.taxonID = tsp.taxonID
+                 LEFT JOIN tbl_tax_rank tr ON tsp.tax_rankID = tr.tax_rankID
+                 LEFT JOIN tbl_tax_classification tc ON ts.tax_syn_ID = tc.tax_syn_ID
+                 LEFT JOIN tbl_tax_synonymy has_synonyms ON (has_synonyms.acc_taxon_ID = ts.taxonID AND has_synonyms.source_citationID = ts.source_citationID)
+                 LEFT JOIN tbl_tax_classification has_children_clas ON has_children_clas.parent_taxonID = ts.taxonID
+                 LEFT JOIN tbl_tax_synonymy has_children ON (has_children.tax_syn_ID = has_children_clas.tax_syn_ID AND has_children.source_citationID = ts.source_citationID)
+                 LEFT JOIN tbl_tax_species has_basionym ON ts.taxonID = has_basionym.taxonID
+                WHERE ts.source_citationID = :referenceID
+                 AND ts.acc_taxon_ID IS NULL ";
+
+            // check if we search for children of a specific taxon
+            if( $taxonID > 0 ) {
+                $sql .= " AND tc.parent_taxonID = :taxonID ";
+            }
+            // .. if not make sure we only return entries which have at least one child
+            else {
+                $sql .= " AND tc.parent_taxonID IS NULL
+                      AND has_children.tax_syn_ID IS NOT NULL ";
+            }
+
+            $dbRows = $this->entityManager->getConnection()->executeQuery($sql, ['taxonID' => $taxonID, 'referenceID' => $referenceID])->fetchAllAssociative();
+
+            // process all results and create response from it
+            //TODO modify query with HAVING clause and fetch the counts themself?
+            foreach( $dbRows as $dbRow ) {
+                if ($dbRow['hasChildren'] > 0 || $dbRow['hasSynonyms'] > 0 || $dbRow['hasBasionym']) {
+                    $stack[] = $dbRow['taxonID'];
+                    $resultNumber++;
+                }
+            }
+        } while (!empty($stack));
+
+        return $resultNumber;
+    }
 }

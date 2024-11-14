@@ -461,5 +461,61 @@ class ClassificationController extends AbstractFOSRestController
         return $this->handleView($view);
     }
 
+    #[Get(
+        path: '/services/rest/classification/numberOfChildrenWithChildrenCitation/{referenceID}',
+        summary: 'Get number of classification children who have children themselves of a given taxonID according to a given reference of type citation',
+        tags: ['classification'],
+        parameters: [
+            new PathParameter(
+                name: 'referenceID',
+                description: 'ID of reference',
+                in: 'path',
+                required: true,
+                schema: new Schema(type: 'integer'),
+                example: 31070
+            ),
+            new QueryParameter(
+                name: 'taxonID',
+                description: 'optional ID of taxon name',
+                in: 'query',
+                required: false,
+                schema: new Schema(type: 'integer'),
+                example: 46183
+            )
+        ],
+        responses: [
+            new \OpenApi\Attributes\Response(
+                response: 200,
+                description: 'number of children',
+                content: [new MediaType(
+                    mediaType: 'application/json',
+                    schema: new Schema(
+                        type: 'integer',
+                        example: 2
+                    )
+                ),
+                    new MediaType(
+                        mediaType: 'application/xml',
+                        schema: new Schema(
+                            type: 'integer',
+                            example: 2
+                        )
+                    )
+                ]
+            ),
+            new \OpenApi\Attributes\Response(
+                response: 400,
+                description: 'Bad Request'
+            )
+        ]
+    )]
+    #[Route('/services/rest/classification/numberOfChildrenWithChildrenCitation/{referenceID}.{_format}', name: "services_rest_classification_numberOfChildrenWithChildrenCitation", defaults: ['_format' => 'json'], methods: ['GET'])]
+    public function numberOfChildrenWithChildrenCitation(int $referenceID, #[MapQueryParameter] ?int $taxonID = 0): Response
+    {
+        $data = $this->referenceService->getNumberOfChildrenWithChildrenCitation($referenceID, $taxonID);
+        $view = $this->view($data, 200);
+
+        return $this->handleView($view);
+    }
 
 }
