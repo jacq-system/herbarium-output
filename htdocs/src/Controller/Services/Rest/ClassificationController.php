@@ -405,7 +405,7 @@ class ClassificationController extends AbstractFOSRestController
         responses: [
             new \OpenApi\Attributes\Response(
                 response: 200,
-                description: 'fetch a list of all periodicals known to JACQ or returns by ID',
+                description: 'parent entry of a given reference',
                 content: [new MediaType(
                     mediaType: 'application/json',
                     schema: new Schema(
@@ -419,7 +419,7 @@ class ClassificationController extends AbstractFOSRestController
                                 new Property(property: 'referenceType', description: 'Type of the reference', type: 'string', example: ''),
                                 new Property(property: 'hasType', description: ' true if Type exist', type: 'boolean', example: false),
                                 new Property(property: 'hasSpecimen', description: 'true if at least one specimen exists', type: 'boolean', example: false),
-                                new Property(property: 'referenceInfo', description: '', type: 'object', example: '{"type": "","cited": ""}')
+                                new Property(property: 'referenceInfo', description: '', type: 'object', example: '{"number": "","order": ""}')
                             ],
                             type: 'object'
                         )
@@ -438,7 +438,7 @@ class ClassificationController extends AbstractFOSRestController
                                     new Property(property: 'referenceType', description: 'Type of the reference', type: 'string', example: ''),
                                     new Property(property: 'hasType', description: ' true if Type exist', type: 'boolean', example: false),
                                     new Property(property: 'hasSpecimen', description: 'true if at least one specimen exists', type: 'boolean', example: false),
-                                    new Property(property: 'referenceInfo', description: '', type: 'object', example: '{"type": "","cited": ""}')
+                                    new Property(property: 'referenceInfo', description: '', type: 'object', example: '{"number": "","order": ""}')
                                 ],
                                 type: 'object'
                             )
@@ -460,4 +460,6 @@ class ClassificationController extends AbstractFOSRestController
 
         return $this->handleView($view);
     }
+
+
 }
