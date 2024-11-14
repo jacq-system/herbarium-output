@@ -371,4 +371,93 @@ class ClassificationController extends AbstractFOSRestController
 
         return $this->handleView($view);
     }
+
+    #[Get(
+        path: '/services/rest/classification/parent/{referenceType}/{referenceID}/{taxonID}',
+        summary: 'Get the parent entry of a given reference',
+        tags: ['classification'],
+        parameters: [
+            new PathParameter(
+                name: 'referenceType',
+                description: 'Type of reference (citation, person, service, specimen, periodical)',
+                in: 'path',
+                required: true,
+                schema: new Schema(type: 'string'),
+                example: 'citation'
+            ),
+            new PathParameter(
+                name: 'referenceID',
+                description: 'ID of reference',
+                in: 'path',
+                required: true,
+                schema: new Schema(type: 'integer'),
+                example: 31070
+            ),
+            new PathParameter(
+                name: 'taxonID',
+                description: 'ID of taxon name',
+                in: 'path',
+                required: true,
+                schema: new Schema(type: 'integer'),
+                example: 46183
+            )
+        ],
+        responses: [
+            new \OpenApi\Attributes\Response(
+                response: 200,
+                description: 'fetch a list of all periodicals known to JACQ or returns by ID',
+                content: [new MediaType(
+                    mediaType: 'application/json',
+                    schema: new Schema(
+                        type: 'array',
+                        items: new Items(
+                            properties: [
+                                new Property(property: 'taxonID', description: 'the taxon-ID we asked for', type: 'integer', example: 15),
+                                new Property(property: 'uuid', description: 'URL to UUID service', type: 'object', example: '{"href": "url to get the uuid"}'),
+                                new Property(property: 'referenceId', description: 'ID of reference', type: 'integer', example: 15),
+                                new Property(property: 'referenceName', description: 'name of the reference', type: 'string', example: ''),
+                                new Property(property: 'referenceType', description: 'Type of the reference', type: 'string', example: ''),
+                                new Property(property: 'hasType', description: ' true if Type exist', type: 'boolean', example: false),
+                                new Property(property: 'hasSpecimen', description: 'true if at least one specimen exists', type: 'boolean', example: false),
+                                new Property(property: 'referenceInfo', description: '', type: 'object', example: '{"type": "","cited": ""}')
+                            ],
+                            type: 'object'
+                        )
+                    )
+                ),
+                    new MediaType(
+                        mediaType: 'application/xml',
+                        schema: new Schema(
+                            type: 'array',
+                            items: new Items(
+                                properties: [
+                                    new Property(property: 'taxonID', description: 'the taxon-ID we asked for', type: 'integer', example: 15),
+                                    new Property(property: 'uuid', description: 'URL to UUID service', type: 'object', example: '{"href": "url to get the uuid"}'),
+                                    new Property(property: 'referenceId', description: 'ID of reference', type: 'integer', example: 15),
+                                    new Property(property: 'referenceName', description: 'name of the reference', type: 'string', example: ''),
+                                    new Property(property: 'referenceType', description: 'Type of the reference', type: 'string', example: ''),
+                                    new Property(property: 'hasType', description: ' true if Type exist', type: 'boolean', example: false),
+                                    new Property(property: 'hasSpecimen', description: 'true if at least one specimen exists', type: 'boolean', example: false),
+                                    new Property(property: 'referenceInfo', description: '', type: 'object', example: '{"type": "","cited": ""}')
+                                ],
+                                type: 'object'
+                            )
+                        )
+                    )
+                ]
+            ),
+            new \OpenApi\Attributes\Response(
+                response: 400,
+                description: 'Bad Request'
+            )
+        ]
+    )]
+    #[Route('/services/rest/classification/parent/{referenceType}/{referenceID}/{taxonID}.{_format}', name: "services_rest_classification_parent", defaults: ['_format' => 'json'], methods: ['GET'])]
+    public function parent(string $referenceType, int $referenceID, int $taxonID): Response
+    {
+        $data = $this->referenceService->getParent($referenceType, $referenceID, $taxonID);
+        $view = $this->view($data, 200);
+
+        return $this->handleView($view);
+    }
 }

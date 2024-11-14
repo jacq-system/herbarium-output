@@ -541,4 +541,116 @@ readonly class ReferenceService
         return $this->entityManager->getConnection()->executeQuery($sql, ['taxonID' => $taxonID, 'referenceID' => $referenceID])->fetchAllAssociative();
     }
 
+    /**
+     * Get the parent entry of a given reference
+     *
+     * @param string $referenceType type of reference (periodical, citation, service, etc.)
+     * @param int $referenceId ID of reference
+     * @param int $taxonID ID of taxon name
+     */
+    public function getParent(string $referenceType, int $referenceId,int $taxonID): ?array
+    {
+        $parent = null;
+
+        switch( $referenceType ) {
+            case 'periodical':
+                // periodical is a top level element, so no parent
+                return null;
+            case 'citation':
+            default:
+                // only necessary if taxonID is not null
+                //TODO taxonID is required parameter of the route, can't be null..
+                if( $taxonID > 0 ) {
+                    $sql="SELECT `herbar_view`.GetScientificName( ts.`taxonID`, 0 ) AS `referenceName`, tc.number, tc.order, ts.taxonID
+                                            FROM tbl_tax_synonymy ts
+                                             LEFT JOIN tbl_tax_classification tc ON ts.tax_syn_ID = tc.tax_syn_ID
+                                             LEFT JOIN tbl_tax_classification tcchild ON ts.taxonID = tcchild.parent_taxonID
+                                             LEFT JOIN tbl_tax_synonymy tschild ON (    tschild.source_citationID = ts.source_citationID
+                                                                                    AND tcchild.tax_syn_ID = tschild.tax_syn_ID)
+                                            WHERE ts.source_citationID = :referenceId
+                                             AND ts.acc_taxon_ID IS NULL
+                                             AND tschild.taxonID = :taxonID";
+
+                    $dbRow = $this->entityManager->getConnection()->executeQuery($sql, ['taxonID' => $taxonID, 'referenceId'=>$referenceId])->fetchAssociative();
+                    // check if we found a parent
+                    if ($dbRow) {
+                        $parent = array(
+                            "taxonID"       => $dbRow['taxonID'],
+                            "uuid" => array('href' => $this->router->generate('services_rest_scinames_uuid', ['taxonID' => $dbRow['taxonID']], UrlGeneratorInterface::ABSOLUTE_URL)),
+                            "referenceId"   => $referenceId,
+                            "referenceName" => $dbRow['referenceName'],
+                            "referenceType" => "citation",
+                            "hasType"       => $this->hasType($dbRow['taxonID']),
+                            "hasSpecimen"   => $this->hasSpecimen($dbRow['taxonID']),
+                            "referenceInfo" => array(
+                                "number"     => $dbRow['number'],
+                                "order"      => $dbRow['order']
+                            )
+                        );
+                    }
+                    // if not we either have a synonym and have to search for an accepted taxon or have to return the citation entry
+                    else {
+                        $sql="SELECT `herbar_view`.GetScientificName( taxonID, 0 ) AS referenceName, acc_taxon_ID
+                                                  FROM tbl_tax_synonymy
+                                                  WHERE taxonID = :taxonID
+                                                   AND source_citationID = :referenceId
+                                                   AND acc_taxon_ID IS NOT NULL";
+                        $accTaxon = $this->entityManager->getConnection()->executeQuery($sql, ['taxonID' => $taxonID, 'referenceId'=>$referenceId])->fetchAssociative();
+                        // if we have found an accepted taxon for our synonym then return it
+                        if ($accTaxon) {
+                            $parent = array(
+                                "taxonID"       => $accTaxon['acc_taxon_ID'],
+                                "uuid" => array('href' => $this->router->generate('services_rest_scinames_uuid', ['taxonID' => $accTaxon['acc_taxon_ID']], UrlGeneratorInterface::ABSOLUTE_URL)),
+                                "referenceId"   => $referenceId,
+                                "referenceName" => $accTaxon['referenceName'],
+                                "referenceType" => "citation",
+                                "hasType"       => $this->hasType($accTaxon['acc_taxon_ID']),
+                                "hasSpecimen"   => $this->hasSpecimen($accTaxon['acc_taxon_ID'])
+                            );
+                        }
+                        // if not we have to return the citation entry
+                        else {
+                            $sql = "SELECT `herbar_view`.GetProtolog(l.citationID) AS referenceName, l.citationID AS referenceId
+                                                    FROM tbl_lit l
+                                                    WHERE l.citationID = :referenceId";
+                            $citation = $this->entityManager->getConnection()->executeQuery($sql, ['referenceId'=>$referenceId])->fetchAssociative();
+
+                            if ($citation) {
+                                $parent = array(
+                                    "taxonID"       => 0,
+                                    "referenceId"   => $citation['referenceId'],
+                                    "referenceName" => $citation['referenceName'],
+                                    "referenceType" => "citation",
+                                    "hasType"       => false,
+                                    "hasSpecimen"   => false
+                                );
+                            }
+                        }
+                    }
+                }
+                // find the top-level periodical entry
+                else {
+                    $sql = "SELECT lp.periodical AS referenceName, l.periodicalID AS referenceId
+                                            FROM tbl_lit_periodicals lp
+                                             LEFT JOIN tbl_lit l ON l.periodicalID = lp.periodicalID
+                                            WHERE l.citationID = :referenceId";
+                    $periodical = $this->entityManager->getConnection()->executeQuery($sql, ['referenceId' => $referenceId])->fetchAssociative();
+
+                    if ($periodical) {
+                        $parent = array(
+                            "taxonID" => 0,
+                            "referenceId" => $periodical['referenceId'],
+                            "referenceName" => $periodical['referenceName'],
+                            "referenceType" => "periodical",
+                            "hasType" => false,
+                            "hasSpecimen" => false
+                        );
+                    }
+                }
+                break;
+        }
+
+        // return results
+        return $parent;
+    }
 }
