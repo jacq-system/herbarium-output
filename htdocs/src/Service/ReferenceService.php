@@ -416,4 +416,129 @@ readonly class ReferenceService
         }
         return $name;
     }
+
+    /**
+     * fetch synonyms (and basionym) for a given taxonID, according to a given reference
+     *
+     * @param string $referenceType type of reference (periodical, citation, service, etc.)
+     * @param int $referenceID ID of reference
+     * @param int $taxonID ID of taxon name
+     * @param int $insertSeries optional ID of cication-Series to insert
+     * @return array List of synonyms including extra information
+     */
+    public function getSynonyms($referenceType, $referenceID, $taxonID, $insertSeries = 0): array
+    {
+        $results = [];
+        $basID = 0;
+        $basionymResult = null;
+
+        $basionym = $this->getBasionym($taxonID);
+
+        if ($basionym !== null) {
+            $basionymID = $basionym['basID'];
+            $basionymResult = array(
+                "taxonID" => $basID,
+                "uuid" => array('href' => $this->router->generate('services_rest_scinames_uuid', ['taxonID' => $basionymID], UrlGeneratorInterface::ABSOLUTE_URL)),
+                "referenceName" => $basionym['scientificName'],
+                "referenceId" => $referenceID,
+                "referenceType" => $referenceType,
+                "hasType" => $this->hasType($basionymID),
+                "hasSpecimen" => $this->hasSpecimen($basionymID),
+                "insertedCitation" => false,
+                "referenceInfo" => array(
+                    "type" => "homotype",
+                    "cited" => false
+                ),
+            );
+        }
+
+        switch (trim($referenceType)) {
+            case 'citation': //TODO only citation type is implemented, rearrange?
+                $synonyms = $this->findSynonyms($taxonID, $referenceID);
+                foreach ($synonyms as $synonym) {
+                    // ignore if synonym is basionym
+                    if ($basionym !== null && $synonym['taxonID'] == $basionymID) {
+                        $basionymResult["referenceInfo"]["cited"] = true;
+                    } else {
+                        $results[] = array(
+                            "taxonID" => intval($synonym['taxonID']),
+                            "uuid" => array('href' => $this->router->generate('services_rest_scinames_uuid', ['taxonID' => $synonym['taxonID']], UrlGeneratorInterface::ABSOLUTE_URL)),
+
+                            "referenceName" => $synonym['scientificName'],
+                            "referenceId" => $referenceID,
+                            "referenceType" => $referenceType,
+                            "hasType" => $this->hasType($synonym['taxonID']),
+                            "hasSpecimen" => $this->hasSpecimen($synonym['taxonID']),
+                            "insertedCitation" => false,
+                            "referenceInfo" => array(
+                                "type" => ($synonym['homotype'] > 0) ? "homotype" : "heterotype",
+                                'cited' => true
+                            ),
+                        );
+                        $insertedCitations = $this->getInsertedCitation($insertSeries, $referenceID, $synonym['taxonID']);
+                        if (!empty($insertedCitations)) {
+                            foreach ($insertedCitations as $citation) {
+                                $results[] = array(
+                                    "taxonID" => $citation['taxonID'],
+                                    "uuid" => array('href' => $this->router->generate('services_rest_scinames_uuid', ['taxonID' => $citation['taxonID']], UrlGeneratorInterface::ABSOLUTE_URL)),
+                                    "referenceId" => $citation['referenceId'],
+                                    "referenceName" => $citation['referenceName'],
+                                    "referenceType" => $citation['referenceType'],
+                                    "hasChildren" => $citation['hasChildren'],
+                                    "insertedCitation" => true,
+                                );
+                            }
+                        }
+                    }
+                }
+                break;
+        }
+
+        // if we have a basionym, prepend it to list
+        if ($basionymResult != null) {
+            $insertedCitations = $this->getInsertedCitation($insertSeries, $referenceID, $basionymResult['taxonID']);
+            if (!empty($insertedCitations)) {
+                foreach ($insertedCitations as $citation) {
+                    $buffer = array(
+                        "taxonID" => $citation['taxonID'],
+                        "uuid" => array('href' => $this->router->generate('services_rest_scinames_uuid', ['taxonID' => $citation['taxonID']], UrlGeneratorInterface::ABSOLUTE_URL)),
+                        "referenceId" => $citation['referenceId'],
+                        "referenceName" => $citation['referenceName'],
+                        "referenceType" => $citation['referenceType'],
+                        "hasChildren" => $citation['hasChildren'],
+                        "insertedCitation" => true,
+                    );
+                    array_unshift($results, $buffer);
+                }
+            }
+            array_unshift($results, $basionymResult);
+        }
+
+        return $results;
+    }
+
+    protected function getBasionym(int $taxonID): ?array
+    {
+        $sql = "SELECT `herbar_view`.GetScientificName(`ts`.`basID`, 0) AS `scientificName`, ts.basID
+            FROM tbl_tax_species ts
+            WHERE ts.taxonID = :taxonID
+             AND ts.basID IS NOT NULL";
+        $basionym = $this->entityManager->getConnection()->executeQuery($sql, ['taxonID' => $taxonID])->fetchAssociative();
+        if ($basionym === false) {
+            return null;
+        }
+        return $basionym;
+    }
+
+    protected function findSynonyms(int $taxonID, int $referenceID): array
+    {
+        $sql = "SELECT `herbar_view`.GetScientificName( ts.taxonID, 0 ) AS scientificName, ts.taxonID, (tsp.basID = tsp_source.basID) AS homotype
+                    FROM tbl_tax_synonymy ts
+                     LEFT JOIN tbl_tax_species tsp ON tsp.taxonID = ts.taxonID
+                     LEFT JOIN tbl_tax_species tsp_source ON tsp_source.taxonID = ts.acc_taxon_ID
+                    WHERE ts.acc_taxon_ID = :taxonID
+                     AND source_citationID = :referenceID";
+        return $this->entityManager->getConnection()->executeQuery($sql, ['taxonID' => $taxonID, 'referenceID' => $referenceID])->fetchAllAssociative();
+    }
+
 }
