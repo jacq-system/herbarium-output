@@ -2,7 +2,7 @@
 
 namespace App\Controller\Services\Rest;
 
-use App\Service\TaxonNameService;
+use App\Service\TaxonService;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\Items;
@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ScinamesController extends AbstractFOSRestController
 {
-    public function __construct(protected readonly TaxonNameService $taxaNamesService)
+    public function __construct(protected readonly TaxonService $taxaNamesService)
     {
     }
 

@@ -2,6 +2,8 @@
 
 namespace App\Controller\Services\Rest;
 
+use App\Facade\Rest\ClassificationDownloadFacade;
+use App\Facade\Rest\ClassificationFacade;
 use App\Service\ReferenceService;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use OpenApi\Attributes\Get;
@@ -17,7 +19,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ClassificationController extends AbstractFOSRestController
 {
-    public function __construct(protected readonly ReferenceService $referenceService)
+    public function __construct(protected readonly ClassificationFacade $classificationFacade, protected readonly ClassificationDownloadFacade $classificationDownloadFacade)
     {
     }
 
@@ -84,7 +86,7 @@ class ClassificationController extends AbstractFOSRestController
     #[Route('/services/rest/classification/references/{referenceType}/{referenceID}.{_format}', name: "services_rest_classification_references", defaults: ['_format' => 'json'], methods: ['GET'])]
     public function references(string $referenceType, ?int $referenceID = null): Response
     {
-        $data = $this->referenceService->getByType($referenceType, $referenceID);
+        $data = $this->classificationFacade->resolveByType($referenceType, $referenceID);
         $view = $this->view($data, 200);
 
         return $this->handleView($view);
@@ -173,7 +175,7 @@ class ClassificationController extends AbstractFOSRestController
     #[Route('/services/rest/classification/nameReferences/{taxonID}.{_format}', name: "services_rest_classification_nameReferences", defaults: ['_format' => 'json'], methods: ['GET'])]
     public function nameReferences(int $taxonID, #[MapQueryParameter] ?int $excludeReferenceId = 0, #[MapQueryParameter] ?int $insertSeries = 0): Response
     {
-        $data = $this->referenceService->getNameReferences($taxonID, $excludeReferenceId, $insertSeries);
+        $data = $this->classificationFacade->resolveNameReferences($taxonID, $excludeReferenceId, $insertSeries);
         $view = $this->view($data, 200);
 
         return $this->handleView($view);
@@ -270,7 +272,7 @@ class ClassificationController extends AbstractFOSRestController
     #[Route('/services/rest/classification/children/{referenceType}/{referenceID}.{_format}', name: "services_rest_classification_children", defaults: ['_format' => 'json'], methods: ['GET'])]
     public function children(string $referenceType, int $referenceID, #[MapQueryParameter] ?int $taxonID = 0, #[MapQueryParameter] ?int $insertSeries = 0): Response
     {
-        $data = $this->referenceService->getChildren($referenceType, $referenceID, $taxonID, $insertSeries);
+        $data = $this->classificationFacade->resolveChildren($referenceType, $referenceID, $taxonID, $insertSeries);
         $view = $this->view($data, 200);
 
         return $this->handleView($view);
@@ -366,7 +368,7 @@ class ClassificationController extends AbstractFOSRestController
     #[Route('/services/rest/classification/synonyms/{referenceType}/{referenceID}/{taxonID}.{_format}', name: "services_rest_classification_synonyms", defaults: ['_format' => 'json'], methods: ['GET'])]
     public function synonyms(string $referenceType, int $referenceID, int $taxonID, #[MapQueryParameter] ?int $insertSeries = 0): Response
     {
-        $data = $this->referenceService->getSynonyms($referenceType, $referenceID, $taxonID, $insertSeries);
+        $data = $this->classificationFacade->resolveSynonyms($referenceType, $referenceID, $taxonID, $insertSeries);
         $view = $this->view($data, 200);
 
         return $this->handleView($view);
@@ -455,7 +457,7 @@ class ClassificationController extends AbstractFOSRestController
     #[Route('/services/rest/classification/parent/{referenceType}/{referenceID}/{taxonID}.{_format}', name: "services_rest_classification_parent", defaults: ['_format' => 'json'], methods: ['GET'])]
     public function parent(string $referenceType, int $referenceID, int $taxonID): Response
     {
-        $data = $this->referenceService->getParent($referenceType, $referenceID, $taxonID);
+        $data = $this->classificationFacade->resolveParent($referenceType, $referenceID, $taxonID);
         $view = $this->view($data, 200);
 
         return $this->handleView($view);
@@ -512,7 +514,7 @@ class ClassificationController extends AbstractFOSRestController
     #[Route('/services/rest/classification/numberOfChildrenWithChildrenCitation/{referenceID}.{_format}', name: "services_rest_classification_numberOfChildrenWithChildrenCitation", defaults: ['_format' => 'json'], methods: ['GET'])]
     public function numberOfChildrenWithChildrenCitation(int $referenceID, #[MapQueryParameter] ?int $taxonID = 0): Response
     {
-        $data = $this->referenceService->getNumberOfChildrenWithChildrenCitation($referenceID, $taxonID);
+        $data = $this->classificationFacade->resolveNumberOfChildrenWithChildrenCitation($referenceID, $taxonID);
         $view = $this->view($data, 200);
 
         return $this->handleView($view);
@@ -589,7 +591,72 @@ class ClassificationController extends AbstractFOSRestController
     #[Route('/services/rest/classification/periodicalStatistics/{referenceID}.{_format}', name: "services_rest_classification_periodicalStatistics", defaults: ['_format' => 'json'], methods: ['GET'])]
     public function periodicalStatistics(int $referenceID): Response
     {
-        $data = $this->referenceService->getPeriodicalStatistics($referenceID);
+        $data = $this->classificationFacade->resolvePeriodicalStatistics($referenceID);
+        $view = $this->view($data, 200);
+
+        return $this->handleView($view);
+    }
+
+    #[Get(
+        path: '/services/rest/classification/download/{referenceType}/{referenceID}',
+        summary: 'Get an array, filled with header and data for download',
+        tags: ['classification'],
+        parameters: [
+            new PathParameter(
+                name: 'referenceType',
+                description: 'Type of reference (citation, person, service, specimen, periodical)',
+                in: 'path',
+                required: true,
+                schema: new Schema(type: 'string'),
+                example: 'citation'
+            ),
+            new PathParameter(
+                name: 'referenceID',
+                description: 'ID of reference',
+                in: 'path',
+                required: true,
+                schema: new Schema(type: 'integer'),
+                example: 31070
+            ),
+            new QueryParameter(
+                name: 'scientificNameId',
+                description: 'optional ID of scientific name',
+                in: 'query',
+                required: false,
+                schema: new Schema(type: 'integer'),
+                example: 46183
+            ),
+            new QueryParameter(
+                name: 'hideScientificNameAuthors',
+                description: 'hide authors name in scientific name (optional, default = use database',
+                in: 'query',
+                required: false,
+                schema: new Schema(type: 'integer'),
+                example: 1
+            )
+        ],
+        responses: [
+            new \OpenApi\Attributes\Response(
+                response: 200,
+                description: 'parent entry of a given reference',
+                content: [new MediaType(
+                    mediaType: 'application/json',
+                ),
+                    new MediaType(
+                        mediaType: 'application/xml',
+                    )
+                ]
+            ),
+            new \OpenApi\Attributes\Response(
+                response: 400,
+                description: 'Bad Request'
+            )
+        ]
+    )]
+    #[Route('/services/rest/classification/download/{referenceType}/{referenceID}.{_format}', name: "services_rest_classification_download", defaults: ['_format' => 'json'], methods: ['GET'])]
+    public function download(string $referenceType, int $referenceID,#[MapQueryParameter] ?int $scientificNameId, #[MapQueryParameter] ?int $hideScientificNameAuthors ): Response
+    {
+        $data = $this->classificationDownloadFacade->getDownload($referenceType, $referenceID,$scientificNameId,$hideScientificNameAuthors);
         $view = $this->view($data, 200);
 
         return $this->handleView($view);
