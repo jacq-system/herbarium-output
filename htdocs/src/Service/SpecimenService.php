@@ -3,6 +3,7 @@
 namespace App\Service;
 
 
+use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -189,5 +190,106 @@ readonly class SpecimenService
     {
         return $this->router->generate('services_rest_sid_multi', ['page' => $page, 'entriesPerPage' => $entriesPerPage], UrlGeneratorInterface::ABSOLUTE_URL);
     }
+
+    /**
+     * generate an uri out of several parts of a given specimen-ID. Understands tokens (specimenID, HerbNummer, fromDB, ...) and normal text
+     *
+     * @param int $specimenID ID of specimen
+     * @param array $parts text and tokens
+     */
+    public function makeURI (int $specimenID, array $parts): ?string
+    {
+        $uri = '';
+        foreach ($parts as $part) {
+            if ($part['token']) {
+                $tokenParts = explode(':', $part['text']);
+                $token = $tokenParts[0];
+                $subtoken = (isset($tokenParts[1])) ? $tokenParts[1] : '';
+                switch ($token) {
+                    case 'specimenID':
+                        $uri .= $specimenID;
+                        break;
+                    case 'stableIdentifier':    // use stable identifier, options are either :last or :https
+                        $sql = "SELECT stableIdentifier
+                                 FROM tbl_specimens_stblid
+                                 WHERE specimen_ID = :specimenID
+                                 ORDER BY timestamp DESC
+                                 LIMIT 1";
+
+                        $stableIdentifier = $this->entityManager->getConnection()->executeQuery($sql, ["specimenID" => $specimenID])->fetchOne();
+
+                        if (!empty($stableIdentifier)) {
+                            switch ($subtoken) {
+                                case 'last':
+                                    $uri .= substr($stableIdentifier, strrpos($stableIdentifier, '/') + 1);
+                                    break;
+                                case 'https':
+                                    $uri .= str_replace('http:', 'https:', $stableIdentifier);
+                                    break;
+                                default:
+                                    $uri .= $stableIdentifier;
+                                    break;
+                            }
+                        }
+                        break;
+                    case 'herbNumber':  // use HerbNummer with removed hyphens and spaces, options are :num and/or :reformat
+                        $sql = "SELECT id.`HerbNummerNrDigits`, s.`HerbNummer`
+                                             FROM `tbl_specimens` s
+                                              LEFT JOIN `tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
+                                              LEFT JOIN `tbl_img_definition` id ON id.`source_id_fk` = mc.`source_id`
+                                             WHERE s.`specimen_ID` = :specimenID";
+                        $row = $this->entityManager->getConnection()->executeQuery($sql, ["specimenID" => $specimenID])->fetchAssociative();
+                        $HerbNummer = str_replace(['-', ' '], '', $row['HerbNummer']); // remove hyphens and spaces
+                        // first check subtoken :num
+                        if (in_array('num', $tokenParts)) {                         // ignore text with digits within, only use the last number
+                            if (preg_match("/\d+$/", $HerbNummer, $matches)) {  // there is a number at the tail of HerbNummer, so use it
+                                $HerbNummer = $matches[0];
+                            } else {                                                       // HerbNummer ends with text
+                                $HerbNummer = 0;
+                            }
+                        }
+                        // and second :reformat
+                        if (in_array("reformat", $tokenParts)) {                    // correct the number of digits with leading zeros
+                            $uri .= sprintf("%0" . $row['HerbNummerNrDigits'] . ".0f", $HerbNummer);
+                        } else {                                                           // use it as it is
+                            $uri .= $HerbNummer;
+                        }
+                        break;
+                    case 'fromDB':
+                        // first subtoken must be the table name in db "herbar_pictures", second subtoken must be the column name to use for the result.
+                        // where-clause is always the stable identifier and its column must be named "stableIdentifier".
+                        if ($subtoken && !empty($tokenParts[2])) {
+                            $sql = "SELECT stableIdentifier
+                                     FROM tbl_specimens_stblid
+                                     WHERE specimen_ID = :specimenID
+                                     ORDER BY timestamp DESC
+                                     LIMIT 1";
+                            $stableIdentifier = $this->entityManager->getConnection()->executeQuery($sql, ["specimenID" => $specimenID])->fetchAssociative();
+
+                            // SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(manifest, '/', -2), '/', 1) AS derivate_ID FROM `stblid_manifest` WHERE 1
+                            $sql = "SELECT " . $tokenParts[2] . "
+                                                 FROM herbar_pictures.$subtoken
+                                                 WHERE stableIdentifier LIKE :stableIdentifier
+                                                 LIMIT 1";
+                            // TODO using variables as part of SQL !! - forcing replica at least..
+                            $connection = $this->entityManager->getConnection();
+                            if ($connection instanceof PrimaryReadReplicaConnection) {
+                                $connection->ensureConnectedToReplica();
+                            }
+                            $row = $connection->executeQuery($sql, ["stableIdentifier" => $stableIdentifier])->fetchAssociative();
+
+                            $uri .= $row[$tokenParts[2]];
+                        }
+                        break;
+                }
+            } else {
+                $uri .= $part['text'];
+            }
+        }
+
+        return $uri;
+    }
+
+
 
 }
