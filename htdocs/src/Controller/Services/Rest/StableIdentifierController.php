@@ -48,18 +48,18 @@ class StableIdentifierController extends AbstractFOSRestController
                                 new Property(property: 'specimenID', description: 'ID of specimen', type: 'integer', example: 1385945
                                 ),
                                 new Property(property: 'stableIdentifierLatest', description: 'Latest stable identifier', properties: [
-                                    new Property(property: 'stableIdentifier',description: 'Stable identifier',type: 'string'),
-                                    new Property(property: 'timestamp',description: 'Timestamp of the stable identifier',type: 'string',format: 'date-time'),
-                                    new Property(property: 'link',description: 'Link to details page of JACQ (for convenience)',type: 'string',format: 'uri'),
+                                    new Property(property: 'stableIdentifier', description: 'Stable identifier', type: 'string'),
+                                    new Property(property: 'timestamp', description: 'Timestamp of the stable identifier', type: 'string', format: 'date-time'),
+                                    new Property(property: 'link', description: 'Link to details page of JACQ (for convenience)', type: 'string', format: 'uri'),
                                 ],
                                     type: 'object'
                                 ),
                                 new Property(
-                                    property: 'stableIdentifierList',description: 'List of all found stable identifiers, ordered by timestamp',type: 'array',
+                                    property: 'stableIdentifierList', description: 'List of all found stable identifiers, ordered by timestamp', type: 'array',
                                     items: new Items(
                                         properties: [
-                                            new Property(property: 'stableIdentifier',description: 'Stable identifier',type: 'string'),
-                                            new Property(property: 'timestamp',description: 'Timestamp of the stable identifier',type: 'string',format: 'date-time'),
+                                            new Property(property: 'stableIdentifier', description: 'Stable identifier', type: 'string'),
+                                            new Property(property: 'timestamp', description: 'Timestamp of the stable identifier', type: 'string', format: 'date-time'),
                                         ],
                                         type: 'object'
                                     )
@@ -78,18 +78,18 @@ class StableIdentifierController extends AbstractFOSRestController
                                     new Property(property: 'specimenID', description: 'ID of specimen', type: 'integer', example: 1385945
                                     ),
                                     new Property(property: 'stableIdentifierLatest', description: 'Latest stable identifier', properties: [
-                                        new Property(property: 'stableIdentifier',description: 'Stable identifier',type: 'string'),
-                                        new Property(property: 'timestamp',description: 'Timestamp of the stable identifier',type: 'string',format: 'date-time'),
-                                        new Property(property: 'link',description: 'Link to details page of JACQ (for convenience)',type: 'string',format: 'uri'),
+                                        new Property(property: 'stableIdentifier', description: 'Stable identifier', type: 'string'),
+                                        new Property(property: 'timestamp', description: 'Timestamp of the stable identifier', type: 'string', format: 'date-time'),
+                                        new Property(property: 'link', description: 'Link to details page of JACQ (for convenience)', type: 'string', format: 'uri'),
                                     ],
                                         type: 'object'
                                     ),
                                     new Property(
-                                        property: 'stableIdentifierList',description: 'List of all found stable identifiers, ordered by timestamp',type: 'array',
+                                        property: 'stableIdentifierList', description: 'List of all found stable identifiers, ordered by timestamp', type: 'array',
                                         items: new Items(
                                             properties: [
-                                                new Property(property: 'stableIdentifier',description: 'Stable identifier',type: 'string'),
-                                                new Property(property: 'timestamp',description: 'Timestamp of the stable identifier',type: 'string',format: 'date-time'),
+                                                new Property(property: 'stableIdentifier', description: 'Stable identifier', type: 'string'),
+                                                new Property(property: 'timestamp', description: 'Timestamp of the stable identifier', type: 'string', format: 'date-time'),
                                             ],
                                             type: 'object'
                                         )
@@ -150,18 +150,18 @@ class StableIdentifierController extends AbstractFOSRestController
                                 new Property(property: 'specimenID', description: 'ID of specimen', type: 'integer', example: 6830
                                 ),
                                 new Property(property: 'stableIdentifierLatest', description: 'Latest stable identifier', properties: [
-                                    new Property(property: 'stableIdentifier',description: 'Stable identifier',type: 'string'),
-                                    new Property(property: 'timestamp',description: 'Timestamp of the stable identifier',type: 'string',format: 'date-time'),
-                                    new Property(property: 'link',description: 'Link to details page of JACQ (for convenience)',type: 'string',format: 'uri'),
+                                    new Property(property: 'stableIdentifier', description: 'Stable identifier', type: 'string'),
+                                    new Property(property: 'timestamp', description: 'Timestamp of the stable identifier', type: 'string', format: 'date-time'),
+                                    new Property(property: 'link', description: 'Link to details page of JACQ (for convenience)', type: 'string', format: 'uri'),
                                 ],
                                     type: 'object'
                                 ),
                                 new Property(
-                                    property: 'stableIdentifierList',description: 'List of all found stable identifiers, ordered by timestamp',type: 'array',
+                                    property: 'stableIdentifierList', description: 'List of all found stable identifiers, ordered by timestamp', type: 'array',
                                     items: new Items(
                                         properties: [
-                                            new Property(property: 'stableIdentifier',description: 'Stable identifier',type: 'string'),
-                                            new Property(property: 'timestamp',description: 'Timestamp of the stable identifier',type: 'string',format: 'date-time'),
+                                            new Property(property: 'stableIdentifier', description: 'Stable identifier', type: 'string'),
+                                            new Property(property: 'timestamp', description: 'Timestamp of the stable identifier', type: 'string', format: 'date-time'),
                                         ],
                                         type: 'object'
                                     )
@@ -184,8 +184,8 @@ class StableIdentifierController extends AbstractFOSRestController
     {
         //TODO removed the "withRedirect" option in OPenApi, solving by "nonvisible" forward inside the framework
         $sid = urldecode($sid);
-        $specimenID = $this->specimenService->getSpecimenIDfromSid($sid);
-        return $this->forward(self::class.'::sid', ['specimenID' => $specimenID]);
+        $specimenID = $this->specimenService->findSpecimenIiUsingSid($sid);
+        return $this->forward(self::class . '::sid', ['specimenID' => $specimenID]);
     }
 
     #[Get(
@@ -355,11 +355,138 @@ class StableIdentifierController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/stableIdentifier/errors.{_format}', defaults: ['_format' => 'json'],  methods: ['GET'])]
+    #[Route('/services/rest/stableIdentifier/errors.{_format}', defaults: ['_format' => 'json'], methods: ['GET'])]
     public function errors(#[MapQueryParameter] ?int $sourceID): Response
     {
         $results = $this->specimenService->getEntriesWithErrors($sourceID);
         $view = $this->view($results, 200);
+        return $this->handleView($view);
+    }
+
+    #[Get(
+        path: '/services/rest/stableIdentifier/multi',
+        summary: 'Get all entries with more than one stable identifier per specimen-ID',
+        tags: ['stable identifier'],
+        parameters: [
+            new QueryParameter(
+                name: 'page',
+                description: 'optional number of page to be returned (default=first page)',
+                in: 'query',
+                required: false,
+                schema: new Schema(type: 'integer'),
+                example: 2
+            ),
+            new QueryParameter(
+                name: 'entriesPerPage',
+                description: 'optional number entries per page (default=50)',
+                in: 'query',
+                required: false,
+                schema: new Schema(type: 'integer'),
+                example: 20
+            ),
+            new QueryParameter(
+                name: 'sourceID',
+                description: 'optional ID of source to check (default=all sources)',
+                in: 'query',
+                required: false,
+                schema: new Schema(type: 'integer')
+            ),
+        ],
+        responses: [
+            new \OpenApi\Attributes\Response(
+                response: 200,
+                description: 'List of taxa names',
+                content: [new MediaType(
+                    mediaType: 'application/json',
+                    schema: new Schema(
+                        type: 'array',
+                        items: new Items(
+                            properties: array(
+                                new Property(property: 'page', description: 'Page currently displayed', type: 'integer'),
+                                new Property(property: 'previousPage', description: 'Link to the previous page', type: 'string', format: 'uri', nullable: true),
+                                new Property(property: 'nextPage', description: 'Link to the next page', type: 'string', format: 'uri', nullable: true),
+                                new Property(property: 'firstPage',description: 'Link to the first page',type: 'string',format: 'uri'),
+                                new Property(property: 'lastPage',description: 'Link to the last page',type: 'string',format: 'uri'),
+                                new Property(property: 'totalPages',description: 'Total number of pages',type: 'integer'),
+                                new Property(property: 'total',description: 'Total number of records found',type: 'integer'),
+                                new Property(property: 'result',description: 'List of found entries',type: 'array',
+                                    items: new Items(
+                                        properties: array(
+                                            new Property(property: 'specimenID',description: 'ID of the specimen',type: 'integer'),
+                                            new Property(property: 'numberOfEntries',description: 'Number of records found for this specimen ID',type: 'integer'),
+                                            new Property(property: 'stableIdentifierList',description: 'List of stable identifiers for this specimen ID',type: 'array',
+                                                items: new Items(
+                                                    properties: array(
+                                                        new Property(property: 'stableIdentifier',description: 'Stable identifier',type: 'string'),
+                                                        new Property(property: 'timestamp',description: 'Timestamp associated with the stable identifier',type: 'string',format: 'date-time'),
+                                                    ),
+                                                    type: 'object'
+                                                )
+                                            ),
+                                        ),
+                                        type: 'object'
+                                    )
+                                ),
+                            ),
+                            type: 'object'
+                        )
+                    )
+                ),
+                    new MediaType(
+                        mediaType: 'application/xml',
+                        schema: new Schema(
+                            type: 'array',
+                            items: new Items(
+                                properties: array(
+                                    new Property(property: 'page', description: 'Page currently displayed', type: 'integer'),
+                                    new Property(property: 'previousPage', description: 'Link to the previous page', type: 'string', format: 'uri', nullable: true),
+                                    new Property(property: 'nextPage', description: 'Link to the next page', type: 'string', format: 'uri', nullable: true),
+                                    new Property(property: 'firstPage',description: 'Link to the first page',type: 'string',format: 'uri'),
+                                    new Property(property: 'lastPage',description: 'Link to the last page',type: 'string',format: 'uri'),
+                                    new Property(property: 'totalPages',description: 'Total number of pages',type: 'integer'),
+                                    new Property(property: 'total',description: 'Total number of records found',type: 'integer'),
+                                    new Property(property: 'result',description: 'List of found entries',type: 'array',
+                                        items: new Items(
+                                            properties: array(
+                                                new Property(property: 'specimenID',description: 'ID of the specimen',type: 'integer'),
+                                                new Property(property: 'numberOfEntries',description: 'Number of records found for this specimen ID',type: 'integer'),
+                                                new Property(property: 'stableIdentifierList',description: 'List of stable identifiers for this specimen ID',type: 'array',
+                                                    items: new Items(
+                                                        properties: array(
+                                                            new Property(property: 'stableIdentifier',description: 'Stable identifier',type: 'string'),
+                                                            new Property(property: 'timestamp',description: 'Timestamp associated with the stable identifier',type: 'string',format: 'date-time'),
+                                                        ),
+                                                        type: 'object'
+                                                    )
+                                                ),
+                                            ),
+                                            type: 'object'
+                                        )
+                                    ),
+                                ),
+                                type: 'object'
+                            )
+                        )
+                    )
+                ]
+            ),
+            new \OpenApi\Attributes\Response(
+                response: 400,
+                description: 'Bad Request'
+            )
+        ]
+    )]
+    #[Route('/services/rest/stableIdentifier/multi.{_format}', name: "services_rest_sid_multi", defaults: ['_format' => 'json'], methods: ['GET'])]
+    public function multi(#[MapQueryParameter] ?int $page, #[MapQueryParameter] ?int $entriesPerPage, #[MapQueryParameter] ?int $sourceID): Response
+    {
+        if ($sourceID !== null) {
+            $results = $this->specimenService->getMultipleEntriesFromSource($sourceID);
+        }else{
+            $results = $this->specimenService->getMultipleEntries($page, $entriesPerPage);
+        }
+
+        $view = $this->view($results, 200);
+
         return $this->handleView($view);
     }
 }
