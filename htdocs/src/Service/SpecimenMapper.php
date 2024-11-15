@@ -89,7 +89,7 @@ class SpecimenMapper
             } else {
                 $created = trim($row['Datum']);
                 if ($created) {
-                    if (trim($row['Datum2'])) {
+                    if ($row['Datum2']!== null && trim($row['Datum2'])) {
                         $created .= " - " . trim($row['Datum2']);
                     }
                 } else {
