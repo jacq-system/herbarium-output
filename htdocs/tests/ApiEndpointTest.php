@@ -19,16 +19,16 @@ class ApiEndpointTest extends WebTestCase
                 $client->request(strtoupper($method), $data["path"]);//, $data["parameters"]);
                 $response = $client->getResponse();
 
-                $expectedStatusCode =  200;
-                $this->assertTrue(
-                    in_array($response->getStatusCode(), [200, 302]),
-                    sprintf("Route '%s' with method '%s' did not return expected status code.", $data["path"], $method)
-                );
-//                $this->assertEquals(
-//                    $expectedStatusCode,
-//                    $response->getStatusCode(),
+//                $this->assertTrue(
+//                    in_array($response->getStatusCode(), [200, 302]),
 //                    sprintf("Route '%s' with method '%s' did not return expected status code.", $data["path"], $method)
 //                );
+                $expectedStatusCode =  200;
+                $this->assertEquals(
+                    $expectedStatusCode,
+                    $response->getStatusCode(),
+                    sprintf("Route '%s' with method '%s' did not return expected status code.", $data["path"], $method)
+                );
 
             }
         }

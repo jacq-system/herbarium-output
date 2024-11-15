@@ -149,7 +149,8 @@ class ScinamesController extends AbstractFOSRestController
     public function name(int $taxonID): Response
     {
         //TODO this service is just a synonym to $this->uuid()
-        return $this->redirectToRoute('services_rest_scinames_uuid', ['taxonID' => $taxonID]);
+//        return $this->redirectToRoute('services_rest_scinames_uuid', ['taxonID' => $taxonID]);
+                return $this->forward(self::class.'::uuid', ['taxonID' => $taxonID]);
     }
 
     #[Get(
