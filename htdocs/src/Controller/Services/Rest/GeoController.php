@@ -31,7 +31,7 @@ class GeoController extends AbstractFOSRestController
                 description: 'This is latitude',
                 in: 'query',
                 required: false,
-                schema: new Schema(type: 'float'),
+                schema: new Schema(type: 'number', format: 'float'),
                 example: 48.21
             ),
             new QueryParameter(
@@ -39,7 +39,7 @@ class GeoController extends AbstractFOSRestController
                 description: 'This is longitude',
                 in: 'query',
                 required: false,
-                schema: new Schema(type: 'float'),
+                schema: new Schema(type: 'number', format: 'float'),
                 example: 16.37
             ),
             new QueryParameter(
