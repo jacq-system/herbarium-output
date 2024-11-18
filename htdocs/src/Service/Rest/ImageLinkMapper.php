@@ -1,11 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace App\Service;
+namespace App\Service\Rest;
 use App\Facade\Rest\IiifFacade;
 use Doctrine\DBAL\Connection;
 use GuzzleHttp\Client;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouterInterface;
 
 class ImageLinkMapper

@@ -4,7 +4,7 @@ namespace App\Facade\Rest;
 
 
 use App\Service\ReferenceService;
-use App\Service\SpecimenMapper;
+use App\Service\Rest\SpecimenMapper;
 use App\Service\SpecimenService;
 use App\Service\TaxonService;
 use Doctrine\ORM\EntityManagerInterface;

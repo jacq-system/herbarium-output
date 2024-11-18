@@ -2,9 +2,8 @@
 
 namespace App\Controller\Services\Rest;
 
-use App\Facade\Rest\IiifFacade;
 use App\Service\IiifService;
-use App\Service\ImageLinkMapper;
+use App\Service\Rest\ImageLinkMapper;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\MediaType;
