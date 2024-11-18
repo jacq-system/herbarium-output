@@ -6,8 +6,8 @@
   "require": {
     "php": ">=8.3",
     "ext-ctype": "*",
-    "ext-iconv": "*",
     "ext-curl": "*",
+    "ext-iconv": "*",
     "doctrine/dbal": "^3",
     "doctrine/doctrine-bundle": "^2.13",
     "doctrine/doctrine-migrations-bundle": "^3.3",
@@ -23,6 +23,7 @@
     "symfony/dotenv": "^7.1",
     "symfony/flex": "^2",
     "symfony/framework-bundle": "^7.1",
+    "symfony/http-client": "7.1.*",
     "symfony/rate-limiter": "^7.1",
     "symfony/runtime": "^7.1",
     "symfony/security-bundle": "^7.1",
