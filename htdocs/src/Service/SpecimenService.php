@@ -197,7 +197,7 @@ readonly class SpecimenService
      * @param int $specimenID ID of specimen
      * @param array $parts text and tokens
      */
-    public function makeURI (int $specimenID, array $parts): ?string
+    public function makeURI(int $specimenID, array $parts): ?string
     {
         $uri = '';
         foreach ($parts as $part) {
@@ -290,6 +290,23 @@ readonly class SpecimenService
         return $uri;
     }
 
+    /**
+     * get the specimen-ID of a given HerbNumber and source-id
+     */
+    public function getSpecimenIdFromHerbNummer(string $herbNummer, int $source_id): ?int
+    {
+        $sql = "SELECT specimen_ID
+                             FROM tbl_specimens s
+                              LEFT JOIN tbl_management_collections mc on s.collectionID = mc.collectionID
+                             WHERE s.HerbNummer = :herbNummer
+                              AND mc.source_id = :source_id";
+        $id = $this->entityManager->getConnection()->executeQuery($sql, ["herbNummer" => $herbNummer, "source_id" => $source_id])->fetchOne();
 
+        if ($id !== false) {
+            return $id;
+        }
+        return null;
+
+    }
 
 }

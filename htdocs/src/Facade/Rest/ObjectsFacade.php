@@ -3,8 +3,9 @@
 namespace App\Facade\Rest;
 
 
-use App\Service\Rest\ObjectsMapper;
+use App\Service\Rest\HerbNumberScan;
 use App\Service\Rest\SpecimenMapper;
+use App\Service\SpecimenService;
 use App\Service\TaxonService;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,38 +14,10 @@ use Symfony\Component\Routing\RouterInterface;
 
 readonly class ObjectsFacade
 {
-    public function __construct(protected readonly EntityManagerInterface $entityManager, protected RouterInterface $router, protected readonly TaxonService $taxonService)
+    //TODO refactored a little, but no much happy with the result :(
+    public function __construct(protected  EntityManagerInterface $entityManager, protected RouterInterface $router, protected  TaxonService $taxonService, protected HerbNumberScan $herbNumberScan, protected SpecimenService  $specimenService)
     {
     }
-
-    /**
-     * get all or some properties of a specimen with given ID
-     *
-     * @param int $specimenID ID of specimen
-     * @param string $fieldGroups which groups should be returned (dc, dwc, jacq), defaults to all
-     * @return array properties (dc, dwc and jacq)
-     */
-    public function resolveSpecimen(int $specimenID, string $fieldGroups = ''): array
-    {
-        if (!str_contains($fieldGroups, "dc") && !str_contains($fieldGroups, "dwc") && !str_contains($fieldGroups, "jacq")) {
-            $fieldGroups = "dc, dwc, jacq";
-        }
-// TODO breaking DI
-        $specimen = new SpecimenMapper($this->entityManager->getConnection(), $specimenID, $this->router);
-
-        $ret = array();
-        if (str_contains($fieldGroups, "dc")) {
-            $ret['dc'] = $specimen->getDC();
-        }
-        if (str_contains($fieldGroups, "dwc")) {
-            $ret['dwc'] = $specimen->getDWC();
-        }
-        if (str_contains($fieldGroups, "jacq")) {
-            $ret['jacq'] = $specimen->getJACQ();
-        }
-        return $ret;
-    }
-
 
     /**
      * search for all specimens which fit given criteria
@@ -67,31 +40,30 @@ readonly class ObjectsFacade
      * @param array $taxonIDList search for taxon terms has already finished, this is the list of results; defaults to empty array
      * @return array
      */
-    public function resolveSpecimens(int $p, int $rpp,int $listOnly, string $term, string $sc, string $collnr, int $type, string $sort,  string $herbnr, string $nation, int $withImages, string $cltr): array
+    public function resolveSpecimens(int $p, int $rpp, int $listOnly, string $term, string $sc, string $collnr, int $type, string $sort, string $herbnr, string $nation, int $withImages, string $cltr): array
     {
 
-    //TODO refactored a little, but no so happy with the result :(
         $taxonIDList = [];
         if (!empty($term)) {
-             $taxa = $this->taxonService->fulltextSearch($term);
+            $taxa = $this->taxonService->fulltextSearch($term);
 
             foreach ($taxa as $taxon) {
-                    $taxonIDList[] = $taxon['taxonID'];
-                }
+                $taxonIDList[] = $taxon['taxonID'];
             }
+        }
         $baseQuery = $this->buildSpecimensQuery($taxonIDList, $term, $herbnr, $sc, $cltr, $nation, $type, $withImages, $sort);
 
-        $query = $baseQuery. " LIMIT " . ($rpp * $p) . "," . $rpp;
+        $query = $baseQuery . " LIMIT " . ($rpp * $p) . "," . $rpp;
         /** providing all possible params to the query */
         $params = [
             "taxonIDList" => $taxonIDList,
-            "herbNr"=> strtr($herbnr,'*', '%'),
-            "herbNrPure"=> $herbnr,
-            "collNr"=> strtr($collnr,'*', '%'),
-            "collNrPure"=> $collnr,
+            "herbNr" => strtr($herbnr, '*', '%'),
+            "herbNrPure" => $herbnr,
+            "collNr" => strtr($collnr, '*', '%'),
+            "collNrPure" => $collnr,
             "sc" => $sc,
-            "cltr" => $cltr."%",
-            "cltrBothSide" => "%".$cltr."%",
+            "cltr" => $cltr . "%",
+            "cltrBothSide" => "%" . $cltr . "%",
             "nation" => $nation,
         ];
 
@@ -100,7 +72,7 @@ readonly class ObjectsFacade
         ];
 
         $list = $this->entityManager->getConnection()->executeQuery($query, $params, $parameterTypes)->fetchAllAssociative();
-        $nrRows = (int) $this->entityManager->getConnection()->executeQuery("SELECT FOUND_ROWS()")->fetchOne();
+        $nrRows = (int)$this->entityManager->getConnection()->executeQuery("SELECT FOUND_ROWS()")->fetchOne();
 
         // get the number of pages and check the active page again
         $lastPage = floor(($nrRows - 1) / $rpp);
@@ -109,32 +81,32 @@ readonly class ObjectsFacade
         }
 
         $originalParameters = [
-            'p'          => $p,               // page, default: display first page
-            'rpp'        => $rpp,              // records per page, default: 50
-            'list'       => $listOnly,               // return just a list of specimen-IDs?, default: yes
-            'term'       => $term,              // search for scientific name (joker = *)
-            'herbnr'     => $herbnr,              // search for herbarium number (joker = *)
-            'collnr'     => $collnr,              // search for collection number (joker = *)
-            'sc'         => $sc,              // search for a source-code
-            'cltr'       => $cltr,              // search for a collector
-            'nation'     => $nation,              // search for a nation
-            'type'       => $type,               // switch, search only for type records (default: no)
+            'p' => $p,               // page, default: display first page
+            'rpp' => $rpp,              // records per page, default: 50
+            'list' => $listOnly,               // return just a list of specimen-IDs?, default: yes
+            'term' => $term,              // search for scientific name (joker = *)
+            'herbnr' => $herbnr,              // search for herbarium number (joker = *)
+            'collnr' => $collnr,              // search for collection number (joker = *)
+            'sc' => $sc,              // search for a source-code
+            'cltr' => $cltr,              // search for a collector
+            'nation' => $nation,              // search for a nation
+            'type' => $type,               // switch, search only for type records (default: no)
             'withImages' => $withImages,               // switch, search only for records with images (default: no)
-            'sort'       => $sort            // sorting of result, default: order scinames and herbnumbers
+            'sort' => $sort            // sorting of result, default: order scinames and herbnumbers
         ];
 
         $newParameters = '&' . http_build_query($originalParameters, '', '&', PHP_QUERY_RFC3986);
         $url = $this->router->generate('services_rest_objects_specimens', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        $data = array('total'        => $nrRows,
+        $data = array('total' => $nrRows,
             'itemsPerPage' => $originalParameters['rpp'],
-            'page'         => $p + 1,
+            'page' => $p + 1,
             'previousPage' => $url . '?p=' . (($p > 0) ? ($p - 1) : 0) . $newParameters,
-            'nextPage'     => $url . '?p=' . (($p < $lastPage) ? ($p + 1) : $lastPage) . $newParameters,
-            'firstPage'    => $url . '?p=0' . $newParameters,
-            'lastPage'     => $url . '?p=' . $lastPage . $newParameters,
-            'totalPages'   => $lastPage + 1,
-            'result'       => array()
+            'nextPage' => $url . '?p=' . (($p < $lastPage) ? ($p + 1) : $lastPage) . $newParameters,
+            'firstPage' => $url . '?p=0' . $newParameters,
+            'lastPage' => $url . '?p=' . $lastPage . $newParameters,
+            'totalPages' => $lastPage + 1,
+            'result' => array()
         );
         foreach ($list as $item) {
             $data['result'][] = (!empty($listOnly)) ? intval($item['specimenID']) : $this->resolveSpecimen($item['specimenID']);
@@ -154,7 +126,7 @@ readonly class ObjectsFacade
 
         // what to search for
         if ($term !== '') {
-            if (count($taxonIDList)>0) {
+            if (count($taxonIDList) > 0) {
                 $constraint .= " AND s.taxonID IN (:taxonIDList)";
             } else { // there is no scientific name which fits the search criterea, so there can be no result
                 $constraint .= " AND 0 ";
@@ -237,19 +209,109 @@ readonly class ObjectsFacade
         foreach ($joins as $join => $val) {
             if ($val) {
                 switch ($join) {
-                    case 'tst': $sql .= " LEFT JOIN tbl_specimens_types tst       ON tst.specimenID  = s.specimen_ID "; break;
-                    case 'm':   $sql .= " LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
-                                      LEFT JOIN meta m                        ON m.source_ID     = mc.source_ID ";  break;
-                    case 'gn':  $sql .= " LEFT JOIN tbl_geo_nation n              ON n.nationID      = s.NationID ";    break;
-                    case 'c':   $sql .= " LEFT JOIN tbl_collector c               ON c.SammlerID     = s.SammlerID
-                                      LEFT JOIN tbl_collector_2 c2            ON c2.Sammler_2ID  = s.Sammler_2ID "; break;
-                    case 'sn':  $sql .= " LEFT JOIN tbl_tax_sciname sn            ON sn.taxonID      = s.taxonID ";     break;
-                    case 'ss':  $sql .= " LEFT JOIN tbl_specimens_series ss       ON ss.seriesID     = s.seriesID ";    break;
+                    case 'tst':
+                        $sql .= " LEFT JOIN tbl_specimens_types tst       ON tst.specimenID  = s.specimen_ID ";
+                        break;
+                    case 'm':
+                        $sql .= " LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
+                                      LEFT JOIN meta m                        ON m.source_ID     = mc.source_ID ";
+                        break;
+                    case 'gn':
+                        $sql .= " LEFT JOIN tbl_geo_nation n              ON n.nationID      = s.NationID ";
+                        break;
+                    case 'c':
+                        $sql .= " LEFT JOIN tbl_collector c               ON c.SammlerID     = s.SammlerID
+                                      LEFT JOIN tbl_collector_2 c2            ON c2.Sammler_2ID  = s.Sammler_2ID ";
+                        break;
+                    case 'sn':
+                        $sql .= " LEFT JOIN tbl_tax_sciname sn            ON sn.taxonID      = s.taxonID ";
+                        break;
+                    case 'ss':
+                        $sql .= " LEFT JOIN tbl_specimens_series ss       ON ss.seriesID     = s.seriesID ";
+                        break;
                 }
             }
         }
-        return $sql.$constraint.$order;
+        return $sql . $constraint . $order;
     }
+
+    /**
+     * get all or some properties of a specimen with given ID
+     *
+     * @param int $specimenID ID of specimen
+     * @param string $fieldGroups which groups should be returned (dc, dwc, jacq), defaults to all
+     * @return array properties (dc, dwc and jacq)
+     */
+    public function resolveSpecimen(int $specimenID, string $fieldGroups = '', bool $removeEmptyValues = false): array
+    {
+        if (!str_contains($fieldGroups, "dc") && !str_contains($fieldGroups, "dwc") && !str_contains($fieldGroups, "jacq")) {
+            $fieldGroups = "dc, dwc, jacq";
+        }
+// TODO breaking DI
+        $specimen = new SpecimenMapper($this->entityManager->getConnection(), $specimenID, $this->router);
+
+        $ret = array();
+        if (str_contains($fieldGroups, "dc")) {
+            $ret['dc'] = $specimen->getDC();
+        }
+        if (str_contains($fieldGroups, "dwc")) {
+            $ret['dwc'] = $specimen->getDWC();
+        }
+        if (str_contains($fieldGroups, "jacq")) {
+            $ret['jacq'] = $specimen->getJACQ();
+        }
+
+        if ($removeEmptyValues) {
+            $resultsFiltered = [];
+            foreach ($ret as $format => $group) {
+                foreach ($group as $key => $value) {
+                    if (!empty($value)) {
+                        $resultsFiltered[$format][$key] = $value;
+                    }
+                }
+            }
+            return $resultsFiltered;
+        }
+
+        return $ret;
+    }
+
+    public function resolveSpecimensFromList(array $ids, string $fieldGroups = ''): array
+    {
+        $result = [];
+        $alreadyFound = [];
+        foreach ($ids as $item) {
+            $item = trim($item);
+            if (is_numeric(substr($item, 0, 1))) {
+                $specimenID = intval($item);
+                if (!in_array($specimenID, $alreadyFound)) {
+                    $data = $this->resolveSpecimen($specimenID, $fieldGroups, true);
+                    if (!empty($data)) {
+                        $alreadyFound[] = $specimenID;
+                        $result[] = array_merge(["searchterm" => $specimenID], $data);
+                    } else {
+                        $result[] = ["error" => "Identifier $specimenID not found"];
+                    }
+                }
+            } else {
+                $this->herbNumberScan->initialize($item);
+                $specimenID = $this->specimenService->getSpecimenIdFromHerbNummer($this->herbNumberScan->getHerbNumber(), $this->herbNumberScan->getSourceId());
+                if ($specimenID) {
+                    if (!in_array($specimenID, $alreadyFound)) {
+                        $data = $this->resolveSpecimen($specimenID, $fieldGroups, true);
+                        if (!empty($data)) {
+                            $alreadyFound[] = $specimenID;
+                        }
+                        $result[] = array_merge(["searchterm" => $item], $data);
+                    }
+                } else {
+                    $result[] = ["error" => "Identifier $item not found"];
+                }
+            }
+        }
+        return $result;
+    }
+
 
 
 }
