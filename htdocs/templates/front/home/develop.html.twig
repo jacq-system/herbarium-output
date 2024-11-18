@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+{% block title %}Homepage{% endblock %}
+
+{% block body %}
+    <h3>REST test</h3>
+    <p>testing API of JACQ.org and Symfony using example values in OpenApi definition</p>
+{#    {{ dump(results) }}#}
+
+        {% for path, domain in results %}
+            <div class="row">
+                <h5>{{ path }}</h5>
+
+                    {% for server, item in domain %}
+                        <div class="col s6">
+                            <h5  class="card-panel {%  if item.code == 200 %}teal{% elseif item.code == 404 %}red{% else %}orange{% endif %} lighten-2">{{ server }} -  {{ item.code}}</h5>
+                            <a href="{{ item.url }}">{{ item.url }}</a>
+
+                            {% if item.content is not null %}
+                                <p>{{ item.content}}</p>
+                            {% endif %}
+
+                        </div>
+                    {% endfor %}
+
+            </div>
+        {% endfor %}
+
+{% endblock %}

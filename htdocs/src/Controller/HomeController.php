@@ -3,12 +3,17 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Service\Rest\DevelopersService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 class HomeController extends AbstractController
 {
+    public function __construct(protected DevelopersService $developersService)
+    {
+    }
+
     #[Route('/', name: 'app_index')]
     public function index(): Response
     {
@@ -19,6 +24,13 @@ class HomeController extends AbstractController
             // (Twig recommends using snake_case variable names: 'foo_bar' instead of 'fooBar')
 
         ]);
+    }
+
+    #[Route('/develop', name: 'deve_rest')]
+    public function indexDevelop(): Response
+    {
+        $data = $this->developersService->testApiWithExamples();
+        return $this->render('front/home/develop.html.twig', ["results"=>$data]);
     }
 
     #[Route('/api/test', name: 'app_api_test')]

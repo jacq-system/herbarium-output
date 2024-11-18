@@ -52,6 +52,7 @@ security:
         - { path: ^/services, role: PUBLIC_ACCESS }
         - { path: ^/.well-known, roles: PUBLIC_ACCESS }
         - { path: ^/api, role: ROLE_OAUTH2_PROFILE }
+        - { path: ^/develop, role: PUBLIC_ACCESS }
         - { path: ^/, role: ROLE_USER }
 
 when@test:
