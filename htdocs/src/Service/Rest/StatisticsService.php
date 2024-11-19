@@ -169,45 +169,17 @@ readonly class StatisticsService
      */
     public function getResults($periodStart, $periodEnd, int $updated, CoreObjectsEnum $type, TimeIntervalEnum $interval)
     {
-        switch ($type) {
-            // New/Updated names per [interval] -> log_tax_species
-            case CoreObjectsEnum::Names:
-                $dbRows = $this->getNames($interval, $periodStart, $periodEnd, $updated);
-                break;
-            // New/Updated Citations per [Interval] -> log_lit
-            case CoreObjectsEnum::Citations:
-                $dbRows = $this->getCitations($interval, $periodStart, $periodEnd, $updated);
-                break;
-            // New/Updated Names used in Citations per [Interval] -> log_tax_index
-            case CoreObjectsEnum::Names_citations:
-                $dbRows = $this->getNamesCitations($interval, $periodStart, $periodEnd, $updated);
-                break;
-            // New/Updated Specimens per [Interval] -> log_specimens + (straight join) tbl_specimens + (straight join) tbl_management_collections
-            case CoreObjectsEnum::Specimens:
-                $dbRows = $this->getSpecimens($interval, $periodStart, $periodEnd, $updated);
-                break;
-            // New/Updated Type-Specimens per [Interval] -> log_specimens + (straight join) tbl_specimens where typusID is not null + (straight join) tbl_management_collections
-            case CoreObjectsEnum::Type_specimens:
-                $dbRows = $this->getTypeSpecimens($interval, $periodStart, $periodEnd, $updated);
-                break;
-            // New/Updated use of names for Type-Specimens per [Interval] -> log_specimens_types + (straight join) tbl_specimens + (straight join) tbl_management_collections
-            case CoreObjectsEnum::Names_type_specimens:
-                $dbRows = $this->getNamesTypeSpecimens($interval, $periodStart, $periodEnd, $updated);
-                break;
-            // New/Updated Types per Name per [Interval] -> log_tax_typecollections
-            case CoreObjectsEnum::Types_name:
-                $dbRows = $this->getTypesName($interval, $periodStart, $periodEnd, $updated);
-                break;
-            // New/Updated Synonyms per [Interval] -> log_tbl_tax_synonymy
-            case CoreObjectsEnum::Synonyms:
-                $dbRows = $this->getSynonyms($interval, $periodStart, $periodEnd, $updated);
-                break;
-            // New/Updated Classification entries per [Interval] -> table missing
-            case CoreObjectsEnum::Classifications:
-            default :
-                $dbRows = array();
-                break;
-        }
+        $dbRows = match ($type) {
+            CoreObjectsEnum::Names => $this->getNames($interval, $periodStart, $periodEnd, $updated),
+            CoreObjectsEnum::Citations => $this->getCitations($interval, $periodStart, $periodEnd, $updated),
+            CoreObjectsEnum::Names_citations => $this->getNamesCitations($interval, $periodStart, $periodEnd, $updated),
+            CoreObjectsEnum::Specimens => $this->getSpecimens($interval, $periodStart, $periodEnd, $updated),
+            CoreObjectsEnum::Type_specimens => $this->getTypeSpecimens($interval, $periodStart, $periodEnd, $updated),
+            CoreObjectsEnum::Names_type_specimens => $this->getNamesTypeSpecimens($interval, $periodStart, $periodEnd, $updated),
+            CoreObjectsEnum::Types_name => $this->getTypesName($interval, $periodStart, $periodEnd, $updated),
+            CoreObjectsEnum::Synonyms => $this->getSynonyms($interval, $periodStart, $periodEnd, $updated),
+            default => array(),
+        };
 
         if (count($dbRows) > 0) {
             $result = array();

@@ -3,26 +3,217 @@
 
 {% block body %}
     <h3>REST test</h3>
-    <p>testing API of JACQ.org and Symfony using example values in OpenApi definition</p>
-{#    {{ dump(results) }}#}
+    <p>testing API of JACQ.org and the Symfony clone using example values in OpenApi definition (of the Symfony <a
+            href="https://github.com/jacq-system/symfony">repository</a>)</p>
 
-        {% for path, domain in results %}
-            <div class="row">
-                <h5>{{ path }}</h5>
+    <h5>Refactoring</h5>
+    <p>All code was transferred with effort minimalized, most refactoring is connected only to necessary changes (like
+        db calls or Dependency Injection). I had a wish to split methods according to entities/domains, but struggle
+        mostly on it - the priority is to get working copy now, refactor when deployed. E.g. Statistics represents a
+        little bit more elaborated remake.</p>
+    <p>when walking through the code, I had sometimes comments - all are kept inline with //TODO notation; non updated
+        export of them is available bellow - but they do not need any immediate action, just kept for evidence and future use.</p>
 
-                    {% for server, item in domain %}
-                        <div class="col s6">
-                            <h5  class="card-panel {%  if item.code == 200 %}teal{% elseif item.code == 404 %}red{% else %}orange{% endif %} lighten-2">{{ server }} -  {{ item.code}}</h5>
-                            <a href="{{ item.url }}">{{ item.url }}</a>
+    <h5>Hints</h5>
+    <p>Symfony is a MVC framework. Controllers should be thin, equals to "index.php" files in jacq-services. Model is
+        covered here by Services and in some cases where more services were needed or the logic is cross-entity, a
+        Facade was introduced - nevertheless this structure is only outlined and will require more effort.</p>
+    <p>Similar to Slim, Symfony provides named routes. As compiled in one app (in jacq-services each folder = single
+        app), it allows to use Router and getBaseUrl() style no more needed.</p>
+    <p>Database calls are kept in raw SQL approach. Benefits of Doctrine <a
+            href="https://symfony.com/doc/current/doctrine.html">ORM</a> are mostly not utilized, only parameters
+        escaping (using named parameters convention everywhere) and cleaner passing is used. Also the RW and RO database
+        automatic switch is covered b Doctrine. If interested, read more <a
+            href="https://medium.com/@dominykasmurauskas1/how-to-add-read-write-replicas-on-symfony-6-using-doctrine-bundle-a46447449f35">here</a>,
+        in general executeQuery() runs on replica(s) and executeStatement() on writable.</p>
+    <p></p>
 
-                            {% if item.content is not null %}
-                                <p>{{ item.content}}</p>
-                            {% endif %}
+    <h5>Deployment</h5>
+    <p>We are running everything in Kubernetes or at least in docker_compose in Czech. Develop <a
+            href="https://github.com/jacq-system/develop">repository</a> provides reproducible environment to run in
+        local settings as Nginx+PHP-FPM. But this is not a necessary for production environment and can be used as any
+        other app. Routing is at this moment done in easy way, according to the structure seen I expect some thick proxy
+        forwarding is done at JACQ.org nowadays - this has to be explored together.</p>
 
-                        </div>
-                    {% endfor %}
+    <h5>Problems</h5>
+    <p>To agree the Symfony version as equivalent to jacq-services (beside routing, see above), there are some things I
+        please for a help (prefixed with the route, links and results see bellow, line specific comments provided by
+        TODOs in code):</p>
+    <p>A specific problem I see in UUIDs - as described <a
+            href="https://github.com/orgs/jacq-system/projects/2?pane=issue&itemId=86758924">here</a> - Since the call
+        to get the UUID is made by anonymous user and the cascade of actions leads to providing UUID (and conditional
+        assignment if not done yet), there is no added security by calling a protected service - the initiator is
+        anonymous. My guess is this comes from splitting code to "input" and "output" as a way to make easy
+        configuration for RW and RO replica (dtto services etc) - but this brings no added security features, more
+        likely it is a part of problems the JACQ has when comes to source code integrity, maintainability and compliance
+        with modern approaches. My proposal is to integrate input and output to single code base (and so easily remove
+        the service-service dependency.</p>
+    <ol>
+        <li><b>/services/rest/classification/download/{referenceType}/{referenceID}</b> this service requires two
+            configuration keys I do not know (and do not satisfy with my vision of the architecture) -
+            $this->settings['apikey'] and $this->settings['classifications_license']
+        </li>
+        <li><b>/services/rest/iiif/createManifest/{serverID}/{imageIdentifier}</b> - can anybode please provide
+            parameters those provide 200 response at JACQ.org?
+        </li>
+        <li><b>/services/rest/livingplants/derivatives</b> - "Table 'herbarinput.tbl_organisation' doesn't exist" -
+            should this route be implemented or deleted?
+        </li>
+        <li><b>/services/rest/objects/specimens/search</b> - similar - delete or implement?</li>
+        <li><b>/services/rest/JACQscinames/uuid/{taxonID} + /services/rest/JACQscinames/name/{taxonID} +
+                /services/rest/JACQscinames/resolve/{uuid}</b> - UUID topic
+        </li>
+        <li><b>/services/rest/stableIdentifier/errors</b> - this service provides different results for Czech replica
+            and JACQ - I double checked the code and found no other explanation that replica is somehow different to
+            production. Difference = less records in replica
+        </li>
+        <li><b>/services/rest/stableIdentifier/multi</b> - similar inconsistency in counts of results</li>
+    </ol>
+    <h6>TODOs from code</h6>
+    <ul>
+        <li>Controller/Services/Rest/ScinamesController.php (84, 11) //TODO need access to another database
+            ScinamesController.php
+        </li>
+        <li>Controller/Services/Rest/ScinamesController.php (114, 129) new Property(property: 'uuid', description:
+            'Universally Unique Identifier', type: 'string'), //TODO add examples ScinamesController.php
+        </li>
+        <li>Controller/Services/Rest/ScinamesController.php (151, 11) //TODO this service is just a synonym to
+            $this->uuid() ScinamesController.php
+        </li>
+        <li>Controller/Services/Rest/ScinamesController.php (243, 129) new Property(property: 'uuid', description:
+            'Universally Unique Identifier', type: 'string'), //TODO add examples ScinamesController.php
+        </li>
+        <li>Controller/Services/Rest/ScinamesController.php (259, 133) new Property(property: 'uuid', description:
+            'Universally Unique Identifier', type: 'string'), //TODO add examples ScinamesController.php
+        </li>
+        <li>Entity/User.php (87, 11) //TODO - tbl_herbardb_groups are de facto roles (or the individual permisions in
+            groups can be understood as roles User.php
+        </li>
+        <li>Facade/Rest/ClassificationFacade.php (27, 17) // //TODO these three from oirignal code are not supported or
+            do not exists? ClassificationFacade.php
+        </li>
+        <li>Facade/Rest/ClassificationFacade.php (66, 96) AND referenceId = :excludeReferenceId)"; //TODO param
+            :excludeReferenceId can be default O, no control? ClassificationFacade.php
+        </li>
+        <li>Facade/Rest/ClassificationFacade.php (80, 43) "hasType" => false, //TODO always false?
+            ClassificationFacade.php
+        </li>
+        <li>Facade/Rest/ClassificationFacade.php (81, 46) "hasSpecimen" => false //TODO always false?
+            ClassificationFacade.php
+        </li>
+        <li>Facade/Rest/ClassificationFacade.php (158, 15) //TODO modify query with HAVING clause and fetch the counts
+            themself? ClassificationFacade.php
+        </li>
+        <li>Facade/Rest/ClassificationFacade.php (348, 32) case 'citation': //TODO only citation type is implemented,
+            rearrange? ClassificationFacade.php
+        </li>
+        <li>Facade/Rest/ClassificationFacade.php (430, 19) //TODO taxonID is required parameter of the route, can't be
+            null.. ClassificationFacade.php
+        </li>
+        <li>Facade/Rest/ClassificationDownloadFacade.php (149, 31) $line[0] = 'TODO'; // TODO
+            $this->getUuidUrl('citation', $taxSynonymy['source_citationID']); ClassificationDownloadFacade.php
+        </li>
+        <li>Facade/Rest/ClassificationDownloadFacade.php (151, 31) $line[2] = 'TODO'; // TODO
+            $this->settings['classifications_license']; licence is depending on some app configuration? should be stored
+            with data as it is fixed..? ClassificationDownloadFacade.php
+        </li>
+        <li>Facade/Rest/ClassificationDownloadFacade.php (154, 31) $line[5] = 'TODO'; // TODO
+            $this->getUuidUrl('scientific_name', $taxSynonymy['taxonID']); ClassificationDownloadFacade.php
+        </li>
+        <li>Facade/Rest/ClassificationDownloadFacade.php (236, 8) * TODO - this function is just copied for evidence and
+            should be somehow rewritten,but I wasn't able to understood the logic of UUID in JACQ
+            ClassificationDownloadFacade.php
+        </li>
+        <li>Service/ReferenceService.php (26, 15) //TODO fetchAssociative make sense when ID is provided, but to fulfill
+            compatibility with original keep single element array ReferenceService.php
+        </li>
+        <li>Service/ReferenceService.php (53, 15) //TODO see above ReferenceService.php</li>
+        <li>Controller/Services/Rest/ClassificationController.php (43, 36) required: false, //TODO wrong concept -
+            pathParameter must be required according to the OpenAPI/Swagger spec
+            (https://github.com/OAI/OpenAPI-Specification/blob/main/versions/2.0.md#fixed-fields-7) -> a solution could
+            be split into two routes (listAll, getByID)... Code works, but Swagger UI throws an error..
+            ClassificationController.php
+        </li>
+        <li>Controller/Services/Rest/StableIdentifierController.php (121, 11) //TODO better to use http codes, left for
+            backward compatibility StableIdentifierController.php
+        </li>
+        <li>Controller/Services/Rest/StableIdentifierController.php (187, 11) //TODO removed the "withRedirect" option
+            in OPenApi, solving by "nonvisible" forward inside the framework StableIdentifierController.php
+        </li>
+        <li>Service/SpecimenService.php (26, 15) //todo - hard coded 6 digits of ID SpecimenService.php
+        </li>
+        <li>Service/SpecimenService.php (81, 11) //TODO refactor to Router in future SpecimenService.php
+        </li>
+        <li>Service/SpecimenService.php (95, 11) //TODO ??? SpecimenService.php
+        </li>
+        <li>Service/SpecimenService.php (99, 19) //TODO refactor to Router when "output" ready SpecimenService.php
+        </li>
+        <li>Service/SpecimenService.php (274, 32) // TODO using variables as part of SQL !! - forcing replica at least..
+            SpecimenService.php
+        </li>
+        <li>Facade/Rest/IiifFacade.php (102, 19) //TODO breaking DI IiifFacade.php</li>
+        <li>Controller/Services/Rest/ImagesController.php (75, 11) //todo ignoring "withredirect" param
+            ImagesController.php
+        </li>
+        <li>Controller/Services/Rest/ExternalScinamesController.php (46, 129) new Property(property: 'uuid',
+            description: 'Universally Unique Identifier', type: 'string'), //TODO add examples
+            ExternalScinamesController.php
+        </li>
+        <li>Controller/Services/Rest/ExternalScinamesController.php (84, 11) //TODO not implemented, in development by
+            Johannes ExternalScinamesController.php
+        </li>
+        <li>Controller/Services/Rest/GeoController.php (221, 11) //TODO better to use http codes, left for backward
+            compatibility GeoController.php
+        </li>
+        <li>Controller/Services/Rest/LivingPlantsController.php (103, 11) //TODO probably deprecated route
+            LivingPlantsController.php
+        </li>
+        <li>Controller/Services/Rest/LivingPlantsController.php (115, 11) //TODO ?default values hardcoded
+            LivingPlantsController.php
+        </li>
+        <li>Service/OrganisationService.php (9, 4) // TODO non-existing table herbarinput.tbl_organisation
+            OrganisationService.php
+        </li>
+        <li>Service/ClassificationService.php (107, 11) //TODO using variables in col names! ClassificationService.php
+        </li>
+        <li>Enum/CoreObjectsEnum.php (15, 7) //TODO classifications was missing in OA definition but present in code
+            CoreObjectsEnum.php
+        </li>
+        <li>Controller/Services/Rest/ObjectsController.php (306, 48) return new JsonResponse($data, 200); //TODO FOS
+            bundle problem with return format I wan!t able solve --> force JSON ObjectsController.php
+        </li>
+        <li>Controller/Services/Rest/ObjectsController.php (374, 47) return new JsonResponse($data, 200);//TODO FOS
+            bundle problem with return format I wan!t able solve --> force JSON ObjectsController.php
+        </li>
+        <li>Facade/Rest/ObjectsFacade.php (17, 7) //TODO refactored a little, but no much happy with the result :(
+            ObjectsFacade.php
+        </li>
+        <li>Facade/Rest/ObjectsFacade.php (151, 15) //TODO why LIKE? ObjectsFacade.php
+        </li>
+        <li>Facade/Rest/ObjectsFacade.php (160, 15) //TODO why LIKE? ObjectsFacade.php
+        </li>
+        <li>Facade/Rest/ObjectsFacade.php (250, 4) // TODO breaking DI ObjectsFacade.php</li>
+    </ul>
+    {#    {{ dump(results) }} #}
 
-            </div>
-        {% endfor %}
+    {% for path, domain in results %}
+        <div class="row">
+            <h5>{{ path }}</h5>
+
+            {% for server, item in domain %}
+                <div class="col s6">
+                    <h5 class="card-panel {% if item.code == 200 %}teal{% elseif item.code == 404 %}red{% else %}orange{% endif %} lighten-2">{{ server }}
+                        - {{ item.code }}</h5>
+                    <a href="{{ item.url }}">{{ item.url }}</a>
+
+                    {% if item.content is not null %}
+                        <p>{{ item.content }}</p>
+                    {% endif %}
+
+                </div>
+            {% endfor %}
+
+        </div>
+    {% endfor %}
 
 {% endblock %}

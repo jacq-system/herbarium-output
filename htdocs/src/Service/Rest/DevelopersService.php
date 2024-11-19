@@ -24,7 +24,7 @@ class DevelopersService
         $i=0;
         foreach ($apiDoc['paths'] as $path => $methods) {
             $i++;
-//            if($i>3){ continue;}
+//            if($i>40){ continue;}
             foreach ($methods as $method => $details) {
                 if ($method !== 'get') {
                     /** testing only GET to be easy */
@@ -47,7 +47,7 @@ class DevelopersService
                             "code" => $individualResponse->getStatusCode(),
                             "content-type" => "",
                             "content" => "",
-                            "url" => ""
+                            "url" => $individualResponse->getInfo("url")
                         ];
                     }
 
