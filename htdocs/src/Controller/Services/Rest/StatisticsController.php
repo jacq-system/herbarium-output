@@ -40,7 +40,7 @@ class StatisticsController extends AbstractFOSRestController
                 in: 'path',
                 required: true,
                 schema: new Schema(type: 'string'),
-                example: '2014-03-01'
+                example: '2014-02-01'
             ),
             new PathParameter(
                 name: 'updated',

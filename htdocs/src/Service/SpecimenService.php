@@ -44,7 +44,7 @@ readonly class SpecimenService
     /**
      * get a list of all errors which prevent the generation of stable identifier
      */
-    public function getEntriesWithErrors(?int $sourceID = null): array
+    public function getEntriesWithErrors(?int $sourceID): array
     {
         if ($sourceID !== null) {
             $sql = "SELECT ss.specimen_ID AS specimenID, CONCAT('https://www.jacq.org/detail.php?ID=', ss.specimen_ID) AS link

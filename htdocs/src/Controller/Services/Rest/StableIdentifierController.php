@@ -12,6 +12,7 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Schema;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 
 class StableIdentifierController extends AbstractFOSRestController
@@ -200,6 +201,7 @@ class StableIdentifierController extends AbstractFOSRestController
                 in: 'query',
                 required: false,
                 schema: new Schema(type: 'integer', nullable: true),
+                example: 30
             )
         ],
         responses: [
@@ -357,7 +359,7 @@ class StableIdentifierController extends AbstractFOSRestController
         ]
     )]
     #[Route('/services/rest/stableIdentifier/errors.{_format}', defaults: ['_format' => 'json'], methods: ['GET'])]
-    public function errors(  ?int $sourceID = null): Response
+    public function errors(#[MapQueryParameter] ?int $sourceID = null): Response
     {
         $results = $this->specimenService->getEntriesWithErrors($sourceID);
         $view = $this->view($results, 200);
@@ -374,7 +376,7 @@ class StableIdentifierController extends AbstractFOSRestController
                 description: 'optional number of page to be returned (default=first page)',
                 in: 'query',
                 required: false,
-                schema: new Schema(type: 'integer'),
+                schema: new Schema(type: 'integer', nullable: true),
                 example: 2
             ),
             new QueryParameter(
@@ -382,15 +384,16 @@ class StableIdentifierController extends AbstractFOSRestController
                 description: 'optional number entries per page (default=50)',
                 in: 'query',
                 required: false,
-                schema: new Schema(type: 'integer'),
-                example: 20
+                schema: new Schema(type: 'integer', nullable: true),
+                example: 6
             ),
             new QueryParameter(
                 name: 'sourceID',
                 description: 'optional ID of source to check (default=all sources)',
                 in: 'query',
                 required: false,
-                schema: new Schema(type: 'integer')
+                schema: new Schema(type: 'integer', nullable: true),
+                example: 30
             ),
         ],
         responses: [
@@ -478,7 +481,7 @@ class StableIdentifierController extends AbstractFOSRestController
         ]
     )]
     #[Route('/services/rest/stableIdentifier/multi.{_format}', name: "services_rest_sid_multi", defaults: ['_format' => 'json'], methods: ['GET'])]
-    public function multi(?int $page,  ?int $entriesPerPage, ?int $sourceID): Response
+    public function multi(#[MapQueryParameter] int $page = 1, #[MapQueryParameter] int $entriesPerPage = 6, #[MapQueryParameter]  ?int $sourceID = null): Response
     {
         if ($sourceID !== null) {
             $results = $this->specimenService->getMultipleEntriesFromSource($sourceID);

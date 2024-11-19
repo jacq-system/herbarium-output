@@ -278,7 +278,7 @@ class ScinamesController extends AbstractFOSRestController
     public function resolve(string $uuid): Response
     {
         $data =  $this->taxaNamesService->findByUuid($uuid);
-        $view = $this->view($data, 200);
+        $view = $this->view($data, 500);
 
         return $this->handleView($view);
     }
