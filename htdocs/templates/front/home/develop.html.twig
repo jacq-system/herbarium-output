@@ -12,7 +12,8 @@
         mostly on it - the priority is to get working copy now, refactor when deployed. E.g. Statistics represents a
         little bit more elaborated remake.</p>
     <p>when walking through the code, I had sometimes comments - all are kept inline with //TODO notation; non updated
-        export of them is available bellow - but they do not need any immediate action, just kept for evidence and future use.</p>
+        export of them is available bellow - but they do not need any immediate action, just kept for evidence and
+        future use.</p>
 
     <h5>Hints</h5>
     <p>Symfony is a MVC framework. Controllers should be thin, equals to "index.php" files in jacq-services. Model is
@@ -35,7 +36,18 @@
         other app. Routing is at this moment done in easy way, according to the structure seen I expect some thick proxy
         forwarding is done at JACQ.org nowadays - this has to be explored together.</p>
 
-    <h5>Problems</h5>
+    <h5>Problems&Question</h5>
+    <p>in jacq-services repository are more folders than "rest:"</p>
+    <ul>
+        <li>https://github.com/jacq-system/jacq-services/tree/develop/commonNames/references/scientificName - is it
+            used (and should be implemented in Symfony also), where can I find it online?
+        </li>
+        <li>https://github.com/jacq-system/jacq-services/tree/develop/monitor - dtto?</li>
+        <li>https://github.com/jacq-system/jacq-services/tree/develop/oai - as Johannes is working on it, I skipped it
+            for now
+        </li>
+    </ul>
+
     <p>To agree the Symfony version as equivalent to jacq-services (beside routing, see above), there are some things I
         please for a help (prefixed with the route, links and results see bellow, line specific comments provided by
         TODOs in code):</p>
@@ -65,7 +77,7 @@
         </li>
         <li><b>/services/rest/stableIdentifier/errors</b> - this service provides different results for Czech replica
             and JACQ - I double checked the code and found no other explanation that replica is somehow different to
-            production. Difference = less records in replica
+            production. Difference = less records in replica - maybe some scheduled "materialized view update"..?
         </li>
         <li><b>/services/rest/stableIdentifier/multi</b> - similar inconsistency in counts of results</li>
     </ol>
