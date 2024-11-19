@@ -12,7 +12,6 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Schema;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 
 class StableIdentifierController extends AbstractFOSRestController
@@ -118,6 +117,8 @@ class StableIdentifierController extends AbstractFOSRestController
         } else {
             $results = [];
         }
+        //TODO better to use http codes, left for backward compatibility
+        $results['error'] = (empty($results)) ? "nothing to do" : '';
         $view = $this->view($results, 200);
 
         return $this->handleView($view);
@@ -198,7 +199,7 @@ class StableIdentifierController extends AbstractFOSRestController
                 description: 'optional ID of source to check (default=all sources)',
                 in: 'query',
                 required: false,
-                schema: new Schema(type: 'integer')
+                schema: new Schema(type: 'integer', nullable: true),
             )
         ],
         responses: [
@@ -356,7 +357,7 @@ class StableIdentifierController extends AbstractFOSRestController
         ]
     )]
     #[Route('/services/rest/stableIdentifier/errors.{_format}', defaults: ['_format' => 'json'], methods: ['GET'])]
-    public function errors(#[MapQueryParameter] ?int $sourceID): Response
+    public function errors(  ?int $sourceID = null): Response
     {
         $results = $this->specimenService->getEntriesWithErrors($sourceID);
         $view = $this->view($results, 200);
@@ -477,7 +478,7 @@ class StableIdentifierController extends AbstractFOSRestController
         ]
     )]
     #[Route('/services/rest/stableIdentifier/multi.{_format}', name: "services_rest_sid_multi", defaults: ['_format' => 'json'], methods: ['GET'])]
-    public function multi(#[MapQueryParameter] ?int $page, #[MapQueryParameter] ?int $entriesPerPage, #[MapQueryParameter] ?int $sourceID): Response
+    public function multi(?int $page,  ?int $entriesPerPage, ?int $sourceID): Response
     {
         if ($sourceID !== null) {
             $results = $this->specimenService->getMultipleEntriesFromSource($sourceID);

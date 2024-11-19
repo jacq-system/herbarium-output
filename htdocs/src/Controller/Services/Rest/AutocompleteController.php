@@ -31,7 +31,7 @@ class AutocompleteController extends AbstractFOSRestController
                 in: 'path',
                 required: true,
                 schema: new Schema(type: 'string'),
-                example: 'Aster'
+                example: 'Asteranth'
             )
         ],
         responses: [

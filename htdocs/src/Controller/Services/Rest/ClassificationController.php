@@ -40,7 +40,7 @@ class ClassificationController extends AbstractFOSRestController
                 name: 'referenceID',
                 description: 'ID of reference',
                 in: 'path',
-                required: false, //TODO wrong concept - pathParameter must be required according to the OpenAPI/Swagger spec (https://github.com/OAI/OpenAPI-Specification/blob/main/versions/2.0.md#fixed-fields-7) -> split into two routes (listAll, getByID)... Code works, but Swagger UI throws an error..
+                required: false, //TODO wrong concept - pathParameter must be required according to the OpenAPI/Swagger spec (https://github.com/OAI/OpenAPI-Specification/blob/main/versions/2.0.md#fixed-fields-7) -> a solution could be split into two routes (listAll, getByID)... Code works, but Swagger UI throws an error..
                 schema: new Schema(type: 'integer', nullable: true),
                 example: 15
             )
@@ -118,7 +118,8 @@ class ClassificationController extends AbstractFOSRestController
                 description: 'optional ID of citation-Series to be inserted',
                 in: 'query',
                 required: false,
-                schema: new Schema(type: 'integer', nullable: true)
+                schema: new Schema(type: 'integer', nullable: true),
+                example: 0
             )
         ],
         responses: [
@@ -207,14 +208,16 @@ class ClassificationController extends AbstractFOSRestController
                 description: 'optional ID of taxon name',
                 in: 'query',
                 required: false,
-                schema: new Schema(type: 'integer', nullable: true)
+                schema: new Schema(type: 'integer', nullable: true),
+                example: 0
             ),
             new QueryParameter(
                 name: 'insertSeries',
                 description: 'optional ID of citation-Series to be inserted',
                 in: 'query',
                 required: false,
-                schema: new Schema(type: 'integer', nullable: true)
+                schema: new Schema(type: 'integer', nullable: true),
+                example: 0
             )
         ],
         responses: [
@@ -312,7 +315,8 @@ class ClassificationController extends AbstractFOSRestController
                 description: 'optional ID of citation-Series to be inserted',
                 in: 'query',
                 required: false,
-                schema: new Schema(type: 'integer', nullable: true)
+                schema: new Schema(type: 'integer', nullable: true),
+                example: 0
             )
         ],
         responses: [
@@ -482,7 +486,7 @@ class ClassificationController extends AbstractFOSRestController
                 in: 'query',
                 required: false,
                 schema: new Schema(type: 'integer'),
-                example: 46183
+                example: 233658
             )
         ],
         responses: [

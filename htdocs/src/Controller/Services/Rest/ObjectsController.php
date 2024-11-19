@@ -57,7 +57,7 @@ class ObjectsController extends AbstractFOSRestController
                 in: 'path',
                 required: true,
                 schema: new Schema(type: 'integer'),
-                example: 123456
+                example: 316368
             )
         ],
         responses: [
@@ -124,7 +124,7 @@ class ObjectsController extends AbstractFOSRestController
                 in: 'query',
                 required: false,
                 schema: new Schema(type: 'integer'),
-                example: 20
+                example: 6
             ),
             new QueryParameter(
                 name: 'list',
@@ -147,12 +147,10 @@ class ObjectsController extends AbstractFOSRestController
                 description: 'optional search term for source codes, case insensitive',
                 in: 'query',
                 required: false,
-                schema: new Schema(type: 'string'),
-                example: "wu"
+                schema: new Schema(type: 'string')
             ),
-            //TODO in original coll, but seems as a typo
             new QueryParameter(
-                name: 'collnr',
+                name: 'coll',
                 description: 'optional search term for collector(s), case insensitive',
                 in: 'query',
                 required: false,
@@ -165,7 +163,7 @@ class ObjectsController extends AbstractFOSRestController
                 in: 'query',
                 required: false,
                 schema: new Schema(type: 'integer'),
-                example: 1
+                example: 0
             ),
             new QueryParameter(
                 name: 'sort',
@@ -242,10 +240,10 @@ class ObjectsController extends AbstractFOSRestController
         ]
     )]
     #[Route('/services/rest/objects/specimens.{_format}', name: "services_rest_objects_specimens", defaults: ['_format' => 'json'], methods: ['GET'])]
-    public function specimens(#[MapQueryParameter] ?int $p = 0,#[MapQueryParameter] ?int $rpp = 50,#[MapQueryParameter] ?int $list = 1,#[MapQueryParameter] ?string $term = '',#[MapQueryParameter] ?string $sc = '',#[MapQueryParameter] ?string $collnr = '',#[MapQueryParameter] ?int $type = 0,#[MapQueryParameter] ?string $sort = 'sciname,herbnr',#[MapQueryParameter] ?string $herbnr = '', #[MapQueryParameter] ?string $nation = '', #[MapQueryParameter] ?int $withImages = 0, #[MapQueryParameter] ?string $cltr = ''): Response
+    public function specimens(#[MapQueryParameter] ?int $p = 0,#[MapQueryParameter] ?int $rpp = 50,#[MapQueryParameter] ?int $list = 1,#[MapQueryParameter] ?string $term = '',#[MapQueryParameter] ?string $sc = '',#[MapQueryParameter] ?string $coll = '',#[MapQueryParameter] ?int $type = 0,#[MapQueryParameter] ?string $sort = 'sciname,herbnr',#[MapQueryParameter] ?string $herbnr = '', #[MapQueryParameter] ?string $nation = '', #[MapQueryParameter] ?int $withImages = 0, #[MapQueryParameter] ?string $cltr = ''): Response
     {
         ($rpp > 100) ? $rpp = 100 : null;
-        $data = $this->objectsFacade->resolveSpecimens( $p, $rpp, $list, $term,$sc,$collnr,$type,$sort, $herbnr, $nation, $withImages, $cltr);
+        $data = $this->objectsFacade->resolveSpecimens( $p, $rpp, $list, $term,$sc,$coll,$type,$sort, $herbnr, $nation, $withImages, $cltr);
         $view = $this->view($data, 200);
 
         return $this->handleView($view);

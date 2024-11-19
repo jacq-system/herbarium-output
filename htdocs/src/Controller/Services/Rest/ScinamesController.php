@@ -82,7 +82,7 @@ class ScinamesController extends AbstractFOSRestController
     {
         $results = [];
         //TODO need access to another database
-        $view = $this->view($results, 200);
+        $view = $this->view($results, 500);
 
         return $this->handleView($view);
     }
@@ -226,7 +226,8 @@ class ScinamesController extends AbstractFOSRestController
                 description: 'uuid of taxon name',
                 in: 'path',
                 required: true,
-                schema: new Schema(type: 'string')
+                schema: new Schema(type: 'string'),
+                example: '86d5ecb1-c631-11e4-89a5-005056a41758'
             )
         ],
         responses: [

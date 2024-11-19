@@ -218,6 +218,8 @@ class GeoController extends AbstractFOSRestController
         if (isset($provinceID)) {
             $data['province'] = $this->coordinateBoundaryService->provinceBoundaries($provinceID, $lat, $lon);
         }
+        //TODO better to use http codes, left for backward compatibility
+        $data['error'] = (empty($data)) ? "nothing to do" : '';
         $view = $this->view($data, 200);
 
         return $this->handleView($view);

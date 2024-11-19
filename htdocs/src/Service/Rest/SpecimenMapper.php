@@ -33,7 +33,7 @@ class SpecimenMapper
                                  LIMIT 1";
         $sid = $this->connection->executeQuery($sql, ['specimenID' => $this->specimenID])->fetchOne();
 
-        $this->properties['stableIdentifier'] = $sid ?? '';
+        $this->properties['stableIdentifier'] = ($sid) ?: '';
 
         /**
          * then get all other properties of the specimen if it is accessible

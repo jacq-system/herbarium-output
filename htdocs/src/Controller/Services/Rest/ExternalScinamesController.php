@@ -80,9 +80,9 @@ class ExternalScinamesController extends AbstractFOSRestController
     #[Route('/services/rest/externalScinames/find/{term}.{_format}', name: "services_rest_externalScinames_find", defaults: ['_format' => 'json'], methods: ['GET'])]
     public function uuid(string $term): Response
     {
-        $results = ["not implemented"];
-        //TODO not implemented
-        $view = $this->view($results, 200);
+        $results = ["not implemented, in development by Johannes"];
+        //TODO not implemented, in development by Johannes
+        $view = $this->view($results, 418);
 
         return $this->handleView($view);
     }

@@ -74,7 +74,7 @@ class ImagesController extends AbstractFOSRestController
     {
         //todo ignoring "withredirect" param
         $this->imageLinkMapper->setSpecimenId($specimenID);
-        $results = $this->imageLinkMapper->getShowLink($imageNr);
+        $results['link'] = $this->imageLinkMapper->getShowLink($imageNr);
 
         $view = $this->view($results, 200);
 
@@ -135,7 +135,7 @@ class ImagesController extends AbstractFOSRestController
     public function download(int $specimenID, int $imageNr = 0): Response
     {
         $this->imageLinkMapper->setSpecimenId($specimenID);
-        $results = $this->imageLinkMapper->getDownloadLink($imageNr);
+        $results['link'] = $this->imageLinkMapper->getDownloadLink($imageNr);
 
         $view = $this->view($results, 200);
 
@@ -196,7 +196,7 @@ class ImagesController extends AbstractFOSRestController
     public function europeana(int $specimenID, int $imageNr = 0): Response
     {
         $this->imageLinkMapper->setSpecimenId($specimenID);
-        $results = $this->imageLinkMapper->getEuropeanaLink($imageNr);
+        $results['link'] = $this->imageLinkMapper->getEuropeanaLink($imageNr);
 
         $view = $this->view($results, 200);
 
@@ -257,7 +257,7 @@ class ImagesController extends AbstractFOSRestController
     public function thumb(int $specimenID, int $imageNr = 0): Response
     {
         $this->imageLinkMapper->setSpecimenId($specimenID);
-        $results = $this->imageLinkMapper->getThumbLink($imageNr);
+        $results['link'] = $this->imageLinkMapper->getThumbLink($imageNr);
 
         $view = $this->view($results, 200);
 

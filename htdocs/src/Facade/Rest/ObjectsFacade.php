@@ -40,7 +40,7 @@ readonly class ObjectsFacade
      * @param array $taxonIDList search for taxon terms has already finished, this is the list of results; defaults to empty array
      * @return array
      */
-    public function resolveSpecimens(int $p, int $rpp, int $listOnly, string $term, string $sc, string $collnr, int $type, string $sort, string $herbnr, string $nation, int $withImages, string $cltr): array
+    public function resolveSpecimens(int $p, int $rpp, int $listOnly, string $term, string $sc, string $coll, int $type, string $sort, string $herbnr, string $nation, int $withImages, string $cltr): array
     {
 
         $taxonIDList = [];
@@ -59,8 +59,8 @@ readonly class ObjectsFacade
             "taxonIDList" => $taxonIDList,
             "herbNr" => strtr($herbnr, '*', '%'),
             "herbNrPure" => $herbnr,
-            "collNr" => strtr($collnr, '*', '%'),
-            "collNrPure" => $collnr,
+            "collNr" => strtr($coll, '*', '%'),
+            "collNrPure" => $coll,
             "sc" => $sc,
             "cltr" => $cltr . "%",
             "cltrBothSide" => "%" . $cltr . "%",
@@ -86,7 +86,7 @@ readonly class ObjectsFacade
             'list' => $listOnly,               // return just a list of specimen-IDs?, default: yes
             'term' => $term,              // search for scientific name (joker = *)
             'herbnr' => $herbnr,              // search for herbarium number (joker = *)
-            'collnr' => $collnr,              // search for collection number (joker = *)
+            'collnr' => $coll,              // search for collection number (joker = *)
             'sc' => $sc,              // search for a source-code
             'cltr' => $cltr,              // search for a collector
             'nation' => $nation,              // search for a nation

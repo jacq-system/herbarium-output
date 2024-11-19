@@ -22,7 +22,8 @@ readonly class ReferenceService
                     FROM tbl_lit
                     WHERE citationID = :id
                     SQL;
-            return $this->entityManager->getConnection()->executeQuery($sql, ['id' => $referenceID])->fetchAssociative();
+            return $this->entityManager->getConnection()->executeQuery($sql, ['id' => $referenceID])->fetchAllAssociative();
+            //TODO fetchAssociative make sense when ID is provided, but to fulfill compatibility with original keep single element array
         } else {
             $sql = <<<SQL
                     SELECT l.titel AS `name`, l.citationID AS `id`
@@ -48,7 +49,8 @@ readonly class ReferenceService
                     FROM tbl_lit_periodicals
                     WHERE periodicalID = :id
                     SQL;
-            return $this->entityManager->getConnection()->executeQuery($sql, ['id' => $referenceID])->fetchAssociative();
+            return $this->entityManager->getConnection()->executeQuery($sql, ['id' => $referenceID])->fetchAllAssociative();
+            //TODO see above
         } else {
             $sql = <<<SQL
                             SELECT lp.periodical AS `name`, l.periodicalID AS `id`

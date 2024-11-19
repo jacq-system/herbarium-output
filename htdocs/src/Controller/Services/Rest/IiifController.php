@@ -10,6 +10,7 @@ use OpenApi\Attributes\MediaType;
 use OpenApi\Attributes\PathParameter;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -134,14 +135,16 @@ If no backend is configured, the webservice tries to get the manifest from the a
                 description: 'ID of image server',
                 in: 'path',
                 required: true,
-                schema: new Schema(type: 'integer')
+                schema: new Schema(type: 'integer'),
+                example: 1
             ),
             new PathParameter(
                 name: 'imageIdentifier',
                 description: 'image Identifier',
                 in: 'path',
                 required: true,
-                schema: new Schema(type: 'string')
+                schema: new Schema(type: 'string'),
+                example: 1
             )
         ],
         responses: [
@@ -176,6 +179,10 @@ If no backend is configured, the webservice tries to get the manifest from the a
     public function createManifest(int $serverID, string $imageIdentifier): Response
     {
         $manifest = $this->iiifFacade->createManifestFromExtendedCantaloupeImage($serverID, $imageIdentifier);
+
+        if(empty($manifest)){
+            return new JsonResponse(null, 404);
+        }
         $view = $this->view($manifest, 200);
 
         return $this->handleView($view);
