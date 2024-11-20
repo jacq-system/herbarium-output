@@ -9,7 +9,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class DevelopersService
 {
-    protected const array Domains = ["http://nginx:8080/", "https://services.jacq.org/jacq-"];
+    protected const array Domains = ["https://jacq.dyn.cloud.e-infra.cz/", "https://services.jacq.org/jacq-"];
 
     public function __construct(protected readonly EntityManagerInterface $entityManager, protected HttpClientInterface $client, protected RouterInterface $router)
     {
