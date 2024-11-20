@@ -35,6 +35,7 @@ jobs:
                 run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
             -   name: Cache composer dependencies
+                working-directory: ./htdocs
                 uses: actions/cache@v4.1.2
                 with:
                     path: ${{ steps.composer-cache.outputs.dir }}
@@ -51,6 +52,7 @@ jobs:
                     node-version: '22'
 
             -   name: Cache node_modules
+                working-directory: ./htdocs
                 uses: actions/cache@v3
                 with:
                     path: ~/.npm
@@ -59,15 +61,19 @@ jobs:
                         ${{ runner.os }}-node-
 
             -   name: Install npm dependencies
+                working-directory: ./htdocs
                 run: npm ci
 
             -   name: Build assets
+                working-directory: ./htdocs
                 run: npm run build
 
             -   name: Install NelmioApiDoc assets
+                working-directory: ./htdocs
                 run: php bin/console assets:install public --symlink --relative
 
             -   name: Upload built assets
+                working-directory: ./htdocs
                 uses: actions/upload-artifact@v3
                 with:
                     name: built-assets
