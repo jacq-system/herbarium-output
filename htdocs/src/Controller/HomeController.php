@@ -14,11 +14,58 @@ class HomeController extends AbstractController
     {
     }
 
-    #[Route('/', name: 'app_index')]
+    #[Route('/', name: 'app_front_index')]
     public function index(): Response
     {
         // the template path is the relative file path from `templates/`
-        return $this->render('front/home/default.html.twig', [
+        return $this->render('front/home/index.html.twig', [
+            // this array defines the variables passed to the template,
+            // where the key is the variable name and the value is the variable value
+            // (Twig recommends using snake_case variable names: 'foo_bar' instead of 'fooBar')
+
+        ]);
+    }
+
+    #[Route('/database', name: 'app_front_database')]
+    public function database(): Response
+    {
+        // the template path is the relative file path from `templates/`
+        return $this->render('front/home/database.html.twig', [
+            // this array defines the variables passed to the template,
+            // where the key is the variable name and the value is the variable value
+            // (Twig recommends using snake_case variable names: 'foo_bar' instead of 'fooBar')
+
+        ]);
+    }
+
+    #[Route('/collections', name: 'app_front_collections')]
+    public function collections(): Response
+    {
+        // the template path is the relative file path from `templates/`
+        return $this->render('front/home/collections.html.twig', [
+            // this array defines the variables passed to the template,
+            // where the key is the variable name and the value is the variable value
+            // (Twig recommends using snake_case variable names: 'foo_bar' instead of 'fooBar')
+
+        ]);
+    }
+    #[Route('/systems', name: 'app_front_systems')]
+    public function systems(): Response
+    {
+        // the template path is the relative file path from `templates/`
+        return $this->render('front/home/systems.html.twig', [
+            // this array defines the variables passed to the template,
+            // where the key is the variable name and the value is the variable value
+            // (Twig recommends using snake_case variable names: 'foo_bar' instead of 'fooBar')
+
+        ]);
+    }
+
+    #[Route('/imprint', name: 'app_front_imprint')]
+    public function imprint(): Response
+    {
+        // the template path is the relative file path from `templates/`
+        return $this->render('front/home/imprint.html.twig', [
             // this array defines the variables passed to the template,
             // where the key is the variable name and the value is the variable value
             // (Twig recommends using snake_case variable names: 'foo_bar' instead of 'fooBar')

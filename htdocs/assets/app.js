@@ -1,4 +1,8 @@
-import './styles/app.css';
-import 'materialize-css/dist/css/materialize.css';
-import 'materialize-css/dist/js/materialize.js';
+import 'materialize-css';
+import 'materialize-css/dist/css/materialize.min.css';
 
+import './styles/app.css';
+
+document.addEventListener('DOMContentLoaded', function () {
+    M.AutoInit();
+});
