@@ -45,6 +45,39 @@ jobs:
                 working-directory: ./htdocs
                 run: composer install --no-progress --prefer-dist --optimize-autoloader
 
+            -   name: Set up Node.js
+                uses: actions/setup-node@v4
+                with:
+                    node-version: '22'
+
+            -   name: Cache node_modules
+                uses: actions/cache@v4
+                with:
+                    path: ~/.npm
+                    key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+                    restore-keys: |
+                        ${{ runner.os }}-node-
+
+            -   name: Install npm dependencies
+                working-directory: ./htdocs
+                run: npm ci
+
+            -   name: Build assets
+                working-directory: ./htdocs
+                run: npm run build
+
+            -   name: Install NelmioApiDoc assets
+                working-directory: ./htdocs
+                run: php bin/console assets:install public --symlink --relative
+
+            -   name: Upload built assets
+                uses: actions/upload-artifact@v4
+                with:
+                    name: built-assets
+                    path: |
+                        public/build
+                        public/bundles
+
             #docker image
             -   name: Log in to the Container registry
                 uses: docker/login-action@v3.3.0
