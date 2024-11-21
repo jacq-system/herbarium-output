@@ -90,7 +90,7 @@ readonly class ClassificationService
         return null;
     }
 
-    public function getList(array $criteria = [], array $sourceIds)
+    public function getList(array $criteria = [], array $sourceIds = [10400, 26389]): array         //TODO ?default values hardcoded
     {
         $constraints = array();
         if (!empty($criteria['organisationIds'])) {

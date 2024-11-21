@@ -112,8 +112,7 @@ class LivingPlantsController extends AbstractFOSRestController
             $criteria['derivativeID'] = $derivativeID;
         }
 
-        //TODO ?default values hardcoded
-        $data = $this->classificationService->getList($criteria, [10400, 26389]);
+        $data = $this->classificationService->getList($criteria);
         $view = $this->view($data, 200);
 
         return $this->handleView($view);
