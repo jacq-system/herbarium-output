@@ -1,0 +1,17 @@
+@import "variables";
+@import "~materialize-css/sass/materialize";
+
+@import "navbar";
+
+html, body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}

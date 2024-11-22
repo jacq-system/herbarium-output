@@ -12,8 +12,9 @@ cd htdocs && ./npm.sh && ./npm.sh run build
 ```
 
 Install dependencies:
-* ```docker exec -it app-sjacq bash```
-    * install dependencies ```composer install``` recommended to do this from inside of container where Symfony bin is installed.
+* ```docker exec -it app-sjacq bash``` - that mean we are working inside the container
+    * install dependencies ```composer install```
+    * copy thirdparty bundle assets ``` php bin/console assets:install public```
 
 
 ### OAuth2 server

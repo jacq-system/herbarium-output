@@ -2,35 +2,33 @@
 {% block title %}JACQ - Virtual Herbaria{% endblock %}
 
 {% block body %}
-    <div id="navbar" class="navbar-fixed">
-        <nav class="nav-extended">
+    <div class="navbar-fixed">
+        <nav class="nav-extended white">
             <div class="nav-wrapper">
-                <a href="#" class="brand-logo center"><img src="{{ asset('logo/jacq/jacq.png') }}" alt="JACQ Logo"></a>
-            </div>
-            <div class="nav-content">
-                <ul class="tabs">
-                    <li class="tab"><a
-                            class="{% if app.request.attributes.get('_route') == 'app_front_index' %}active{% endif %}"
-                            href="{{ path('app_front_index') }}">Home</a></li>
-                    <li class="tab"><a
-                            class="{% if app.request.attributes.get('_route') == 'app_front_database' %}active{% endif %}"
-                            href="{{ path('app_front_database') }}">Database</a></li>
-                    <li class="tab"><a
-                            class="{% if app.request.attributes.get('_route') == 'app_front_collections' %}active{% endif %}"
-                            href="{{ path('app_front_collections') }}">Collections</a></li>
-                    <li class="tab"><a
-                            class="{% if app.request.attributes.get('_route') == 'app_front_systems' %}active{% endif %}"
-                            href="{{ path('app_front_systems') }}">Systems</a></li>
+                <div style="height: 45px"><a href="{{ path('app_front_index') }}">
+                        <img class="main-logo" src="{{ asset('logo/jacq/jacq.png') }}" alt="JACQ Logo"></a></div>
+                <ul>
+                    <li class="{% if app.request.attributes.get('_route') == 'app_front_index' %}active{% endif %}">
+                        <a href="{{ path('app_front_index') }}">Home</a>
+                    </li>
+                    <li class="{% if app.request.attributes.get('_route') == 'app_front_database' %}active{% endif %}">
+                        <a href="{{ path('app_front_database') }}">Database</a>
+                    </li>
+                    <li class="{% if app.request.attributes.get('_route') == 'app_front_collections' %}active{% endif %}">
+                        <a href="{{ path('app_front_collections') }}">Collections</a>
+                    </li>
+                    <li class="{% if app.request.attributes.get('_route') == 'app_front_systems' %}active{% endif %}">
+                        <a href="{{ path('app_front_systems') }}">Systems</a>
+                    </li>
                 </ul>
             </div>
         </nav>
     </div>
-    {% block content %}{% endblock %}
-    <footer class="page-footer">
-        <div class="footer-copyright">
-            <div class="container">
-                <a href="{{ path('app_front_imprint') }}">Imprint | Citation | Privacy</a>
-            </div>
-        </div>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="page-footer center white">
+        <hr>
+        <a href="{{ path('app_front_imprint') }}">Imprint | Citation | Privacy</a>
     </footer>
 {% endblock %}
