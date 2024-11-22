@@ -4,3 +4,11 @@
 
 @import "navbar";
 @import "typography";
+
+#partners {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 20px;
+}

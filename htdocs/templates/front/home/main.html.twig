@@ -8,16 +8,16 @@
                 <div style="height: 45px"><a href="{{ path('app_front_index') }}">
                         <img class="main-logo" src="{{ asset('logo/jacq/jacq.png') }}" alt="JACQ Logo"></a></div>
                 <ul>
-                    <li class="{% if app.request.attributes.get('_route') == 'app_front_index' %}active{% endif %}">
+                    <li {% if app.request.attributes.get('_route') == 'app_front_index' %}class="active"{% endif %}">
                         <a href="{{ path('app_front_index') }}">Home</a>
                     </li>
-                    <li class="{% if app.request.attributes.get('_route') == 'app_front_database' %}active{% endif %}">
+                    <li {% if app.request.attributes.get('_route') == 'app_front_database' %}class="active"{% endif %}>
                         <a href="{{ path('app_front_database') }}">Database</a>
                     </li>
-                    <li class="{% if app.request.attributes.get('_route') == 'app_front_collections' %}active{% endif %}">
+                    <li {% if app.request.attributes.get('_route') == 'app_front_collections' %}class="active"{% endif %}>
                         <a href="{{ path('app_front_collections') }}">Collections</a>
                     </li>
-                    <li class="{% if app.request.attributes.get('_route') == 'app_front_systems' %}active{% endif %}">
+                    <li {% if app.request.attributes.get('_route') == 'app_front_systems' %}class="active"{% endif %}>
                         <a href="{{ path('app_front_systems') }}">Systems</a>
                     </li>
                 </ul>
