@@ -441,7 +441,7 @@ readonly class IiifFacade
         }
 
         foreach ($meta as $key => $line) {
-            if ($line['value'] !== null && (substr($line['value'], 0, 7) === 'http://' || substr($line['value'], 0, 8) === 'https://')) {
+            if ($line['value'] !== null && (str_starts_with((string)$line['value'], 'http://') || str_starts_with((string)$line['value'], 'https://'))) {
                 $meta[$key]['value'] = "<a href='" . $line['value'] . "'>" . $line['value'] . "</a>";
             }
         }
