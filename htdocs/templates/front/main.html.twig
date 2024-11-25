@@ -20,6 +20,9 @@
                     <li {% if app.request.attributes.get('_route') == 'app_front_systems' %}class="active"{% endif %}>
                         <a href="{{ path('app_front_systems') }}">Systems</a>
                     </li>
+                    <li {% if app.request.attributes.get('_route') == 'deve_overview' %}class="active"{% endif %}>
+                        <a href="{{ path('deve_overview') }}">|| Develop ||</a>
+                    </li>
                 </ul>
             </div>
         </nav>

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Service\DjatokaService;
 use App\Service\Rest\DevelopersService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -10,74 +11,68 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class HomeController extends AbstractController
 {
-    public function __construct(protected DevelopersService $developersService)
+    public function __construct(protected DevelopersService $developersService, protected readonly DjatokaService $djatokaService)
     {
     }
 
     #[Route('/', name: 'app_front_index')]
     public function index(): Response
     {
-        // the template path is the relative file path from `templates/`
-        return $this->render('front/home/index.html.twig', [
-            // this array defines the variables passed to the template,
-            // where the key is the variable name and the value is the variable value
-            // (Twig recommends using snake_case variable names: 'foo_bar' instead of 'fooBar')
-
-        ]);
+        return $this->render('front/home/index.html.twig');
     }
 
     #[Route('/database', name: 'app_front_database')]
     public function database(): Response
     {
-        // the template path is the relative file path from `templates/`
-        return $this->render('front/home/database.html.twig', [
-            // this array defines the variables passed to the template,
-            // where the key is the variable name and the value is the variable value
-            // (Twig recommends using snake_case variable names: 'foo_bar' instead of 'fooBar')
-
-        ]);
+        return $this->render('front/home/database.html.twig');
     }
 
     #[Route('/collections', name: 'app_front_collections')]
     public function collections(): Response
     {
-        // the template path is the relative file path from `templates/`
-        return $this->render('front/home/collections.html.twig', [
-            // this array defines the variables passed to the template,
-            // where the key is the variable name and the value is the variable value
-            // (Twig recommends using snake_case variable names: 'foo_bar' instead of 'fooBar')
-
-        ]);
+        return $this->render('front/home/collections.html.twig');
     }
     #[Route('/systems', name: 'app_front_systems')]
     public function systems(): Response
     {
-        // the template path is the relative file path from `templates/`
-        return $this->render('front/home/systems.html.twig', [
-            // this array defines the variables passed to the template,
-            // where the key is the variable name and the value is the variable value
-            // (Twig recommends using snake_case variable names: 'foo_bar' instead of 'fooBar')
-
-        ]);
+        return $this->render('front/home/systems.html.twig');
     }
 
     #[Route('/imprint', name: 'app_front_imprint')]
     public function imprint(): Response
     {
-        // the template path is the relative file path from `templates/`
-        return $this->render('front/home/imprint.html.twig', [
-            // this array defines the variables passed to the template,
-            // where the key is the variable name and the value is the variable value
-            // (Twig recommends using snake_case variable names: 'foo_bar' instead of 'fooBar')
-
-        ]);
+        return $this->render('front/home/imprint.html.twig');
     }
 
-    #[Route('/develop', name: 'deve_rest')]
-    public function indexDevelop(): Response
+    #[Route('/jacqStatistics', name: 'app_front_jacqStatistics')]
+    public function jacqStatistics(): Response
+    {
+        return $this->render('front/home/statistics.html.twig');
+    }
+
+    #[Route('/checkDjatokaServers', name: 'app_front_checkDjatokaServers', defaults: ['source' => null])]
+    public function checkDjatokaServers(?string $source): Response
+    {
+        $data = $this->djatokaService->getData($source);
+        $warn = $data['warn'] ?? null;
+        $ok = $data['ok'] ?? null;
+        $fail = $data['fail'] ?? null;
+        $noPicture = $data['noPicture'] ?? null;
+
+        return $this->render('front/home/djatokaCheck.html.twig', ["warn"=>$warn,"ok"=>$ok,"fail"=>$fail,"noPicture"=>$noPicture]);
+    }
+
+    #[Route('/develop/rest', name: 'deve_rest')]
+    public function indexDevelopRest(): Response
     {
         $data = $this->developersService->testApiWithExamples();
-        return $this->render('front/home/develop.html.twig', ["results"=>$data]);
+        return $this->render('front/develop/rest.html.twig', ["results"=>$data]);
+    }
+
+    #[Route('/develop', name: 'deve_overview')]
+    public function indexDevelop(): Response
+    {
+        return $this->render('front/develop/default.html.twig');
     }
 
     #[Route('/api/test', name: 'app_api_test')]

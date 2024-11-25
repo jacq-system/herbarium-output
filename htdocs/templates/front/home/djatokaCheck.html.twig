@@ -1,0 +1,122 @@
+{% extends 'front/main.html.twig' %}
+
+{% block main %}
+
+    <div class="container">
+
+        <h3>check all Djatoka installations at {{ "now"|date('r') }}</h3>
+
+        {% if fail is not empty %}
+        <h4>Servers with errors</h4>
+        <table>
+            <thead>
+            <tr>
+                <th>source (id)</th>
+                <th>specimen-id</th>
+                <th>RPC</th>
+                <th>image</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for server in fail %}
+                <tr>
+                    <td>{{ server['source'] }}({{ server['source_id'] }})</td>
+                    <td>{{ server['specimenID'] }}</td>
+                    {% if server['errorRPC'] is not empty %}
+                        <td class="red-text">{{ server['errorRPC']}}</td>
+                    {% else %}
+                        <td class="green-text">OK</td>
+                    {% endif %}
+                    {% if server['errorImage'] is not empty %}
+                        <td class="red-text">{{ server['errorImage']}}</td>
+                    {% else %}
+                        <td class="green-text">OK</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        {% if warn is not empty %}
+            <hr>
+
+            <h4>Servers with warnings</h4>
+            <table>
+                <thead>
+                <tr>
+                    <th>source (id)</th>
+                    <th>specimen-id</th>
+                    <th>RPC</th>
+                    <th>image</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for server in warn %}
+                    <tr>
+                        <td>{{ server['source'] }}({{ server['source_id'] }})</td>
+                        <td>{{ server['specimenID'] }}</td>
+                        {% if server['warningRPC'] is not empty %}
+                            <td class="red-text">{{ server['warningRPC']}}</td>
+                        {% else %}
+                            <td class="green-text">OK</td>
+                        {% endif %}
+                        {% if server['errorImage'] is not empty %}
+                            <td class="red-text">{{ server['errorImage']}}</td>
+                        {% else %}
+                            <td class="green-text">OK</td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
+        {% if ok is not empty %}
+            <hr>
+            <h4>Servers without errors</h4>
+            <table>
+                <thead>
+                <tr>
+                    <th>source (id)</th>
+                    <th>specimen-id</th>
+                    <th>RPC</th>
+                    <th>image</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for server in ok %}
+                    <tr>
+                        <td>{{ server['source'] }}({{ server['source_id'] }})</td>
+                        <td>{{ server['specimenID'] }}</td>
+                        <td class="green-text">OK</td>
+                        <td class="green-text">OK</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
+
+        {% if noPicture is not empty %}
+            <hr>
+            <h4>Servers with no available pictures</h4>
+            <table>
+                <thead>
+                <tr>
+                    <th>source (id)</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for server in noPicture %}
+                    <tr>
+                        <td>{{ server['source'] }}({{ server['source_id'] }})</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        <p>To scan just a single source, add either the parameter "?source=&lt;id&gt;" or "?source=&lt;source&gt;" to
+            the URL.</p>
+    </div>
+
+{% endblock %}

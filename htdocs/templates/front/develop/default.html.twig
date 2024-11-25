@@ -1,0 +1,11 @@
+{% extends 'front/main.html.twig' %}
+{% block title %}Develop Symfony overview{% endblock %}
+
+{% block main %}
+    <div class="container">
+        <a href="{{ path('deve_rest') }}">REST service info</a><br/>
+        <a href="{{ path('app_front_checkDjatokaServers') }}">checkDjatokaServers</a><br/>
+        <a href="{{ path('app_front_jacqStatistics') }}">jacqStatistics</a><br/>
+
+    </div>
+{% endblock %}
