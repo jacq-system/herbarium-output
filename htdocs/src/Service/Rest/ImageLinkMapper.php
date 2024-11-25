@@ -3,9 +3,9 @@
 namespace App\Service\Rest;
 use App\Facade\Rest\IiifFacade;
 use Doctrine\DBAL\Connection;
-use GuzzleHttp\Client;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ImageLinkMapper
 {
@@ -15,7 +15,7 @@ class ImageLinkMapper
     protected array $fileLinks = array();
     protected bool $linksActive = false;
 
-    public function __construct(protected readonly Connection $connection, protected readonly RouterInterface $router, protected readonly IiifFacade $iiifFacade)
+    public function __construct(protected readonly Connection $connection, protected readonly RouterInterface $router, protected readonly IiifFacade $iiifFacade,protected HttpClientInterface $client)
     {
     }
 
@@ -264,9 +264,8 @@ class ImageLinkMapper
         }
         $images = array();
         try {
-            // Create a client instance and send requests to jacq-servlet
-            $client = new Client(['timeout' => 8]);
-            $response1 = $client->request('POST', $specimen['imgserver_url'] . 'jacq-servlet/ImageServer', [
+            //   send requests to jacq-servlet
+            $response1 = $this->client->request('POST', $specimen['imgserver_url'] . 'jacq-servlet/ImageServer', [
                 'json' => ['method' => 'listResources',
                     'params' => [$specimen['key'],
                         [$filename,
@@ -283,7 +282,7 @@ class ImageLinkMapper
                 ],
                 'verify' => false
             ]);
-            $data = json_decode($response1->getBody()->getContents(), true);
+            $data = json_decode($response1->getContent(), true);
             if (!empty($data['error'])) {
                 throw new \Exception($data['error']);
             } elseif (empty($data['result'][0])) {
