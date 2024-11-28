@@ -21,26 +21,26 @@
             <tbody>
             {% for item in results %}
                 {% if item['total'] > 0 %}
-                    <tr>
+                    <tr class="herbarium" id="herbarium-{{ item['source_code'] }}">
                         <td class="border-right">{{ item['source_code'] }}</td>
                         <td> {{ min(item['stat']) }}</td>
                         <td> {{ max(item['stat']) }}</td>
                         <td> {{ item['stat'] | avg| round(1) }}</td>
                         <td class="border-right"> {{ item['stat'] | median }} </td>
                         {% for i in periodMin..periodMax %}
-                            <td>{{ item['stat'][i] }}</td>
+                            <td class="period">{{ item['stat'][i] }}</td>
                         {% endfor %}
                     </tr>
                 {% endif %}
             {% endfor %}
-            <tr class="border-top">
+            <tr class="border-top herbarium" id="herbarium-total">
                 <td class="border-right">&sum;</td>
                 <td> {{ min(suma) }}</td>
                 <td> {{ max(suma) }}</td>
                 <td> {{ suma | avg| round(1) }}</td>
                 <td class="border-right"> {{ suma | median }} </td>
                 {% for i in periodMin..periodMax %}
-                    <td>{{ suma[i] }}</td>
+                    <td class="period">{{ suma[i] }}</td>
                 {% endfor %}
             </tr>
             </tbody>

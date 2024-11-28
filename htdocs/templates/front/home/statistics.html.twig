@@ -8,14 +8,14 @@
                 <div class="row" style="margin-bottom: 0;">
                     <div class="input-field col s2">
                         <i class="prefix fas fa-calendar-days"> </i>
-                        <input type="text" class="datepicker" id="periodStart" name="periodStart"
-                               value="{{ "now"|date('Y') }}-01-01">
+                        <input type="text" class="datepicker-custom" id="periodStart" name="periodStart"
+                               value="{{ "now"|date('Y') }}-01-01" data-format="yyyy-mm-dd">
                         <label for="periodStart">From</label>
                     </div>
                     <div class="input-field col s2">
                         <i class="prefix fas fa-calendar-days"> </i>
-                        <input type="text" class="datepicker" id="periodEnd"
-                               value="{{ "now"|date('Y-m-d') }}" name="periodEnd">
+                        <input type="text" class="datepicker-custom" id="periodEnd"
+                               value="{{ "now"|date('Y-m-d') }}" name="periodEnd" data-format="yyyy-mm-dd">
                         <label for="periodEnd">To</label>
                     </div>
                     <div class="input-field col s2">

@@ -1,4 +1,10 @@
 export default function statistics() {
+
+    let options = {format: "yyyy-mm-dd"}
+    let elems = document.querySelectorAll('.datepicker-custom');
+    let instances = M.Datepicker.init(elems, options);
+
+
     document.getElementById('statisticsForm').addEventListener('submit', function (event) {
         event.preventDefault();
 
