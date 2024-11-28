@@ -8,7 +8,7 @@
 
         {% if fail is not empty %}
         <h4>Servers with errors</h4>
-        <table>
+        <table class="compact">
             <thead>
             <tr>
                 <th>source (id)</th>
@@ -41,7 +41,7 @@
             <hr>
 
             <h4>Servers with warnings</h4>
-            <table>
+            <table class="compact">
                 <thead>
                 <tr>
                     <th>source (id)</th>
@@ -74,7 +74,7 @@
         {% if ok is not empty %}
             <hr>
             <h4>Servers without errors</h4>
-            <table>
+            <table class="compact">
                 <thead>
                 <tr>
                     <th>source (id)</th>
@@ -100,7 +100,7 @@
         {% if noPicture is not empty %}
             <hr>
             <h4>Servers with no available pictures</h4>
-            <table>
+            <table class="compact">
                 <thead>
                 <tr>
                     <th>source (id)</th>
