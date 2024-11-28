@@ -22,7 +22,7 @@
             {% for item in results %}
                 {% if item['total'] > 0 %}
                     <tr class="herbarium" id="herbarium-{{ item['source_code'] }}">
-                        <td class="border-right">{{ item['source_code'] }}</td>
+                        <td class="border-right trigger">{{ item['source_code'] }}</td>
                         <td> {{ min(item['stat']) }}</td>
                         <td> {{ max(item['stat']) }}</td>
                         <td> {{ item['stat'] | avg| round(1) }}</td>
@@ -34,7 +34,7 @@
                 {% endif %}
             {% endfor %}
             <tr class="border-top herbarium" id="herbarium-total">
-                <td class="border-right">&sum;</td>
+                <td class="border-right trigger">&sum;</td>
                 <td> {{ min(suma) }}</td>
                 <td> {{ max(suma) }}</td>
                 <td> {{ suma | avg| round(1) }}</td>
