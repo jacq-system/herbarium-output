@@ -2,26 +2,3 @@
     color: $jacq-color;
 }
 
-table.compact {
-    th, td {
-        padding: 4px 2px;
-        font-size: 0.9rem ;
-    }
-
-    th {
-        font-weight: 600;
-        text-align: center;
-    }
-
-    td {
-        text-align: center ;
-        vertical-align: middle;
-    }
-
-
-    border: 1px solid #ddd;
-
-    tr {
-        border-bottom: 1px solid #eee;
-    }
-}

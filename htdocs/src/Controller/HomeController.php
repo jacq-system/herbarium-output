@@ -3,15 +3,19 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Enum\CoreObjectsEnum;
+use App\Enum\TimeIntervalEnum;
 use App\Service\DjatokaService;
 use App\Service\Rest\DevelopersService;
+use App\Service\Rest\StatisticsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 
 class HomeController extends AbstractController
 {
-    public function __construct(protected DevelopersService $developersService, protected readonly DjatokaService $djatokaService)
+    public function __construct(protected DevelopersService $developersService, protected readonly DjatokaService $djatokaService, protected readonly StatisticsService $statisticsService)
     {
     }
 
@@ -48,6 +52,25 @@ class HomeController extends AbstractController
     public function jacqStatistics(): Response
     {
         return $this->render('front/home/statistics.html.twig');
+    }
+
+    #[Route('/jacqStatisticsResults', name: 'app_front_jacqStatistics_results')]
+    public function jacqStatisticsResults(#[MapQueryParameter] string $periodStart,#[MapQueryParameter]  string $periodEnd,#[MapQueryParameter]  int $updated,#[MapQueryParameter]  CoreObjectsEnum $type,#[MapQueryParameter]  TimeIntervalEnum $interval): Response
+    {
+        $data = $this->statisticsService->getResults($periodStart, $periodEnd, $updated, $type, $interval);
+        $periodMin = $data['periodMin'];
+        $periodMax = $data['periodMax'];
+        $periodSum=[];
+
+        foreach ($data['results'] as $herbarium) {
+            for ($i = $periodMin; $i <= $periodMax; $i++) {
+                if (!isset($periodSum[$i])) {
+                    $periodSum[$i] = 0;
+                }
+                $periodSum[$i] += $herbarium['stat'][$i];
+            }
+        }
+        return $this->render('front/home/statistics_results.html.twig', ["results" => $data['results'], "periodMin" => $periodMin, "periodMax" => $periodMax, 'suma'=>$periodSum]);
     }
 
     #[Route('/checkDjatokaServers', name: 'app_front_checkDjatokaServers', defaults: ['source' => null])]

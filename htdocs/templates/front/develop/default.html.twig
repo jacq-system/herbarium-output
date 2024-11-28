@@ -3,9 +3,13 @@
 
 {% block main %}
     <div class="container">
+        <a href="{{ path('app.swagger') }}">REST Swagger JSON</a><br/>
+        <a href="{{ path('app.swagger_ui') }}">REST Swagger UI</a><br/>
         <a href="{{ path('deve_rest') }}">REST service info</a><br/>
+
         <a href="{{ path('app_front_checkDjatokaServers') }}">checkDjatokaServers</a><br/>
         <a href="{{ path('app_front_jacqStatistics') }}">jacqStatistics</a><br/>
+
 
     </div>
 {% endblock %}

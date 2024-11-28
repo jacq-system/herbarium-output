@@ -1,0 +1,50 @@
+{% block info %}
+
+    {% if results is empty %}
+        <p>Nothing found</p>
+    {% else %}
+
+        <table class="compact">
+            <thead>
+            <tr class="border-bottom">
+                <td class="border-right"></td>
+                <td>min</td>
+                <td>max</td>
+                <td>avg</td>
+                <td>median</td>
+                {% for i in periodMin..periodMax %}
+                    <td>{{ i }}</td>
+                {% endfor %}
+            </tr>
+
+            </thead>
+            <tbody>
+            {% for item in results %}
+                {% if item['total'] > 0 %}
+                    <tr>
+                        <td class="border-right">{{ item['source_code'] }}</td>
+                        <td> {{ min(item['stat']) }}</td>
+                        <td> {{ max(item['stat']) }}</td>
+                        <td> {{ item['stat'] | avg| round(1) }}</td>
+                        <td class="border-right"> {{ item['stat'] | median }} </td>
+                        {% for i in periodMin..periodMax %}
+                            <td>{{ item['stat'][i] }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            <tr class="border-top">
+                <td class="border-right">&sum;</td>
+                <td> {{ min(suma) }}</td>
+                <td> {{ max(suma) }}</td>
+                <td> {{ suma | avg| round(1) }}</td>
+                <td class="border-right"> {{ suma | median }} </td>
+                {% for i in periodMin..periodMax %}
+                    <td>{{ suma[i] }}</td>
+                {% endfor %}
+            </tr>
+            </tbody>
+        </table>
+    {% endif %}
+
+{% endblock %}

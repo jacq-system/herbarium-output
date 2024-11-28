@@ -1,0 +1,33 @@
+
+table.compact {
+    th, td {
+        padding: 1px 1px 1px 1px;
+        font-size: 0.8rem ;
+    }
+
+    th {
+        font-weight: 600;
+        text-align: center;
+    }
+
+    td {
+        text-align: center ;
+        vertical-align: middle;
+    }
+
+
+    border: 1px solid #ddd;
+
+}
+
+.border-right {
+    border-right: 1px solid #000;
+}
+
+.border-bottom {
+    border-bottom: 1px solid #000 !important;
+}
+
+tr.border-top td {
+    border-top: 1px solid #000;
+}

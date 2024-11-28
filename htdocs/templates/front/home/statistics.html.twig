@@ -1,9 +1,69 @@
 {% extends 'front/main.html.twig' %}
-
+{% block title %}JACQ - Statistics{% endblock %}
 {% block main %}
 
     <div class="container">
-
+        <div class="row">
+            <form class="col s12" id="statisticsForm" action="{{ path('app_front_jacqStatistics_results') }}" method="GET">
+                <div class="row" style="margin-bottom: 0;">
+                    <div class="input-field col s2">
+                        <i class="prefix fas fa-calendar-days"> </i>
+                        <input type="text" class="datepicker" id="periodStart" name="periodStart"
+                               value="{{ "now"|date('Y') }}-01-01">
+                        <label for="periodStart">From</label>
+                    </div>
+                    <div class="input-field col s2">
+                        <i class="prefix fas fa-calendar-days"> </i>
+                        <input type="text" class="datepicker" id="periodEnd"
+                               value="{{ "now"|date('Y-m-d') }}" name="periodEnd">
+                        <label for="periodEnd">To</label>
+                    </div>
+                    <div class="input-field col s2">
+                        <select id="updated" name="updated">
+                            <option value="0" selected>New</option>
+                            <option value="1">Updated</option>
+                        </select>
+                        <label for="updated">Status</label>
+                    </div>
+                    <div class="input-field col s2">
+                        <select id="type" name="type">
+                            <option value="names">Names</option>
+                            <option value="citations">Citations</option>
+                            <option value="names_citations">Names used in Citations</option>
+                            <option value="specimens" selected>Specimens</option>
+                            <option value="type_specimens">Type-Specimens</option>
+                            <option value="names_type_specimens">use of names for Type-Specimens</option>
+                            <option value="types_name">Types per Name</option>
+                            <option value="synonyms">Synonyms</option>
+                        </select>
+                        <label for="type">Object type</label>
+                    </div>
+                    <div class="input-field col s2">
+                        <select id="interval" name="interval">
+                            <option value="year">year</option>
+                            <option value="month">month</option>
+                            <option value="week" selected>week</option>
+                            <option value="day">day</option>
+                        </select>
+                        <label for="interval">Interval</label>
+                    </div>
+                    <div class="input-field col s2">
+                        <button class="btn white"><i class="fas fa-magnifying-glass"> </i></button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col s12" id="statistics_result"></div>
+        </div>
+        <div class="row">
+            <div class="col s12" id="statistics_plot" style="width: 100%; height: 300px;"></div>
+        </div>
+        <p class="center">Copyright &copy; {{ "now"|date('Y') }} University Vienna, Museum of Natural History Vienna, Austrian Academy
+            of Sciences. All Rights Reserved.</p>
+    </div>
+
 
 {% endblock %}
