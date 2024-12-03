@@ -5,7 +5,8 @@
     <div class="container">
         <div class="row">
             <div class="col s12">
-                <h5 class="tooltipped" data-position="bottom" data-tooltip="#info">Database Search <a class="modal-trigger" href="#search-info"><i class="far fa-question-circle fa-sm"></i></a></h5>
+                <h5 class="tooltipped" data-position="bottom" data-tooltip="#info">Database Search <a
+                        class="modal-trigger" href="#search-info"><i class="far fa-question-circle fa-sm"></i></a></h5>
                 <!-- Search Info Modal -->
                 <div id="search-info" class="modal">
                     <div class="modal-content">
@@ -17,8 +18,12 @@
                             <p>Queries for a Genus can be sent as "genus name" "blank space" and the "%" sign:
                                 Searchstring "Oncidum %" yields all data for Oncidium.</p>
                             <p>Typing the initial Letters for "genus" and "epithet" are sufficient as Search Criteria:
-                                "p bad" yields all Taxa where genus starts with "p" and Epithet starts with "bad". Results include e.g. p badia Hepp, Peziza badia Pers. or Poa badensis Haenke ex Willd.</p>
-                            <p>Search on Synonymy has been implemented for nomenclatural and taxonomic questions. If the "incl. syn." checkbox is activated (default), known nomenclatural and taxonomic synonyms will be returned with the search result</p>
+                                "p bad" yields all Taxa where genus starts with "p" and Epithet starts with "bad".
+                                Results include e.g. p badia Hepp, Peziza badia Pers. or Poa badensis Haenke ex
+                                Willd.</p>
+                            <p>Search on Synonymy has been implemented for nomenclatural and taxonomic questions. If the
+                                "incl. syn." checkbox is activated (default), known nomenclatural and taxonomic synonyms
+                                will be returned with the search result</p>
                         </blockquote>
                     </div>
                     <div class="modal-footer">
@@ -28,41 +33,58 @@
                 <div class="divider"></div>
             </div>
         </div>
-        <form id="ajax_f" name="f" class="row">
+        <div class="row">
+            <div class="col s12 m4">
+               dd
+            </div>
+            <div class="col  s12 m4">
+               vv
+            </div>
+        </div>
+    </div>
+    <div class="container">
+
+    <form>
+            <div class="row">
             <!-- Taxon -->
-            <div class="input-field col s6">
-                xx
-                <label for="taxon">Scientific name</label>
-            </div>
-            <!-- Family -->
-            <div class="input-field col s6">
-                xx
-                <label for="family">Family</label>
-            </div>
-            <!-- Institution -->
-            <div class="input-field col s6">
-                <select id="ajax_source_name" name="source_name">
-                    <option value="" selected>all herbaria</option>
+            <div class="col s12 m6">
+                <div class="input-field ">
+                    <input value="" name="taxon" id="taxon" type="text">
+                    <label for="taxon">Scientific name</label>
+                </div>
+                <!-- Family -->
+                <div class="input-field ">
+                    <input value="" name="family" id="family" type="text">
+                    <label for="family">Family</label>
+                </div>
+                <!-- Institution -->
+                <div class="input-field ">
+                    <select id="ajax_source_name" name="source_name">
+                        <option value="" selected>all herbaria</option>
 
-                </select>
-                <label for="ajax_source_name">Search in</label>
+                    </select>
+                    <label for="ajax_source_name">Search in</label>
+                </div>
             </div>
-            <!-- Herbar Number -->
-            <div class="input-field col s6">
-               xx
-                <label for="HerbNummer">Herbar #</label>
+            <div class="col  s12 m6">
+                <!-- Herbar Number -->
+                <div class="input-field ">
+                    <input value="" name="HerbNummer" id="HerbNummer" type="text">
+                    <label for="HerbNummer">Herbar #</label>
+                </div>
+                <!-- Collector -->
+                <div class="input-field ">
+                    <input value="" name="Sammler" id="Sammler" type="text">
+                    <label for="Sammler">Collector</label>
+                </div>
+                <!-- Collector Number -->
+                <div class="input-field  ">
+                    <input value="" name="SammlerNr" id="SammlerNr" type="text">
+                    <label for="SammlerNr">Collector #</label>
+                </div>
             </div>
-            <!-- Collector -->
-            <div class="input-field col s6">
-               xx
-                <label for="Sammler">Collector</label>
             </div>
-            <!-- Collector Number -->
-            <div class="input-field col s6">
-                xx
-                <label for="SammlerNr">Collector #</label>
-            </div>
-
+                <div class="row">
             <!-- Extended Search -->
             <div class="col s12">
                 <ul class="collapsible">
@@ -95,7 +117,7 @@
                                 </div>
                                 <!-- Series -->
                                 <div class="input-field">
-                                    <input  name="series" id="series" type="text">
+                                    <input name="series" id="series" type="text">
                                     <label for="series">Series</label>
                                 </div>
                                 <!-- Locality -->
@@ -105,7 +127,7 @@
                                 </div>
                                 <!-- Country -->
                                 <div id="ajax_nation_engl_div" class="input-field">
-                                    <input id="ajax_nation_engl" name="nation_engl" type="text" value="xx">
+                                    <input id="ajax_nation_engl" name="nation_engl" type="text" value="">
                                     <label for="ajax_nation_engl">Country</label>
                                 </div>
                                 <!-- State/Province -->
@@ -176,14 +198,18 @@
             <!-- Submission -->
             <div class="col s12">
                 <div class="center-align">
-                    <button id="ajax_f_submit" class="waves-effect waves-green btn-flat" type="submit" name="submit">Search</button>
+                    <button id="ajax_f_submit" class="waves-effect waves-green btn-flat" type="submit" name="submit">
+                        Search
+                    </button>
                     <a id="ajax_f_reset" class="waves-effect waves-green btn-flat">Reset</a>
                 </div>
             </div>
+                </div>
         </form>
-        <div class="progress progress-search">
-            <div class="indeterminate"></div>
-        </div>
+
+        {#        <div class="progress progress-search"> #}
+        {#            <div class="indeterminate"></div> #}
+        {#        </div> #}
         <div id="results">
         </div>
 
