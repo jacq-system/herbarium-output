@@ -6,10 +6,14 @@ let chartInstance = null;
 
 
 export default function statistics() {
+    const element = document.getElementById('statisticsForm');
+    if (!element) {
+        return null;
+    }
 
     initializeDatePickers();
 
-    document.getElementById('statisticsForm').addEventListener('submit', function (event) {
+    element.addEventListener('submit', function (event) {
         event.preventDefault();
 
 

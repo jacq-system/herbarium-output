@@ -5,17 +5,20 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Enum\CoreObjectsEnum;
 use App\Enum\TimeIntervalEnum;
+use App\Service\CollectionService;
 use App\Service\DjatokaService;
+use App\Service\InstitutionService;
 use App\Service\Rest\DevelopersService;
 use App\Service\Rest\StatisticsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 
 class HomeController extends AbstractController
 {
-    public function __construct(protected DevelopersService $developersService, protected readonly DjatokaService $djatokaService, protected readonly StatisticsService $statisticsService)
+    public function __construct(protected DevelopersService $developersService, protected readonly DjatokaService $djatokaService, protected readonly StatisticsService $statisticsService, protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService)
     {
     }
 
@@ -28,7 +31,17 @@ class HomeController extends AbstractController
     #[Route('/database', name: 'app_front_database')]
     public function database(): Response
     {
-        return $this->render('front/home/database.html.twig');
+        $institutions = $this->herbariumService->getAllAsPairs();
+        $collections = $this->collectionService->getAllAsPairs();
+        return $this->render('front/home/database.html.twig', ["institutions" => $institutions, 'collections'=>$collections]);
+    }
+
+    #[Route('/collectionsSelectOptions', name: 'app_front_collectionsSelectOptions', methods: ['GET'])]
+    public function collectionsSelectOptions(#[MapQueryParameter] int $herbariumID): Response
+    {
+        $result = $this->collectionService->getAllFromHerbariumAsPairs($herbariumID);
+
+        return new JsonResponse($result);
     }
 
     #[Route('/collections', name: 'app_front_collections')]
