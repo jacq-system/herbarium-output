@@ -1,2 +1,7 @@
 $jacq-color: rgb(93, 159, 48);
 $jacq-color-hover: change-color($jacq-color, $alpha: 0.8);
+
+$primary-color: $jacq-color; // main color
+$secondary-color: $jacq-color; // e.g. background of selected
+$input-focus-color: $jacq-color; // underline of active input
+$highlight-color: #ff7043; // backgroudn of selectied <option> in  <select>
