@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\Jacq\Herbarinput\Meta;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class InstitutionService
@@ -27,6 +28,11 @@ readonly class InstitutionService
                 ORDER BY herbname";
 
         return $this->entityManager->getConnection()->executeQuery($sql)->fetchAllKeyValue();
+    }
+
+    public function findByCode(string $code): Meta
+    {
+        return $this->entityManager->getRepository(Meta::class)->findOneBy(['code' => $code]);
     }
 
 

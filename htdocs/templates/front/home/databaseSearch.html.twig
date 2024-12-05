@@ -2,6 +2,12 @@
     {% for key, value in data %}
     {{ key }}: {{ value }}<br>
     {% endfor %}
+
+    <p>count: {{recordsCount }}</p>
+    <p> {% for key, value in records %}
+            {{ key }}: {{ value.getId() }}<br>
+        {% endfor %}
+    </p>
 </div>
 
 

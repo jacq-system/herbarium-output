@@ -40,7 +40,9 @@ class HomeController extends AbstractController
             return $this->redirectToRoute($request->get('_route'));
         }
         $getData = $request->query->all();
-        $session->set(self::SESSION_NAMESPACE, $getData);
+        if(!empty($getData)){
+            $session->set(self::SESSION_NAMESPACE, $getData);
+        }
 
         $institutions = $this->herbariumService->getAllAsPairs();
         $collections = $this->collectionService->getAllAsPairs();
@@ -53,7 +55,8 @@ class HomeController extends AbstractController
         $postData = $request->request->all();
         $session->set(self::SESSION_NAMESPACE, $postData);
 
-        return $this->render('front/home/databaseSearch.html.twig', ["data" => $session->get(self::SESSION_NAMESPACE), 'records' => $this->searchFormFacade->search()]);
+        $values = $session->get(self::SESSION_NAMESPACE);
+        return $this->render('front/home/databaseSearch.html.twig', ["data" => $session->get(self::SESSION_NAMESPACE), 'records' => $this->searchFormFacade->search($values), 'recordsCount'=>$this->searchFormFacade->countResults($values)]);
     }
 
     #[Route('/collectionsSelectOptions', name: 'app_front_collectionsSelectOptions', methods: ['GET'])]
