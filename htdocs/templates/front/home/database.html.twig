@@ -36,47 +36,47 @@
     </div>
     <!-- form -->
     <div class="container">
-        <form>
+        <form id="searchForm" action="{{ path('app_front_databaseSearch') }}" method="POST" data-prefilled="{% if values is not empty %}1{% else %}0{% endif %}">
             <div class="row">
                 <!-- Taxon -->
                 <div class="col s12 m6">
                     <div class="input-field ">
-                        <input value="" name="taxon" id="taxon" type="text">
+                        <input value="{{ values['taxon'] | default(null)}}" name="taxon" id="taxon" type="text">
                         <label for="taxon">Scientific name</label>
                     </div>
-                    <!-- Institutions -->
+                    <!-- Institution -->
                     <div class="input-field ">
-                        <select id="institutions" name="institutions" data-source="{{ path('app_front_collectionsSelectOptions') }}">
-                            <option value="" selected>all herbaria</option>
+                        <select id="institution" name="institution" data-source="{{ path('app_front_collectionsSelectOptions') }}">
+                            <option value="">all herbaria</option>
                             {% for id, name in institutions %}
-                                <option value="{{ id }}" >{{ name }}</option>
+                                <option value="{{ id }}" {% if values['institution'] is defined and values['institution'] == id %}selected{% endif %}>{{ name }}</option>
                             {% endfor %}
                         </select>
-                        <label for="institutions">Search in</label>
+                        <label for="institution">Search in</label>
                     </div>
                     <!-- Collector -->
                     <div class="input-field ">
-                        <input value="" name="Sammler" id="Sammler" type="text">
-                        <label for="Sammler">Collector</label>
+                        <input value="{{ values['collector'] | default(null)}}" name="collector" type="text">
+                        <label for="collector">Collector</label>
                     </div>
 
                 </div>
                 <div class="col s12 m6">
                     <!-- Family -->
                     <div class="input-field ">
-                        <input value="" name="family" id="family" type="text">
+                        <input value="{{ values['family'] | default(null)}}" name="family" type="text">
                         <label for="family">Family</label>
                     </div>
                     <!-- Herbar Number -->
                     <div class="input-field ">
-                        <input value="" name="HerbNummer" id="HerbNummer" type="text">
-                        <label for="HerbNummer">Herbar #</label>
+                        <input value="{{ values['herbNr'] | default(null)}}" name="herbNr" id="herbNr" type="text">
+                        <label for="herbNr">Herbar Nr#</label>
                     </div>
 
                     <!-- Collector Number -->
                     <div class="input-field  ">
-                        <input value="" name="SammlerNr" id="SammlerNr" type="text">
-                        <label for="SammlerNr">Collector #</label>
+                        <input value="{{ values['collectorNr'] | default(null)}}" name="collectorNr" id="collectorNr" type="text">
+                        <label for="collectorNr">Collector Nr#</label>
                     </div>
                 </div>
             </div>
@@ -91,65 +91,65 @@
                                     <div class="col s12 m6">
                                         <!-- Ident. History -->
                                         <div class="input-field">
-                                            <input name="taxon_alt" id="taxon_alt" type="text">
-                                            <label for="taxon_alt">Ident. History</label>
+                                            <input name="taxonAlternative" id="taxonAlternative" type="text" value="{{ values['taxonAlternative'] | default(null)}}">
+                                            <label for="taxonAlternative">Ident. History</label>
                                         </div>
                                         <div class="input-field">
-                                            <select id="collections" name="collection">
-                                                <option value="" selected>all subcollections</option>
+                                            <select id="collection" name="collection">
+                                                <option value="">all subcollections</option>
                                                 {% for id, name in collections %}
-                                                    <option value="{{ id }}" >{{ name }}</option>
+                                                    <option value="{{ id }}" {% if values['collection'] is defined and values['collection'] == id %}selected{% endif %}>{{ name }}</option>
                                                 {% endfor %}
                                             </select>
-                                            <label for="ajax_collection">Search in</label>
+                                            <label for="collection">Search in</label>
                                         </div>
                                         <!-- Series -->
                                         <div class="input-field">
-                                            <input name="series" id="series" type="text">
+                                            <input name="series" id="series" type="text" value="{{ values['series'] | default(null)}}">
                                             <label for="series">Series</label>
                                         </div>
                                         <!-- Country -->
-                                        <div id="ajax_nation_engl_div" class="input-field">
-                                            <input id="ajax_nation_engl" name="nation_engl" type="text" value="">
-                                            <label for="ajax_nation_engl">Country</label>
+                                        <div  class="input-field">
+                                            <input id="country" name="country" type="text" value="{{ values['country'] | default(null)}}">
+                                            <label for="country">Country</label>
                                         </div>
                                         <!-- Habitat -->
                                         <div class="input-field">
-                                            <input name="habitat" id="habitat" type="text">
+                                            <input name="habitat" id="habitat" type="text" value="{{ values['habitat'] | default(null)}}">
                                             <label for="habitat">Habitat</label>
                                         </div>
                                         <div class="input-field">
-                                            <input name="annotation" id="annotation" type="text">
+                                            <input name="annotation" id="annotation" type="text" value="{{ values['annotation'] | default(null)}}">
                                             <label for="annotation">Annotation</label>
                                         </div>
                                     </div>
                                     <div class="col s12 m6">
                                         <!-- CollectionDate -->
                                         <div class="input-field">
-                                            <input name="CollDate" id="CollDate" type="text">
-                                            <label for="CollDate">Collection date</label>
+                                            <input name="collectionDate" id="collectionDate" type="text" value="{{ values['collectionDate'] | default(null)}}">
+                                            <label for="collectionDate">Collection date</label>
                                         </div>
                                         <!-- Collection Number -->
                                         <div class="input-field">
-                                            <input name="CollNummer" id="CollNummer" type="text">
-                                            <label for="CollNummer">Collection #</label>
+                                            <input name="collectionNr" id="collectionNr" type="text" value="{{ values['collectionNr'] | default(null)}}">
+                                            <label for="collectionNr">Collection Nr#</label>
                                         </div>
 
                                         <!-- Locality -->
                                         <div class="input-field">
-                                            <input name="Fundort" id="Fundort" type="text">
-                                            <label for="Fundort">Locality</label>
+                                            <input name="locality" id="locality" type="text" value="{{ values['locality'] | default(null)}}">
+                                            <label for="locality">Locality</label>
                                         </div>
 
                                         <!-- State/Province -->
-                                        <div id="ajax_provinz_div" class="input-field">
-                                            <input id="ajax_provinz" name="provinz" type="text">
-                                            <label for="ajax_provinz">State/Province</label>
+                                        <div class="input-field">
+                                            <input id="province" name="province" type="text" value="{{ values['province'] | default(null)}}">
+                                            <label for="province">State/Province</label>
                                         </div>
 
                                         <!-- Habitus -->
                                         <div class="input-field">
-                                            <input name="habitus" id="habitus" type="text">
+                                            <input name="habitus" id="habitus" type="text" value="{{ values['habitus'] | default(null)}}">
                                             <label for="habitus">Habitus</label>
                                         </div>
 
@@ -165,11 +165,10 @@
                         <div class="switch">
                             <label>
                                 Only display Type Records
-                                <input type="checkbox" id="checkbox_type">
+                                <input type="checkbox" id="checkbox_type" name="onlyType" {% if values['onlyType'] is defined and values['onlyType'] == 'on' %}checked{% endif %}>
                                 <span class="lever"></span>
                             </label>
                         </div>
-                        <input type="hidden" name="type" value="all">
                     </div>
                 </div>
                 <!-- Images -->
@@ -178,11 +177,10 @@
                         <div class="switch">
                             <label>
                                 Only display Records with Images
-                                <input type="checkbox" id="checkbox_images">
+                                <input type="checkbox" id="checkbox_images" name="onlyImages" {% if values['onlyImages'] is defined and values['onlyImages'] == 'on' %}checked{% endif %}>
                                 <span class="lever"></span>
                             </label>
                         </div>
-                        <input type="hidden" name="images" value="all">
                     </div>
                 </div>
                 <!-- Synonym -->
@@ -191,36 +189,30 @@
                         <div class="switch">
                             <label>
                                 Incl. synonym search
-                                <input type="checkbox" id="checkbox_synonym">
+                                <input type="checkbox" id="checkbox_synonym" name="includeSynonym" {% if values['includeSynonym'] is defined and values['includeSynonym'] == 'on' %}checked{% endif %}>
                                 <span class="lever"></span>
                             </label>
                         </div>
-                        <input type="hidden" name="synonym" value="only">
                     </div>
                 </div>
                 <!-- Submission -->
                 <div class="col s12">
                     <div class="center-align">
-                        <button id="ajax_f_submit" class="waves-effect waves-green btn-flat" type="submit"
-                                name="submit">
+                        <button class="btn-flat" type="submit">
                             Search
                         </button>
-                        <a id="ajax_f_reset" class="waves-effect waves-green btn-flat">Reset</a>
+                        <a href="{{ path('app_front_database', {'reset': 'true'})}}" class="btn-flat">Reset</a>
                     </div>
                 </div>
             </div>
         </form>
 
-        {#        <div class="progress progress-search"> #}
-        {#            <div class="indeterminate"></div> #}
-        {#        </div> #}
+                <div id="progressBar" class="progress progress-search hide">
+                    <div class="indeterminate"></div>
+                </div>
 
     </div>
     <!-- results -->
-    <div class="container">
-        <div id="results">
-        </div>
-
-    </div>
+    <div  id="results" class="container"></div>
 
 {% endblock %}

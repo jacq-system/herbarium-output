@@ -1,10 +1,23 @@
- export default function searchForm() {
+import {searchResults} from './searchFormSubmit';
+export default function searchFormUI() {
 
-     const element = document.getElementById('institutions');
+    const element = document.getElementById('institution');
+    const form = document.getElementById('searchForm');
 
-     if (!element) {
-         return null;
-     }
+    if (!element || !form) {
+        return null;
+    }
+    subsetCollections(element);
+
+    if (form.dataset.prefilled === "1") {
+        console.log("2");
+        searchResults(form);
+        console.log("3");
+
+    }
+}
+
+function subsetCollections(element) {
     element.addEventListener('change', function (event) {
         const selectedValue = this.value;
         const path = this.dataset.source;
@@ -14,7 +27,7 @@
         })
             .then((response) => response.json())
             .then((data) => {
-                const secondSelect = document.getElementById('collections');
+                const secondSelect = document.getElementById('collection');
                 secondSelect.innerHTML = '';
                 const defaultOption = document.createElement('option');
                 defaultOption.value = '';
@@ -30,9 +43,7 @@
                 M.FormSelect.init(secondSelect);
             })
             .catch((error) => console.error('Error:', error));
-
     });
-
 
 }
 

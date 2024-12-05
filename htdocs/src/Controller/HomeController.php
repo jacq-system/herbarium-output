@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Enum\CoreObjectsEnum;
 use App\Enum\TimeIntervalEnum;
+use App\Facade\SearchFormFacade;
 use App\Service\CollectionService;
 use App\Service\DjatokaService;
 use App\Service\InstitutionService;
@@ -12,13 +13,16 @@ use App\Service\Rest\DevelopersService;
 use App\Service\Rest\StatisticsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 
 class HomeController extends AbstractController
 {
-    public function __construct(protected DevelopersService $developersService, protected readonly DjatokaService $djatokaService, protected readonly StatisticsService $statisticsService, protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService)
+    public const string SESSION_NAMESPACE = 'searchForm';
+    public function __construct(protected DevelopersService $developersService, protected readonly DjatokaService $djatokaService, protected readonly StatisticsService $statisticsService, protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade)
     {
     }
 
@@ -29,11 +33,27 @@ class HomeController extends AbstractController
     }
 
     #[Route('/database', name: 'app_front_database')]
-    public function database(): Response
+    public function database(Request $request, SessionInterface $session,#[MapQueryParameter] bool $reset = false): Response
     {
+        if($reset){
+            $session->remove(self::SESSION_NAMESPACE);
+            return $this->redirectToRoute($request->get('_route'));
+        }
+        $getData = $request->query->all();
+        $session->set(self::SESSION_NAMESPACE, $getData);
+
         $institutions = $this->herbariumService->getAllAsPairs();
         $collections = $this->collectionService->getAllAsPairs();
-        return $this->render('front/home/database.html.twig', ["institutions" => $institutions, 'collections'=>$collections]);
+        return $this->render('front/home/database.html.twig', ["institutions" => $institutions, 'collections'=>$collections, "values" => $session->get(self::SESSION_NAMESPACE)]);
+    }
+
+    #[Route('/databaseSearch', name: 'app_front_databaseSearch', methods: ['POST'])]
+    public function databaseSearch(Request $request, SessionInterface $session): Response
+    {
+        $postData = $request->request->all();
+        $session->set(self::SESSION_NAMESPACE, $postData);
+
+        return $this->render('front/home/databaseSearch.html.twig', ["data" => $session->get(self::SESSION_NAMESPACE), 'records' => $this->searchFormFacade->search()]);
     }
 
     #[Route('/collectionsSelectOptions', name: 'app_front_collectionsSelectOptions', methods: ['GET'])]

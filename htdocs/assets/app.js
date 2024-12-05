@@ -1,9 +1,11 @@
 import 'materialize-css';
 import './scss/index.scss';
 import statistics from "./js/statistics";
-import searchForm from "./js/searchForm";
+import searchFormUI from "./js/searchFormUI";
+import {searchFormSubmit} from "./js/searchFormSubmit";
 document.addEventListener('DOMContentLoaded', function () {
     M.AutoInit();
     statistics();
-    searchForm();
+    searchFormUI();
+    searchFormSubmit()
 });
