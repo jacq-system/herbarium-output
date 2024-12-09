@@ -61,6 +61,9 @@ class Specimens
     #[ORM\Column(name: 'digital_image_obs')]
     private int $imageObservation;
 
+    #[ORM\Column(name: 'taxon_alt')]
+    private string $taxonAlternative;
+
     #[ORM\ManyToOne(targetEntity: HerbCollection::class)]
     #[ORM\JoinColumn(name: 'collectionID', referencedColumnName: 'collectionID')]
     private HerbCollection $collection;
@@ -71,6 +74,12 @@ class Specimens
 
     #[ORM\OneToMany(targetEntity: Typus::class, mappedBy: 'specimen')]
     private Collection $typus;
+
+    #[ORM\ManyToOne(targetEntity: Species::class)]
+    #[ORM\JoinColumn(name: 'taxonID', referencedColumnName: 'taxonID')]
+    private Species $species;
+
+
 
     public function getId(): ?int
     {

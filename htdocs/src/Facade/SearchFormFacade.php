@@ -28,7 +28,10 @@ class SearchFormFacade
 
     protected function buildQuery(): void
     {
-        $this->queryBuilder = $this->entityManager->getRepository(Specimens::class)->createQueryBuilder('s')->setMaxResults(300000);
+        $this->queryBuilder = $this->entityManager->getRepository(Specimens::class)
+            ->createQueryBuilder('s')
+            ->join('s.species', 'species')
+            ->setMaxResults(300000);
 
         if (!empty($this->sessionData['institution'])) {
             $this->queryInstitution((int)$this->sessionData['institution']);
@@ -79,6 +82,11 @@ class SearchFormFacade
                 ->setParameter('habitat', '%' . $this->sessionData['habitat'] . '%');
         }
 
+        if (!empty($this->sessionData['taxonAlternative'])) {
+            $this->queryBuilder->andWhere('s.taxonAlternative LIKE :taxonAlternative')
+                ->setParameter('taxonAlternative', '%' . $this->sessionData['taxonAlternative'] . '%');
+        }
+
         if (!empty($this->sessionData['annotation'])) {
             $this->queryBuilder->andWhere('s.collection LIKE :annotation')
                 ->setParameter('annotation', '%' . $this->sessionData['annotation'] . '%');
@@ -99,6 +107,113 @@ class SearchFormFacade
         if (!empty($this->sessionData['onlyImages'])) {
             $this->queryImages();
         }
+
+        if (!empty($this->sessionData['family'])) {
+            $this->queryFamily($this->sessionData['family']);
+        }
+
+        if (!empty($this->sessionData['taxon'])) {
+            $this->queryTaxon($this->sessionData['taxon']);
+        }
+
+    }
+
+    protected function getTaxonIds(string $name)
+    {
+        $pieces = explode(" ", trim($name));
+        $part1 = array_shift($pieces);
+        $part2 = array_shift($pieces);
+        if (empty($part2)) {
+            $sql = "SELECT ts.taxonID, ts.basID, ts.synID
+                    FROM tbl_tax_genera tg,  tbl_tax_species ts
+                     LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+                     LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                     LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                     LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                     LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                     LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                    WHERE tg.genID = ts.genID AND tg.genus LIKE :part1 ";
+        } else {
+            $sql = "SELECT ts.taxonID, ts.basID, ts.synID
+                    FROM tbl_tax_genera tg,  tbl_tax_species ts
+                     LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+                     LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                     LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                     LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                     LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                     LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                    WHERE tg.genID = ts.genID AND tg.genus LIKE :part1  AND (     te.epithet LIKE :part2
+                                                        OR te1.epithet LIKE :part2
+                                                        OR te2.epithet LIKE :part2
+                                                        OR te3.epithet LIKE :part2
+                                                        OR te4.epithet LIKE :part2
+                                                        OR te5.epithet LIKE :part2)";
+        }
+
+        return $this->entityManager->getConnection()->executeQuery($sql, ['part1' => $part1 . '%', 'part2' => $part2 . '%'])->fetchAllAssociative();
+    }
+
+// TODO table ts2 ommited from original query,  why rejoin the same table for (?probably) same query
+    protected function queryTaxon(string $id): void
+    {
+        $taxaIds = $this->getTaxonIds($id);
+        $conditions = [];
+        //result includes NULL rows that need to be excluded
+        $taxonId = array_filter(array_column($taxaIds, 'taxonID'), fn($value) => $value !== null);
+        $basID = array_filter(array_column($taxaIds, 'basID'), fn($value) => $value !== null);
+        $synID = array_filter(array_column($taxaIds, 'synID'), fn($value) => $value !== null);
+        if (!empty($this->sessionData['includeSynonym']))
+        {
+            if (!empty($taxonId)) {
+                $conditions[] =  $this->queryBuilder->expr()->orX(
+                    $this->queryBuilder->expr()->in('species.id', $taxonId),
+                    $this->queryBuilder->expr()->in('species.basID', $taxonId),
+                    $this->queryBuilder->expr()->in('species.synID', $taxonId)
+                );
+            }
+
+            if (!empty($basID)) {
+                $conditions[] =  $this->queryBuilder->expr()->orX(
+                    $this->queryBuilder->expr()->in('species.id', $basID),
+                    $this->queryBuilder->expr()->in('species.basID', $basID),
+                    $this->queryBuilder->expr()->in('species.synID', $basID)
+                );
+            }
+
+            if (!empty($synID)) {
+                $conditions[] =  $this->queryBuilder->expr()->orX(
+                    $this->queryBuilder->expr()->in('species.id', $synID),
+                    $this->queryBuilder->expr()->in('species.basID', $synID),
+                    $this->queryBuilder->expr()->in('species.synID', $synID)
+                );
+            }
+        }else{
+            if (!empty($taxonId)) {
+                $conditions[] = $this->queryBuilder->expr()->orX(
+                    $this->queryBuilder->expr()->in('species.id', $taxonId)
+                );
+            }
+        }
+
+        //finally add to the builder
+        $this->queryBuilder->andWhere(
+            $this->queryBuilder->expr()->orX(...$conditions)
+        );
+
+
+    }
+
+    protected function queryFamily(string $id): void
+    {
+        $this->queryBuilder
+            ->join('species.genus', 'genus')
+            ->join('genus.family', 'family');
+
+        $this->queryBuilder
+            ->andWhere($this->queryBuilder->expr()->orX(
+                $this->queryBuilder->expr()->like('family.name', ':family'),
+                $this->queryBuilder->expr()->like('family.nameAlternative', ':family')))
+            ->setParameter('family', $id . '%');
     }
 
     protected function queryImages(): void
