@@ -14,9 +14,9 @@ export function searchFormSubmit() {
 }
 
 export function searchResults(form) {
-    console.log("dfsf");
     const progressBar = document.getElementById('progressBar');
     const targetElement = document.getElementById('results');
+
 
     progressBar.classList.remove('hide');
     progressBar.classList.add('show');
@@ -36,6 +36,8 @@ export function searchResults(form) {
             targetElement.innerHTML = html;
             progressBar.classList.remove('show');
             progressBar.classList.add('hide');
+            let paginator = document.getElementById('recordsPerPage');
+            M.FormSelect.init(paginator);
         })
         .catch((error) => {
             console.error('Error:', error);

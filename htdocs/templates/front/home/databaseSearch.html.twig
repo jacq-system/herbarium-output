@@ -1,13 +1,69 @@
-<div id="row">
-    {% for key, value in data %}
-    {{ key }}: {{ value }}<br>
-    {% endfor %}
+{# debug list of form fields #}
+{#    {% for key, value in data %} #}
+{#        {{ key }}: {{ value }}<br> #}
+{#    {% endfor %} #}
 
-    <p>count: {{recordsCount }}</p>
-    <p> {% for key, value in records %}
-            {{ key }}: {{ value.getId() }}<br>
+<div class="divider"></div>
+<div class="row">
+    <div class="s12 m2 col"><b>{{ recordsCount|number_format }} record{% if recordsCount|length >1 %}s{% endif %}
+            found</b></div>
+    <div class="s12 m8 col">
+        <button class="btn-flat waves-effect waves-light" type="button" name="action" value="Create map">Create map
+        </button>
+        <a href="exportKml.php" download>
+            <button class="btn-flat waves-effect waves-light exportKML">Download KML</button>
+        </a>
+        <a href="exportCsv.php" download>
+            <button class="btn-flat waves-effect waves-light exportContent">Download XLSX</button>
+        </a>
+        <a href="exportCsv.php?type=ods" download>
+            <button class="btn-flat waves-effect waves-light exportContent">Download ODS</button>
+        </a>
+        <a href="exportCsv.php?type=csv" download>
+            <button class="btn-flat waves-effect waves-light exportContent">Download CSV</button>
+        </a>
+    </div>
+</div>
+<div class="row">
+    <div class="s12 m2 col"></div>
+    <div class="s8 m4 col">
+        <form>
+        <div class="input-field">
+            <select id="recordsPerPage" name="recordsPerPage">
+                {% for value in recordsPerPage %}
+                    <option value="{{ value }}" {% if value == 10 %}selected{% endif %}>{{ value }}</option>
+                {% endfor %}
+            </select>
+            <label for="recordsPerPage">Items per Page</label>
+        </div>
+        </form>
+    </div>
+</div>
+<div class="divider"></div>
+<div class="row">
+    <table id="result-table" class="striped responsive-table">
+        <thead>
+        <tr>
+            <th></th>
+            <th class="resulttax">Taxon</th>
+            <th class="resultcol">Collector</th>
+            <th class="result">Date</th>
+            <th class="result">Location</th>
+            <th class="result">Typus</th>
+            <th class="result">Collection Herb.#</th>
+            <th class="result">Lat/Lon</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for key, value in records %}
+            <tr>
+                <td>{{ key }}</td>
+                <td>{{ value.getId() }}</td>
+            </tr>
         {% endfor %}
-    </p>
+        </tbody>
+    </table>
+</div>
 </div>
 
 

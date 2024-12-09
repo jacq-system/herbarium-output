@@ -23,6 +23,8 @@ class SearchFormFacade
     {
         $this->sessionData = $sessionData;
         $this->buildQuery();
+        $this->queryBuilder
+            ->setMaxResults(30);
         return $this->queryBuilder->getQuery()->getResult();
     }
 
@@ -30,8 +32,7 @@ class SearchFormFacade
     {
         $this->queryBuilder = $this->entityManager->getRepository(Specimens::class)
             ->createQueryBuilder('s')
-            ->join('s.species', 'species')
-            ->setMaxResults(300000);
+            ->join('s.species', 'species');
 
         if (!empty($this->sessionData['institution'])) {
             $this->queryInstitution((int)$this->sessionData['institution']);

@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace App\Controller;
 
@@ -22,6 +22,8 @@ use Symfony\Component\Routing\Attribute\Route;
 class HomeController extends AbstractController
 {
     public const string SESSION_NAMESPACE = 'searchForm';
+    public const array RECORDS_PER_PAGE = array(10, 30, 50, 100);
+
     public function __construct(protected DevelopersService $developersService, protected readonly DjatokaService $djatokaService, protected readonly StatisticsService $statisticsService, protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade)
     {
     }
@@ -33,20 +35,20 @@ class HomeController extends AbstractController
     }
 
     #[Route('/database', name: 'app_front_database')]
-    public function database(Request $request, SessionInterface $session,#[MapQueryParameter] bool $reset = false): Response
+    public function database(Request $request, SessionInterface $session, #[MapQueryParameter] bool $reset = false): Response
     {
-        if($reset){
+        if ($reset) {
             $session->remove(self::SESSION_NAMESPACE);
             return $this->redirectToRoute($request->get('_route'));
         }
         $getData = $request->query->all();
-        if(!empty($getData)){
+        if (!empty($getData)) {
             $session->set(self::SESSION_NAMESPACE, $getData);
         }
 
         $institutions = $this->herbariumService->getAllAsPairs();
         $collections = $this->collectionService->getAllAsPairs();
-        return $this->render('front/home/database.html.twig', ["institutions" => $institutions, 'collections'=>$collections, "values" => $session->get(self::SESSION_NAMESPACE)]);
+        return $this->render('front/home/database.html.twig', ["institutions" => $institutions, 'collections' => $collections, "values" => $session->get(self::SESSION_NAMESPACE)]);
     }
 
     #[Route('/databaseSearch', name: 'app_front_databaseSearch', methods: ['POST'])]
@@ -56,7 +58,7 @@ class HomeController extends AbstractController
         $session->set(self::SESSION_NAMESPACE, $postData);
 
         $values = $session->get(self::SESSION_NAMESPACE);
-        return $this->render('front/home/databaseSearch.html.twig', ["data" => $session->get(self::SESSION_NAMESPACE), 'records' => $this->searchFormFacade->search($values), 'recordsCount'=>$this->searchFormFacade->countResults($values)]);
+        return $this->render('front/home/databaseSearch.html.twig', ["data" => $session->get(self::SESSION_NAMESPACE), 'records' => $this->searchFormFacade->search($values), 'recordsCount' => $this->searchFormFacade->countResults($values), 'recordsPerPage' => self::RECORDS_PER_PAGE]);
     }
 
     #[Route('/collectionsSelectOptions', name: 'app_front_collectionsSelectOptions', methods: ['GET'])]
@@ -72,6 +74,7 @@ class HomeController extends AbstractController
     {
         return $this->render('front/home/collections.html.twig');
     }
+
     #[Route('/systems', name: 'app_front_systems')]
     public function systems(): Response
     {
@@ -91,12 +94,12 @@ class HomeController extends AbstractController
     }
 
     #[Route('/jacqStatisticsResults', name: 'app_front_jacqStatistics_results')]
-    public function jacqStatisticsResults(#[MapQueryParameter] string $periodStart,#[MapQueryParameter]  string $periodEnd,#[MapQueryParameter]  int $updated,#[MapQueryParameter]  CoreObjectsEnum $type,#[MapQueryParameter]  TimeIntervalEnum $interval): Response
+    public function jacqStatisticsResults(#[MapQueryParameter] string $periodStart, #[MapQueryParameter] string $periodEnd, #[MapQueryParameter] int $updated, #[MapQueryParameter] CoreObjectsEnum $type, #[MapQueryParameter] TimeIntervalEnum $interval): Response
     {
         $data = $this->statisticsService->getResults($periodStart, $periodEnd, $updated, $type, $interval);
         $periodMin = $data['periodMin'];
         $periodMax = $data['periodMax'];
-        $periodSum=[];
+        $periodSum = [];
 
         foreach ($data['results'] as $herbarium) {
             for ($i = $periodMin; $i <= $periodMax; $i++) {
@@ -106,7 +109,7 @@ class HomeController extends AbstractController
                 $periodSum[$i] += $herbarium['stat'][$i];
             }
         }
-        return $this->render('front/home/statistics_results.html.twig', ["results" => $data['results'], "periodMin" => $periodMin, "periodMax" => $periodMax, 'suma'=>$periodSum]);
+        return $this->render('front/home/statistics_results.html.twig', ["results" => $data['results'], "periodMin" => $periodMin, "periodMax" => $periodMax, 'suma' => $periodSum]);
     }
 
     #[Route('/checkDjatokaServers', name: 'app_front_checkDjatokaServers', defaults: ['source' => null])]
@@ -118,14 +121,14 @@ class HomeController extends AbstractController
         $fail = $data['fail'] ?? null;
         $noPicture = $data['noPicture'] ?? null;
 
-        return $this->render('front/home/djatokaCheck.html.twig', ["warn"=>$warn,"ok"=>$ok,"fail"=>$fail,"noPicture"=>$noPicture]);
+        return $this->render('front/home/djatokaCheck.html.twig', ["warn" => $warn, "ok" => $ok, "fail" => $fail, "noPicture" => $noPicture]);
     }
 
     #[Route('/develop/rest', name: 'deve_rest')]
     public function indexDevelopRest(): Response
     {
         $data = $this->developersService->testApiWithExamples();
-        return $this->render('front/develop/rest.html.twig', ["results"=>$data]);
+        return $this->render('front/develop/rest.html.twig', ["results" => $data]);
     }
 
     #[Route('/develop', name: 'deve_overview')]
