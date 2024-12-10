@@ -1,3 +1,5 @@
+import paginationInit from "./searchFormPagination";
+
 export function searchFormSubmit() {
 
     const form = document.getElementById('searchForm');
@@ -14,12 +16,10 @@ export function searchFormSubmit() {
 }
 
 export function searchResults(form) {
-    const progressBar = document.getElementById('progressBar');
     const targetElement = document.getElementById('results');
 
+    showProgressBar();
 
-    progressBar.classList.remove('hide');
-    progressBar.classList.add('show');
     const formData = new FormData(form);
 
     fetch(form.action, {
@@ -34,10 +34,10 @@ export function searchResults(form) {
         })
         .then((html) => {
             targetElement.innerHTML = html;
-            progressBar.classList.remove('show');
-            progressBar.classList.add('hide');
+            hideProgressBar();
             let paginator = document.getElementById('recordsPerPage');
             M.FormSelect.init(paginator);
+            paginationInit();
         })
         .catch((error) => {
             console.error('Error:', error);
@@ -46,3 +46,14 @@ export function searchResults(form) {
 
 }
 
+export function showProgressBar() {
+    const progressBar = document.getElementById('progressBar');
+    progressBar.classList.remove('hide');
+    progressBar.classList.add('show');
+}
+
+export function hideProgressBar() {
+    const progressBar = document.getElementById('progressBar');
+    progressBar.classList.remove('show');
+    progressBar.classList.add('hide');
+}

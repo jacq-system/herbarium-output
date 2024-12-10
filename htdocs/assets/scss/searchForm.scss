@@ -1,0 +1,17 @@
+button.waves-effect {
+    background-color: white;
+    color: black;
+
+    &.active {
+        background-color: $primary-color;
+        color: white;
+    }
+
+    &.border {
+        border: 1px solid grey;
+    }
+}
+
+#reset{
+    color: black;
+}

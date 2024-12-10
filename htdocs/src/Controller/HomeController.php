@@ -21,7 +21,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class HomeController extends AbstractController
 {
-    public const string SESSION_NAMESPACE = 'searchForm';
+    public const string SESSION_FILTERS = 'searchForm';
+    public const string SESSION_SETTINGS = 'searchFormSettings';
     public const array RECORDS_PER_PAGE = array(10, 30, 50, 100);
 
     public function __construct(protected DevelopersService $developersService, protected readonly DjatokaService $djatokaService, protected readonly StatisticsService $statisticsService, protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade)
@@ -38,27 +39,58 @@ class HomeController extends AbstractController
     public function database(Request $request, SessionInterface $session, #[MapQueryParameter] bool $reset = false): Response
     {
         if ($reset) {
-            $session->remove(self::SESSION_NAMESPACE);
+            $session->remove(self::SESSION_FILTERS);
             return $this->redirectToRoute($request->get('_route'));
         }
         $getData = $request->query->all();
         if (!empty($getData)) {
-            $session->set(self::SESSION_NAMESPACE, $getData);
+            $session->set(self::SESSION_FILTERS, $getData);
         }
 
         $institutions = $this->herbariumService->getAllAsPairs();
         $collections = $this->collectionService->getAllAsPairs();
-        return $this->render('front/home/database.html.twig', ["institutions" => $institutions, 'collections' => $collections, "values" => $session->get(self::SESSION_NAMESPACE)]);
+        return $this->render('front/home/database.html.twig', ["institutions" => $institutions, 'collections' => $collections, "values" => $session->get(self::SESSION_FILTERS)]);
     }
 
     #[Route('/databaseSearch', name: 'app_front_databaseSearch', methods: ['POST'])]
     public function databaseSearch(Request $request, SessionInterface $session): Response
     {
         $postData = $request->request->all();
-        $session->set(self::SESSION_NAMESPACE, $postData);
+        $session->set(self::SESSION_FILTERS, $postData);
 
-        $values = $session->get(self::SESSION_NAMESPACE);
-        return $this->render('front/home/databaseSearch.html.twig', ["data" => $session->get(self::SESSION_NAMESPACE), 'records' => $this->searchFormFacade->search($values), 'recordsCount' => $this->searchFormFacade->countResults($values), 'recordsPerPage' => self::RECORDS_PER_PAGE]);
+        $filters = $session->get(self::SESSION_FILTERS);
+        $settings = $session->get(self::SESSION_SETTINGS);
+        $pagination = $this->searchFormFacade->providePaginationInfo($filters, $settings);
+
+        return $this->render('front/home/databaseSearch.html.twig', [
+            "data" => $session->get(self::SESSION_FILTERS),
+            'records' => $this->searchFormFacade->search($filters, $settings),
+            'recordsCount' => $pagination["totalRecords"],
+            'totalPages' => $pagination['totalPages'],
+            'pages' => $pagination['pages'],
+            'currentPage' => $pagination['currentPage'],
+            'recordsPerPage' => self::RECORDS_PER_PAGE,
+            "settings" => $settings]);
+    }
+
+
+    #[Route('/databaseSearchSettings', name: 'app_front_databaseSearchSettings', methods: ['GET'])]
+    public function databaseSearchSettings(SessionInterface $session, #[MapQueryParameter] string $feature, #[MapQueryParameter] string $value): Response
+    {
+        $currentSettings = $session->get(self::SESSION_SETTINGS);
+        switch ($feature) {
+            case "page":
+                $currentSettings["page"] = $value;
+                $session->set(self::SESSION_SETTINGS, $currentSettings);
+                break;
+            case "recordsPerPage":
+                $currentSettings["recordsPerPage"] = $value;
+                $session->set(self::SESSION_SETTINGS, $currentSettings);
+                break;
+            default:
+                break;
+        }
+        return new JsonResponse($session->get(self::SESSION_SETTINGS));
     }
 
     #[Route('/collectionsSelectOptions', name: 'app_front_collectionsSelectOptions', methods: ['GET'])]

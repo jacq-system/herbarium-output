@@ -2,6 +2,7 @@
 
 namespace App\Facade;
 
+use App\Controller\HomeController;
 use App\Entity\Jacq\Herbarinput\Specimens;
 use App\Entity\Jacq\Herbarinput\Typus;
 use App\Service\InstitutionService;
@@ -11,20 +12,26 @@ use Exception;
 
 class SearchFormFacade
 {
+    public const int PAGINATION_RANGE = 3;
     protected array $sessionData;
-
     protected QueryBuilder $queryBuilder;
 
     public function __construct(protected readonly EntityManagerInterface $entityManager, protected readonly InstitutionService $institutionService)
     {
     }
 
-    public function search($sessionData): array
+    public function search(array $sessionData, ?array $settings): array
     {
         $this->sessionData = $sessionData;
+
+        $recordsPerPage = $settings['recordsPerPage'] ?? HomeController::RECORDS_PER_PAGE[0];
+        $page = $settings['page'] ?? 1;
+        $offset = ($page - 1) * $recordsPerPage;
+
         $this->buildQuery();
         $this->queryBuilder
-            ->setMaxResults(30);
+            ->setFirstResult((int)$offset)
+            ->setMaxResults((int)$recordsPerPage);
         return $this->queryBuilder->getQuery()->getResult();
     }
 
@@ -119,113 +126,6 @@ class SearchFormFacade
 
     }
 
-    protected function getTaxonIds(string $name)
-    {
-        $pieces = explode(" ", trim($name));
-        $part1 = array_shift($pieces);
-        $part2 = array_shift($pieces);
-        if (empty($part2)) {
-            $sql = "SELECT ts.taxonID, ts.basID, ts.synID
-                    FROM tbl_tax_genera tg,  tbl_tax_species ts
-                     LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                     LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                     LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                     LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                     LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                     LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                    WHERE tg.genID = ts.genID AND tg.genus LIKE :part1 ";
-        } else {
-            $sql = "SELECT ts.taxonID, ts.basID, ts.synID
-                    FROM tbl_tax_genera tg,  tbl_tax_species ts
-                     LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                     LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                     LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                     LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                     LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                     LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                    WHERE tg.genID = ts.genID AND tg.genus LIKE :part1  AND (     te.epithet LIKE :part2
-                                                        OR te1.epithet LIKE :part2
-                                                        OR te2.epithet LIKE :part2
-                                                        OR te3.epithet LIKE :part2
-                                                        OR te4.epithet LIKE :part2
-                                                        OR te5.epithet LIKE :part2)";
-        }
-
-        return $this->entityManager->getConnection()->executeQuery($sql, ['part1' => $part1 . '%', 'part2' => $part2 . '%'])->fetchAllAssociative();
-    }
-
-// TODO table ts2 ommited from original query,  why rejoin the same table for (?probably) same query
-    protected function queryTaxon(string $id): void
-    {
-        $taxaIds = $this->getTaxonIds($id);
-        $conditions = [];
-        //result includes NULL rows that need to be excluded
-        $taxonId = array_filter(array_column($taxaIds, 'taxonID'), fn($value) => $value !== null);
-        $basID = array_filter(array_column($taxaIds, 'basID'), fn($value) => $value !== null);
-        $synID = array_filter(array_column($taxaIds, 'synID'), fn($value) => $value !== null);
-        if (!empty($this->sessionData['includeSynonym']))
-        {
-            if (!empty($taxonId)) {
-                $conditions[] =  $this->queryBuilder->expr()->orX(
-                    $this->queryBuilder->expr()->in('species.id', $taxonId),
-                    $this->queryBuilder->expr()->in('species.basID', $taxonId),
-                    $this->queryBuilder->expr()->in('species.synID', $taxonId)
-                );
-            }
-
-            if (!empty($basID)) {
-                $conditions[] =  $this->queryBuilder->expr()->orX(
-                    $this->queryBuilder->expr()->in('species.id', $basID),
-                    $this->queryBuilder->expr()->in('species.basID', $basID),
-                    $this->queryBuilder->expr()->in('species.synID', $basID)
-                );
-            }
-
-            if (!empty($synID)) {
-                $conditions[] =  $this->queryBuilder->expr()->orX(
-                    $this->queryBuilder->expr()->in('species.id', $synID),
-                    $this->queryBuilder->expr()->in('species.basID', $synID),
-                    $this->queryBuilder->expr()->in('species.synID', $synID)
-                );
-            }
-        }else{
-            if (!empty($taxonId)) {
-                $conditions[] = $this->queryBuilder->expr()->orX(
-                    $this->queryBuilder->expr()->in('species.id', $taxonId)
-                );
-            }
-        }
-
-        //finally add to the builder
-        $this->queryBuilder->andWhere(
-            $this->queryBuilder->expr()->orX(...$conditions)
-        );
-
-
-    }
-
-    protected function queryFamily(string $id): void
-    {
-        $this->queryBuilder
-            ->join('species.genus', 'genus')
-            ->join('genus.family', 'family');
-
-        $this->queryBuilder
-            ->andWhere($this->queryBuilder->expr()->orX(
-                $this->queryBuilder->expr()->like('family.name', ':family'),
-                $this->queryBuilder->expr()->like('family.nameAlternative', ':family')))
-            ->setParameter('family', $id . '%');
-    }
-
-    protected function queryImages(): void
-    {
-        $this->queryBuilder
-            ->andWhere($this->queryBuilder->expr()->orX(
-                $this->queryBuilder->expr()->eq('s.image', 1),
-                $this->queryBuilder->expr()->eq('s.imageObservation', 1)
-            ));
-    }
-
     protected function queryInstitution(int $id): void
     {
         $this->queryBuilder
@@ -234,6 +134,8 @@ class SearchFormFacade
             ->andWhere('i.id = :institution')
             ->setParameter('institution', $id);
     }
+
+// TODO table ts2 ommited from original query,  why rejoin the same table for (?probably) same query
 
     /**
      * simplified. Original code searched also in collectorNr for example. Let's use just trim the institution code and do simple fulltext
@@ -364,12 +266,150 @@ class SearchFormFacade
 
     }
 
+    protected function queryImages(): void
+    {
+        $this->queryBuilder
+            ->andWhere($this->queryBuilder->expr()->orX(
+                $this->queryBuilder->expr()->eq('s.image', 1),
+                $this->queryBuilder->expr()->eq('s.imageObservation', 1)
+            ));
+    }
+
+    protected function queryFamily(string $id): void
+    {
+        $this->queryBuilder
+            ->join('species.genus', 'genus')
+            ->join('genus.family', 'family');
+
+        $this->queryBuilder
+            ->andWhere($this->queryBuilder->expr()->orX(
+                $this->queryBuilder->expr()->like('family.name', ':family'),
+                $this->queryBuilder->expr()->like('family.nameAlternative', ':family')))
+            ->setParameter('family', $id . '%');
+    }
+
+    protected function queryTaxon(string $id): void
+    {
+        $taxaIds = $this->getTaxonIds($id);
+        $conditions = [];
+        //result includes NULL rows that need to be excluded
+        $taxonId = array_filter(array_column($taxaIds, 'taxonID'), fn($value) => $value !== null);
+        $basID = array_filter(array_column($taxaIds, 'basID'), fn($value) => $value !== null);
+        $synID = array_filter(array_column($taxaIds, 'synID'), fn($value) => $value !== null);
+        if (!empty($this->sessionData['includeSynonym'])) {
+            if (!empty($taxonId)) {
+                $conditions[] = $this->queryBuilder->expr()->orX(
+                    $this->queryBuilder->expr()->in('species.id', $taxonId),
+                    $this->queryBuilder->expr()->in('species.basID', $taxonId),
+                    $this->queryBuilder->expr()->in('species.synID', $taxonId)
+                );
+            }
+
+            if (!empty($basID)) {
+                $conditions[] = $this->queryBuilder->expr()->orX(
+                    $this->queryBuilder->expr()->in('species.id', $basID),
+                    $this->queryBuilder->expr()->in('species.basID', $basID),
+                    $this->queryBuilder->expr()->in('species.synID', $basID)
+                );
+            }
+
+            if (!empty($synID)) {
+                $conditions[] = $this->queryBuilder->expr()->orX(
+                    $this->queryBuilder->expr()->in('species.id', $synID),
+                    $this->queryBuilder->expr()->in('species.basID', $synID),
+                    $this->queryBuilder->expr()->in('species.synID', $synID)
+                );
+            }
+        } else {
+            if (!empty($taxonId)) {
+                $conditions[] = $this->queryBuilder->expr()->orX(
+                    $this->queryBuilder->expr()->in('species.id', $taxonId)
+                );
+            }
+        }
+
+        //finally add to the builder
+        $this->queryBuilder->andWhere(
+            $this->queryBuilder->expr()->orX(...$conditions)
+        );
+
+
+    }
+
+    protected function getTaxonIds(string $name)
+    {
+        $pieces = explode(" ", trim($name));
+        $part1 = array_shift($pieces);
+        $part2 = array_shift($pieces);
+        if (empty($part2)) {
+            $sql = "SELECT ts.taxonID, ts.basID, ts.synID
+                    FROM tbl_tax_genera tg,  tbl_tax_species ts
+                     LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+                     LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                     LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                     LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                     LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                     LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                    WHERE tg.genID = ts.genID AND tg.genus LIKE :part1 ";
+        } else {
+            $sql = "SELECT ts.taxonID, ts.basID, ts.synID
+                    FROM tbl_tax_genera tg,  tbl_tax_species ts
+                     LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+                     LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                     LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                     LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                     LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                     LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                    WHERE tg.genID = ts.genID AND tg.genus LIKE :part1  AND (     te.epithet LIKE :part2
+                                                        OR te1.epithet LIKE :part2
+                                                        OR te2.epithet LIKE :part2
+                                                        OR te3.epithet LIKE :part2
+                                                        OR te4.epithet LIKE :part2
+                                                        OR te5.epithet LIKE :part2)";
+        }
+
+        return $this->entityManager->getConnection()->executeQuery($sql, ['part1' => $part1 . '%', 'part2' => $part2 . '%'])->fetchAllAssociative();
+    }
+
+    public function providePaginationInfo(array $filters, ?array $settings = null): array
+    {
+        $totalRecordCount = $this->countResults($filters);
+        $recordsPerPage = $settings['recordsPerPage'] ?? HomeController::RECORDS_PER_PAGE[0];
+        $currentPage = $settings['page'] ?? 1;
+
+        $totalPages = ceil($totalRecordCount / $recordsPerPage);
+
+        $pages[] = 1;
+        if ($currentPage > 1) {
+
+            if ($currentPage > self::PAGINATION_RANGE + 2) {
+                $pages[] = '...';
+            }
+        }
+
+        $start = max(2, $currentPage - self::PAGINATION_RANGE);
+        $end = min($totalPages - 1, $currentPage + self::PAGINATION_RANGE);
+
+        for ($i = $start; $i <= $end; $i++) {
+            $pages[] = $i;
+        }
+
+        if ($currentPage < $totalPages) {
+            if ($currentPage < $totalPages - self::PAGINATION_RANGE - 1) {
+                $pages[] = '...';
+            }
+        }
+        if ($totalPages > 1) {
+            $pages[] = $totalPages;
+        }
+        return ["totalRecords" => $totalRecordCount, "totalPages" => $totalPages, "currentPage" => $currentPage, "pages" => $pages];
+    }
+
     public function countResults($sessionData): int
     {
         $this->sessionData = $sessionData;
         $this->buildQuery();
         return $this->queryBuilder->select('count(DISTINCT s.id)')->getQuery()->getSingleScalarResult();
     }
-
 
 }
