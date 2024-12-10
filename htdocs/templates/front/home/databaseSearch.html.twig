@@ -1,5 +1,5 @@
 {# debug list of form fields #}
-{#    {% for key, value in settings %}#}
+{#    {% for key, value in data %}#}
 {#        {{ key }}: {{ value }}<br>#}
 {#    {% endfor %}#}
 
@@ -80,11 +80,8 @@
         </tr>
         </thead>
         <tbody>
-        {% for key, value in records %}
-            <tr>
-                <td>{{ key }}</td>
-                <td>{{ value.getId() }}</td>
-            </tr>
+        {% for key, specimen in records %}
+            {% include 'front/home/searchRecord.html.twig' with {'specimen': specimen} only %}
         {% endfor %}
         </tbody>
     </table>

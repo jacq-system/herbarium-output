@@ -20,4 +20,11 @@ class HerbCollection
     #[ORM\JoinColumn(name: 'source_id', referencedColumnName: 'source_id')]
     private Meta $institution;
 
+    public function getInstitution(): Meta
+    {
+        return $this->institution;
+    }
+
+
+
 }

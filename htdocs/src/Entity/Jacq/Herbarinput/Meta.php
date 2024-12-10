@@ -22,4 +22,11 @@ class Meta
         return $this->id;
     }
 
+    #[ORM\OneToOne(targetEntity: ImageDefinition::class, mappedBy: 'institution')]
+    private ?ImageDefinition $imageDefinition = null;
+
+    public function getImageDefinition(): ?ImageDefinition
+    {
+        return $this->imageDefinition;
+    }
 }

@@ -20,7 +20,7 @@ readonly class IiifFacade
     /**
      * get the URI of the iiif manifest of a given specimen-ID
      */
-    public function resolveManifestUri(int $specimenID): array
+    public function resolveManifestUri(int $specimenID): string
     {
         $sql = "SELECT iiif.manifest_uri
                                   FROM tbl_specimens s
@@ -30,12 +30,12 @@ readonly class IiifFacade
         $specimen = $this->entityManager->getConnection()->executeQuery($sql, ['specimenID' => $specimenID])->fetchOne();
 
         if ($specimen === false) {
-            return ['uri' => ''];
+            return '';
         }
         if ($specimen !== '') {
-            return array('uri' => $this->specimenService->makeURI($specimenID, $this->parser($specimen)));
+            return $this->specimenService->makeURI($specimenID, $this->parser($specimen));
         } else {
-            return ['uri' => ''];
+            return '';
         }
     }
 

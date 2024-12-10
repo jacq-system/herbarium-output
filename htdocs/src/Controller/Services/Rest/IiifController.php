@@ -65,7 +65,7 @@ class IiifController extends AbstractFOSRestController
     #[Route('/services/rest/iiif/manifestUri/{specimenID}.{_format}', defaults: ['_format' => 'json'], methods: ['GET'])]
     public function manifestUri(int $specimenID): Response
     {
-        $results = $this->iiifFacade->resolveManifestUri($specimenID);
+        $results['uri'] = $this->iiifFacade->resolveManifestUri($specimenID);
 
         $view = $this->view($results, 200);
 

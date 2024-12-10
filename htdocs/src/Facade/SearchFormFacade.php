@@ -23,12 +23,14 @@ class SearchFormFacade
     public function search(array $sessionData, ?array $settings): array
     {
         $this->sessionData = $sessionData;
+        $this->buildQuery();
 
         $recordsPerPage = $settings['recordsPerPage'] ?? HomeController::RECORDS_PER_PAGE[0];
         $page = $settings['page'] ?? 1;
         $offset = ($page - 1) * $recordsPerPage;
 
-        $this->buildQuery();
+        $sort = $settings['sort'] ?? null;
+
         $this->queryBuilder
             ->setFirstResult((int)$offset)
             ->setMaxResults((int)$recordsPerPage);

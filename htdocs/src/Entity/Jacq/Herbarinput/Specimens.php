@@ -3,6 +3,7 @@
 namespace App\Entity\Jacq\Herbarinput;
 
 
+use App\Entity\Jacq\HerbarPictures\PhaidraCache;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -34,6 +35,9 @@ class Specimens
     #[ORM\Column(name: 'SammlerID')]
     private int $collector;
 
+    #[ORM\Column(name: 'observation')]
+    private ?bool $observation;
+
     #[ORM\Column(name: 'Sammler_2ID')]
     private int $collector2;
 
@@ -56,10 +60,10 @@ class Specimens
     private string $annotation;
 
     #[ORM\Column(name: 'digital_image')]
-    private int $image;
+    private ?bool $image;
 
     #[ORM\Column(name: 'digital_image_obs')]
-    private int $imageObservation;
+    private ?bool $imageObservation;
 
     #[ORM\Column(name: 'taxon_alt')]
     private string $taxonAlternative;
@@ -75,19 +79,156 @@ class Specimens
     #[ORM\OneToMany(targetEntity: Typus::class, mappedBy: 'specimen')]
     private Collection $typus;
 
+    #[ORM\OneToOne(targetEntity: PhaidraCache::class, mappedBy: 'specimen')]
+    private ?PhaidraCache $phaidraImages = null;
+
     #[ORM\ManyToOne(targetEntity: Species::class)]
     #[ORM\JoinColumn(name: 'taxonID', referencedColumnName: 'taxonID')]
     private Species $species;
 
 
 
+    public function __construct() {
+        $this->typus = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function __construct() {
-        $this->typus = new ArrayCollection();
+    public function getNumber(): int
+    {
+        return $this->number;
     }
+
+    public function getHerbNumber(): string
+    {
+        return $this->herbNumber;
+    }
+
+    public function getAltNumber(): string
+    {
+        return $this->altNumber;
+    }
+
+    public function getSeriesNumber(): string
+    {
+        return $this->seriesNumber;
+    }
+
+    public function getCollectionNumber(): string
+    {
+        return $this->collectionNumber;
+    }
+
+    public function getCollector(): int
+    {
+        return $this->collector;
+    }
+
+    public function isObservation(): ?bool
+    {
+        return $this->observation;
+    }
+
+    public function getCollector2(): int
+    {
+        return $this->collector2;
+    }
+
+    public function getDate(): string
+    {
+        return $this->date;
+    }
+
+    public function getLocality(): string
+    {
+        return $this->locality;
+    }
+
+    public function getLocalityEng(): string
+    {
+        return $this->localityEng;
+    }
+
+    public function getHabitus(): string
+    {
+        return $this->habitus;
+    }
+
+    public function getHabitat(): string
+    {
+        return $this->habitat;
+    }
+
+    public function getAnnotation(): string
+    {
+        return $this->annotation;
+    }
+
+    public function hasImage(): ?bool
+    {
+        return $this->image;
+    }
+
+    public function hasObservationImage(): ?bool
+    {
+        return $this->imageObservation;
+    }
+
+    public function getTaxonAlternative(): string
+    {
+        return $this->taxonAlternative;
+    }
+
+    public function getCollection(): HerbCollection
+    {
+        return $this->collection;
+    }
+
+    public function getSeries(): Series
+    {
+        return $this->series;
+    }
+
+    public function getTypus(): Collection
+    {
+        return $this->typus;
+    }
+
+    public function getSpecies(): Species
+    {
+        return $this->species;
+    }
+
+
+    public function getImageIconFilename(): ?string
+    {
+        if ($this->isObservation()) {
+            if ($this->hasObservationImage()) {
+                return "obs.png";
+            } else {
+                return "obs_bw.png";
+            }
+        } else {
+            if ($this->hasImage() || $this->hasObservationImage()) {
+                if ($this->hasObservationImage() && $this->hasImage()) {
+                    return "spec_obs.png";
+                } elseif ($this->hasObservationImage() && !$this->hasImage()) {
+                    return "obs.png";
+                } else {
+                    return "camera.png";
+                }
+            }
+        }
+        return null;
+    }
+
+    public function getPhaidraImage(): ?PhaidraCache
+    {
+        return $this->phaidraImages;
+    }
+
 
 }

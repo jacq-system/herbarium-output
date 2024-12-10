@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Enum\CoreObjectsEnum;
 use App\Enum\TimeIntervalEnum;
+use App\Facade\Rest\IiifFacade;
 use App\Facade\SearchFormFacade;
 use App\Service\CollectionService;
 use App\Service\DjatokaService;
@@ -24,6 +25,9 @@ class HomeController extends AbstractController
     public const string SESSION_FILTERS = 'searchForm';
     public const string SESSION_SETTINGS = 'searchFormSettings';
     public const array RECORDS_PER_PAGE = array(10, 30, 50, 100);
+
+    //TODO the name of taxon is not part of the query now, hard to sort
+    public const array SORT = ["taxon"=> '', 'collector'=>'s.collector'];
 
     public function __construct(protected DevelopersService $developersService, protected readonly DjatokaService $djatokaService, protected readonly StatisticsService $statisticsService, protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade)
     {
@@ -86,6 +90,12 @@ class HomeController extends AbstractController
             case "recordsPerPage":
                 $currentSettings["recordsPerPage"] = $value;
                 $session->set(self::SESSION_SETTINGS, $currentSettings);
+                break;
+            case "sort":
+                if (isset(self::SORT[$value])) {
+                    $currentSettings["sort"] = self::SORT[$value];
+                    $session->set(self::SESSION_SETTINGS, $currentSettings);
+                }
                 break;
             default:
                 break;
