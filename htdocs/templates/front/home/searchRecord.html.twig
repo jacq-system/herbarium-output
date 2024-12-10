@@ -1,0 +1,26 @@
+<tr>
+    <td>
+        {% if specimen.isObservation() or specimen.hasObservationImage() or specimen.hasImage() %}
+
+            {% if specimen.isObservation() and not specimen.hasObservationImage() %} {#  has no link #}
+                <img height="15" alt='' src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}"
+                     width="15"/>
+            {% else %}
+                {% if (specimen.getCollection().getInstitution().getImageDefinition() is not null and specimen.getCollection().getInstitution().getImageDefinition().isIiifCapable()) or (specimen.getPhaidraImage() is not empty) %}
+
+                    <a href='{{ specimen.getCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ specimen.getId()|manifestUrl }}' target='imgBrowser'>
+                        <img height='15' width="15" alt='' src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}" >
+                    </a><br>
+                    <a href='{{ specimen.getCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ specimen.getId()|manifestUrl }}' target='_blank'>
+                    <img height='15' width='15' alt='' src='{{ asset('recordIcons') }}/logo-iiif.png' >
+                </a>
+                    {% else %}
+                        <a href='image.php?filename={{ specimen.getId() }}&method=show' target='imgBrowser'><img height='15' width="15" alt='' src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}" ></a>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    </td>
+    <td>
+        {{ specimen.getId() }}
+    </td>
+</tr>
