@@ -2,7 +2,6 @@
 
 namespace App\Facade;
 
-use App\Controller\Front\HomeController;
 use App\Controller\Front\SearchFormController;
 use App\Entity\Jacq\Herbarinput\Specimens;
 use App\Entity\Jacq\Herbarinput\Typus;
@@ -26,7 +25,7 @@ class SearchFormFacade
         $this->buildQuery();
 
         $recordsPerPage = $this->searchFormSessionService->getSetting('recordsPerPage', SearchFormController::RECORDS_PER_PAGE[0]);
-        $page = $this->searchFormSessionService->getSetting('page',1);
+        $page = $this->searchFormSessionService->getSetting('page', 1);
         $offset = ($page - 1) * $recordsPerPage;
 
         $sort = $this->searchFormSessionService->getSetting('sort');

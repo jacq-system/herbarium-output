@@ -88,7 +88,13 @@ class Specimens
     #[ORM\JoinColumn(name: 'taxonID', referencedColumnName: 'taxonID')]
     private Species $species;
 
+    #[ORM\ManyToOne(targetEntity: Province::class)]
+    #[ORM\JoinColumn(name: 'provinceID', referencedColumnName: 'provinceID')]
+    private ?Province $province  = null;
 
+    #[ORM\ManyToOne(targetEntity: Country::class)]
+    #[ORM\JoinColumn(name: 'NationID', referencedColumnName: 'NationID')]
+    private ?Country $country  = null;
 
     public function __construct() {
         $this->typus = new ArrayCollection();
@@ -232,5 +238,16 @@ class Specimens
     {
         return $this->collector2;
     }
+
+    public function getProvince(): ?Province
+    {
+        return $this->province;
+    }
+
+    public function getCountry(): ?Country
+    {
+        return $this->country;
+    }
+
 
 }

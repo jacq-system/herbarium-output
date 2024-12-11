@@ -22,4 +22,34 @@ class Country
     #[ORM\Column(name: 'language_variants')]
     private string $variants;
 
+    #[ORM\Column(name: 'iso_alpha_2_code')]
+    private string $isoCode;
+
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getNameEng(): string
+    {
+        return $this->nameEng;
+    }
+
+    public function getVariants(): string
+    {
+        return $this->variants;
+    }
+
+    public function getIsoCode(): string
+    {
+        return $this->isoCode;
+    }
+
+
 }

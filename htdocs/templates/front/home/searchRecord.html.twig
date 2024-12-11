@@ -26,9 +26,13 @@
         {% endif %}
     </td>
     <td>
-        <a href='{{ path('app_front_specimenDetail', {'id': specimen.getId() }) }}' target='_blank'>$specimen['scientificName']</a>
+        <a href='{{ path('app_front_specimenDetail', {'id': specimen.getId() }) }}' target='_blank'>{{ specimen | scientificName }}</a>
         {{ specimen.getSpecies().getId() | taxonAuthority | raw }}
     </td>
     <td>{{ specimen | collector | raw }}</td>
     <td>{{ specimen.getDate() }}</td>
+    <td>{{ specimen | locality | raw }}</td>
+    <td>{{ specimen | typus | raw }}</td>
+    {{ specimen | institution | raw}}
+    <td>{{ specimen | gps }}</td>
 </tr>

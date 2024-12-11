@@ -19,4 +19,10 @@ class Province
     #[ORM\Column(name: 'provinz_local')]
     private string $nameLocal;
 
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+
 }

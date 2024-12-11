@@ -20,6 +20,12 @@ class SpecimenExtension extends AbstractExtension
             new TwigFilter('manifestUrl', [$this, 'getManifest']),
             new TwigFilter('taxonAuthority', [$this, 'getTaxonAuthority']),
             new TwigFilter('collector', [$this, 'getSpecimenCollector']),
+            new TwigFilter('scientificName', [$this, 'getScientificName']),
+            new TwigFilter('locality', [$this, 'getLocality']),
+            new TwigFilter('typus', [$this, 'getTypus']),
+            new TwigFilter('institution', [$this, 'getCollection']),
+            new TwigFilter('gps', [$this, 'getGps']),
+
         ];
     }
 
@@ -109,5 +115,80 @@ class SpecimenExtension extends AbstractExtension
         }
 
         return trim($text);
+    }
+
+    public function getScientificName(Specimens $specimen): string
+    {
+
+        $sql = "SELECT herbar_view.GetScientificName(:species, 0) AS scientificName";
+        return $this->entityManager->getConnection()->executeQuery($sql, ['species' => $specimen->getSpecies()->getId()])->fetchOne();
+
+    }
+
+    public function getLocality(Specimens $specimen): string
+    {
+        $text ='';
+        $switch = false;
+        if ($specimen?->getCountry()?->getNameEng() !== null) {
+            $text.= "<img src='flags/" . strtolower($specimen->getCountry()->getIsoCode()) . ".png'> " . $specimen->getCountry()->getNameEng();
+            $switch = true;
+        }
+        if ($specimen->getProvince()!== null) {
+            if ($switch) {
+                $text .= ". ";
+            }
+            $text.=  $specimen->getProvince()->getName();
+            $switch = true;
+        }
+        if (trim($specimen->getLocality())) {
+            if ($switch) {
+                $text .= ". ";
+            }
+            if (strlen(trim($specimen->getLocality())) > 200) {
+                $text .= substr(trim($specimen->getLocality()), 0, 200) . "...";
+            } else {
+                $text .= trim($specimen->getLocality());
+            }
+        }
+        return $text;
+    }
+    public function getTypus(Specimens $specimen): string
+    {
+        $text ='';
+        $sql = "SELECT t.typus
+                FROM tbl_specimens_types tst
+                 LEFT JOIN tbl_typi t ON t.typusID = tst.typusID
+                WHERE tst.specimenID = :specimen";
+
+        $typi = $this->entityManager->getConnection()->executeQuery($sql, ['specimen'=> $specimen->getId()])->fetchFirstColumn();
+        $first = true;
+        foreach ($typi as $typus) {
+            if (!$first) {
+                $text.= "<br>";
+            }
+            $text .= '<span class="red-text"><b>'.$typus . '</b></span>';
+            $first = false;
+        }
+
+        return $text;
+    }
+    public function getCollection(Specimens $specimen): string
+    {//TODO some smarter way to provide title in <td>
+        $text ='';
+        if ($specimen->getCollection()->getInstitution()->getId() == '29') {
+           $text.= "<td title=\"".$specimen->getCollection()->getName() . "\">";
+        $text.=  $specimen->getHerbNumber() ."</td>";
+        } else {
+            $text.= "<td title='" . $specimen->getCollection()->getName() . "'>"   ;
+            $text.= (mb_strtoupper($specimen->getCollection()->getCollShortPrj())) . " " . $specimen->getHerbNumber() . "</td>";
+            //. htmlspecialchars(collectionItem($specimen['collection'])) . " " . htmlspecialchars($specimen['HerbNummer']) . "</td>";
+        }
+        return $text;
+    }
+    public function getGps(Specimens $specimen): string
+    {
+        $text ='';
+
+        return $text;
     }
 }
