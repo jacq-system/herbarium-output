@@ -34,10 +34,10 @@ export function searchResults(form) {
         })
         .then((html) => {
             targetElement.innerHTML = html;
-            hideProgressBar();
             let paginator = document.getElementById('recordsPerPage');
             M.FormSelect.init(paginator);
             paginationInit();
+            hideProgressBar();
         })
         .catch((error) => {
             console.error('Error:', error);

@@ -22,4 +22,11 @@ class Species
 
     #[ORM\Column(name: 'synID')]
     private int $synID;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+
 }

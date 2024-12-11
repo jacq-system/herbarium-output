@@ -100,4 +100,10 @@ class SearchFormController extends AbstractController
         $url = $this->imageService->doRedirectShowPic($picDetails);
         return $this->redirect($url);
     }
+
+    #[Route('/detail', name: 'app_front_specimenDetail', methods: ['GET'])]
+    public function detail(#[MapQueryParameter] int $id): Response
+    {
+        return new Response();
+    }
 }

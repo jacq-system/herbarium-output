@@ -8,19 +8,27 @@
             {% else %}
                 {% if (specimen.getCollection().getInstitution().getImageDefinition() is not null and specimen.getCollection().getInstitution().getImageDefinition().isIiifCapable()) or (specimen.getPhaidraImage() is not empty) %}
 
-                    <a href='{{ specimen.getCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ specimen.getId()|manifestUrl }}' target='imgBrowser'>
-                        <img height='15' width="15" alt='' src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}" >
+                    <a href='{{ specimen.getCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ specimen.getId()|manifestUrl }}'
+                       target='imgBrowser'>
+                        <img height='15' width="15" alt=''
+                             src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}">
                     </a><br>
-                    <a href='{{ specimen.getCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ specimen.getId()|manifestUrl }}' target='_blank'>
-                    <img height='15' width='15' alt='' src='{{ asset('recordIcons') }}/logo-iiif.png' >
-                </a>
-                    {% else %}
-                        <a href='{{ path('app_front_showImage', { 'filename': specimen.getId() }) }}' target='imgBrowser'><img height='15' width="15" alt='' src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}" ></a>
+                    <a href='{{ specimen.getCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ specimen.getId()|manifestUrl }}'
+                       target='_blank'>
+                        <img height='15' width='15' alt='' src='{{ asset('recordIcons') }}/logo-iiif.png'>
+                    </a>
+                {% else %}
+                    <a href='{{ path('app_front_showImage', { 'filename': specimen.getId() }) }}'
+                       target='imgBrowser'><img height='15' width="15" alt=''
+                                                src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}"></a>
                 {% endif %}
             {% endif %}
         {% endif %}
     </td>
     <td>
-        {{ specimen.getId() }}
+        <a href='{{ path('app_front_specimenDetail', {'id': specimen.getId() }) }}' target='_blank'>$specimen['scientificName']</a>
+        {{ specimen.getSpecies().getId() | taxonAuthority | raw }}
     </td>
+    <td>{{ specimen | collector | raw }}</td>
+    <td>{{ specimen.getDate() }}</td>
 </tr>

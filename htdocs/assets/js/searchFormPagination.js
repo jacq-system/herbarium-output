@@ -17,7 +17,6 @@ function handleChangePage(element, form) {
     element.addEventListener('click', function (event) {
         const newPage = this.dataset.number;
         const path = this.dataset.path;
-        showProgressBar();
         fetch(path + `?feature=page&value=${encodeURIComponent(newPage)}`, {
             method: 'GET',
         })
@@ -28,7 +27,6 @@ function handleChangePage(element, form) {
             })
             .then((data) => {
                 searchResults(form);
-                hideProgressBar();
             })
             .catch((error) => console.error('Error:', error));
     });
@@ -39,7 +37,6 @@ function handleRecordsPerPage(element, form) {
     element.addEventListener('change', function (event) {
         const selectedValue = this.value;
         const path = this.dataset.path;
-        showProgressBar()
         fetch(path + `?feature=recordsPerPage&value=${encodeURIComponent(selectedValue)}`, {
             method: 'GET',
         })
@@ -50,7 +47,6 @@ function handleRecordsPerPage(element, form) {
             })
             .then((data) => {
                 searchResults(form);
-                hideProgressBar();
             })
             .catch((error) => console.error('Error:', error));
     });

@@ -18,31 +18,25 @@ class Specimens
     private ?int $id = null;
 
     #[ORM\Column(name: 'Nummer')]
-    private int $number;
+    private ?int $number = null;
 
     #[ORM\Column(name: 'HerbNummer')]
     private string $herbNumber;
 
     #[ORM\Column(name: 'alt_number')]
-    private string $altNumber;
+    private ?string $altNumber = null;
 
     #[ORM\Column(name: 'series_number')]
-    private string $seriesNumber;
+    private ?string $seriesNumber;
 
     #[ORM\Column(name: 'CollNummer')]
     private string $collectionNumber;
 
-    #[ORM\Column(name: 'SammlerID')]
-    private int $collector;
-
     #[ORM\Column(name: 'observation')]
     private ?bool $observation;
 
-    #[ORM\Column(name: 'Sammler_2ID')]
-    private int $collector2;
-
     #[ORM\Column(name: 'Datum')]
-    private string $date;
+    private ?string $date;
 
     #[ORM\Column(name: 'Fundort')]
     private string $locality;
@@ -74,7 +68,15 @@ class Specimens
 
     #[ORM\ManyToOne(targetEntity: Series::class)]
     #[ORM\JoinColumn(name: 'seriesID', referencedColumnName: 'seriesID')]
-    private Series $series;
+    private ?Series $series;
+
+    #[ORM\ManyToOne(targetEntity: Collector::class)]
+    #[ORM\JoinColumn(name: 'SammlerID', referencedColumnName: 'SammlerID')]
+    private ?Collector $collector = null;
+
+    #[ORM\ManyToOne(targetEntity: Collector2::class)]
+    #[ORM\JoinColumn(name: 'Sammler_2ID', referencedColumnName: 'Sammler_2ID')]
+    private ?Collector2 $collector2 = null;
 
     #[ORM\OneToMany(targetEntity: Typus::class, mappedBy: 'specimen')]
     private Collection $typus;
@@ -97,7 +99,7 @@ class Specimens
         return $this->id;
     }
 
-    public function getNumber(): int
+    public function getNumber(): ?int
     {
         return $this->number;
     }
@@ -107,12 +109,12 @@ class Specimens
         return $this->herbNumber;
     }
 
-    public function getAltNumber(): string
+    public function getAltNumber(): ?string
     {
         return $this->altNumber;
     }
 
-    public function getSeriesNumber(): string
+    public function getSeriesNumber(): ?string
     {
         return $this->seriesNumber;
     }
@@ -122,22 +124,12 @@ class Specimens
         return $this->collectionNumber;
     }
 
-    public function getCollector(): int
-    {
-        return $this->collector;
-    }
-
     public function isObservation(): ?bool
     {
         return $this->observation;
     }
 
-    public function getCollector2(): int
-    {
-        return $this->collector2;
-    }
-
-    public function getDate(): string
+    public function getDate(): ?string
     {
         return $this->date;
     }
@@ -187,7 +179,7 @@ class Specimens
         return $this->collection;
     }
 
-    public function getSeries(): Series
+    public function getSeries(): ?Series
     {
         return $this->series;
     }
@@ -230,5 +222,15 @@ class Specimens
         return $this->phaidraImages;
     }
 
+    public function getCollector(): ?Collector
+    {
+        return $this->collector;
+    }
+
+
+    public function getCollector2(): ?Collector2
+    {
+        return $this->collector2;
+    }
 
 }
