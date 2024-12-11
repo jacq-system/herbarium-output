@@ -1,35 +1,22 @@
 <?php declare(strict_types=1);
 
-namespace App\Controller;
+namespace App\Controller\Front;
 
 use App\Entity\User;
 use App\Enum\CoreObjectsEnum;
 use App\Enum\TimeIntervalEnum;
-use App\Facade\Rest\IiifFacade;
-use App\Facade\SearchFormFacade;
-use App\Service\CollectionService;
 use App\Service\DjatokaService;
-use App\Service\InstitutionService;
 use App\Service\Rest\DevelopersService;
 use App\Service\Rest\StatisticsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 
 class HomeController extends AbstractController
 {
-    public const string SESSION_FILTERS = 'searchForm';
-    public const string SESSION_SETTINGS = 'searchFormSettings';
-    public const array RECORDS_PER_PAGE = array(10, 30, 50, 100);
 
-    //TODO the name of taxon is not part of the query now, hard to sort
-    public const array SORT = ["taxon"=> '', 'collector'=>'s.collector'];
-
-    public function __construct(protected DevelopersService $developersService, protected readonly DjatokaService $djatokaService, protected readonly StatisticsService $statisticsService, protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade)
+    public function __construct(protected DevelopersService $developersService, protected readonly DjatokaService $djatokaService, protected readonly StatisticsService $statisticsService)
     {
     }
 
@@ -37,78 +24,6 @@ class HomeController extends AbstractController
     public function index(): Response
     {
         return $this->render('front/home/index.html.twig');
-    }
-
-    #[Route('/database', name: 'app_front_database')]
-    public function database(Request $request, SessionInterface $session, #[MapQueryParameter] bool $reset = false): Response
-    {
-        if ($reset) {
-            $session->remove(self::SESSION_FILTERS);
-            return $this->redirectToRoute($request->get('_route'));
-        }
-        $getData = $request->query->all();
-        if (!empty($getData)) {
-            $session->set(self::SESSION_FILTERS, $getData);
-        }
-
-        $institutions = $this->herbariumService->getAllAsPairs();
-        $collections = $this->collectionService->getAllAsPairs();
-        return $this->render('front/home/database.html.twig', ["institutions" => $institutions, 'collections' => $collections, "values" => $session->get(self::SESSION_FILTERS)]);
-    }
-
-    #[Route('/databaseSearch', name: 'app_front_databaseSearch', methods: ['POST'])]
-    public function databaseSearch(Request $request, SessionInterface $session): Response
-    {
-        $postData = $request->request->all();
-        $session->set(self::SESSION_FILTERS, $postData);
-
-        $filters = $session->get(self::SESSION_FILTERS);
-        $settings = $session->get(self::SESSION_SETTINGS);
-        $pagination = $this->searchFormFacade->providePaginationInfo($filters, $settings);
-
-        return $this->render('front/home/databaseSearch.html.twig', [
-            "data" => $session->get(self::SESSION_FILTERS),
-            'records' => $this->searchFormFacade->search($filters, $settings),
-            'recordsCount' => $pagination["totalRecords"],
-            'totalPages' => $pagination['totalPages'],
-            'pages' => $pagination['pages'],
-            'currentPage' => $pagination['currentPage'],
-            'recordsPerPage' => self::RECORDS_PER_PAGE,
-            "settings" => $settings]);
-    }
-
-
-    #[Route('/databaseSearchSettings', name: 'app_front_databaseSearchSettings', methods: ['GET'])]
-    public function databaseSearchSettings(SessionInterface $session, #[MapQueryParameter] string $feature, #[MapQueryParameter] string $value): Response
-    {
-        $currentSettings = $session->get(self::SESSION_SETTINGS);
-        switch ($feature) {
-            case "page":
-                $currentSettings["page"] = $value;
-                $session->set(self::SESSION_SETTINGS, $currentSettings);
-                break;
-            case "recordsPerPage":
-                $currentSettings["recordsPerPage"] = $value;
-                $session->set(self::SESSION_SETTINGS, $currentSettings);
-                break;
-            case "sort":
-                if (isset(self::SORT[$value])) {
-                    $currentSettings["sort"] = self::SORT[$value];
-                    $session->set(self::SESSION_SETTINGS, $currentSettings);
-                }
-                break;
-            default:
-                break;
-        }
-        return new JsonResponse($session->get(self::SESSION_SETTINGS));
-    }
-
-    #[Route('/collectionsSelectOptions', name: 'app_front_collectionsSelectOptions', methods: ['GET'])]
-    public function collectionsSelectOptions(#[MapQueryParameter] int $herbariumID): Response
-    {
-        $result = $this->collectionService->getAllFromHerbariumAsPairs($herbariumID);
-
-        return new JsonResponse($result);
     }
 
     #[Route('/collections', name: 'app_front_collections')]

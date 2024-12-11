@@ -21,7 +21,11 @@ function handleChangePage(element, form) {
         fetch(path + `?feature=page&value=${encodeURIComponent(newPage)}`, {
             method: 'GET',
         })
-            .then((response) => response.json())
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            })
             .then((data) => {
                 searchResults(form);
                 hideProgressBar();
@@ -39,7 +43,11 @@ function handleRecordsPerPage(element, form) {
         fetch(path + `?feature=recordsPerPage&value=${encodeURIComponent(selectedValue)}`, {
             method: 'GET',
         })
-            .then((response) => response.json())
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            })
             .then((data) => {
                 searchResults(form);
                 hideProgressBar();

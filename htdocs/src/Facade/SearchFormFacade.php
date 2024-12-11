@@ -2,10 +2,12 @@
 
 namespace App\Facade;
 
-use App\Controller\HomeController;
+use App\Controller\Front\HomeController;
+use App\Controller\Front\SearchFormController;
 use App\Entity\Jacq\Herbarinput\Specimens;
 use App\Entity\Jacq\Herbarinput\Typus;
 use App\Service\InstitutionService;
+use App\Service\SearchFormSessionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
@@ -13,23 +15,21 @@ use Exception;
 class SearchFormFacade
 {
     public const int PAGINATION_RANGE = 3;
-    protected array $sessionData;
     protected QueryBuilder $queryBuilder;
 
-    public function __construct(protected readonly EntityManagerInterface $entityManager, protected readonly InstitutionService $institutionService)
+    public function __construct(protected readonly EntityManagerInterface $entityManager, protected readonly InstitutionService $institutionService, protected readonly SearchFormSessionService $searchFormSessionService)
     {
     }
 
-    public function search(array $sessionData, ?array $settings): array
+    public function search(): array
     {
-        $this->sessionData = $sessionData;
         $this->buildQuery();
 
-        $recordsPerPage = $settings['recordsPerPage'] ?? HomeController::RECORDS_PER_PAGE[0];
-        $page = $settings['page'] ?? 1;
+        $recordsPerPage = $this->searchFormSessionService->getSetting('recordsPerPage', SearchFormController::RECORDS_PER_PAGE[0]);
+        $page = $this->searchFormSessionService->getSetting('page',1);
         $offset = ($page - 1) * $recordsPerPage;
 
-        $sort = $settings['sort'] ?? null;
+        $sort = $this->searchFormSessionService->getSetting('sort');
 
         $this->queryBuilder
             ->setFirstResult((int)$offset)
@@ -43,87 +43,87 @@ class SearchFormFacade
             ->createQueryBuilder('s')
             ->join('s.species', 'species');
 
-        if (!empty($this->sessionData['institution'])) {
-            $this->queryInstitution((int)$this->sessionData['institution']);
+        if (!empty($this->searchFormSessionService->getFilter('institution'))) {
+            $this->queryInstitution((int)$this->searchFormSessionService->getFilter('institution'));
         }
 
-        if (!empty($this->sessionData['herbNr'])) {
-            $this->queryHerbNr($this->sessionData['herbNr']);
+        if (!empty($this->searchFormSessionService->getFilter('herbNr'))) {
+            $this->queryHerbNr($this->searchFormSessionService->getFilter('herbNr'));
         }
 
-        if (!empty($this->sessionData['collection'])) {
+        if (!empty($this->searchFormSessionService->getFilter('collection'))) {
             $this->queryBuilder->andWhere('s.collection = :collection')
-                ->setParameter('collection', $this->sessionData['collection']);
+                ->setParameter('collection', $this->searchFormSessionService->getFilter('collection'));
         }
 
-        if (!empty($this->sessionData['collectorNr'])) {
-            $this->queryCollectorNr($this->sessionData['collectorNr']);
+        if (!empty($this->searchFormSessionService->getFilter('collectorNr'))) {
+            $this->queryCollectorNr($this->searchFormSessionService->getFilter('collectorNr'));
         }
 
-        if (!empty($this->sessionData['collector'])) {
-            $this->queryCollector($this->sessionData['collector']);
+        if (!empty($this->searchFormSessionService->getFilter('collector'))) {
+            $this->queryCollector($this->searchFormSessionService->getFilter('collector'));
         }
 
-        if (!empty($this->sessionData['collectionDate'])) {
+        if (!empty($this->searchFormSessionService->getFilter('collectionDate'))) {
             $this->queryBuilder->andWhere('s.date LIKE :collectionDate')
-                ->setParameter('collectionDate', '%' . $this->sessionData['collectionDate'] . "%");
+                ->setParameter('collectionDate', '%' . $this->searchFormSessionService->getFilter('collectionDate') . "%");
         }
 
-        if (!empty($this->sessionData['collectionNr'])) {
+        if (!empty($this->searchFormSessionService->getFilter('collectionNr'))) {
             $this->queryBuilder->andWhere('s.collectionNumber LIKE :collectionNr')
-                ->setParameter('collectionNr', '%' . $this->sessionData['collectionNr'] . "%");
+                ->setParameter('collectionNr', '%' . $this->searchFormSessionService->getFilter('collectionNr') . "%");
         }
 
-        if (!empty($this->sessionData['series'])) {
-            $this->querySeries($this->sessionData['series']);
+        if (!empty($this->searchFormSessionService->getFilter('series'))) {
+            $this->querySeries($this->searchFormSessionService->getFilter('series'));
         }
 
-        if (!empty($this->sessionData['locality'])) {
-            $this->queryLocality($this->sessionData['locality']);
+        if (!empty($this->searchFormSessionService->getFilter('locality'))) {
+            $this->queryLocality($this->searchFormSessionService->getFilter('locality'));
         }
 
-        if (!empty($this->sessionData['habitus'])) {
+        if (!empty($this->searchFormSessionService->getFilter('habitus'))) {
             $this->queryBuilder->andWhere('s.collection LIKE :habitus')
-                ->setParameter('habitus', '%' . $this->sessionData['habitus'] . '%');
+                ->setParameter('habitus', '%' . $this->searchFormSessionService->getFilter('habitus') . '%');
         }
 
-        if (!empty($this->sessionData['habitat'])) {
+        if (!empty($this->searchFormSessionService->getFilter('habitat'))) {
             $this->queryBuilder->andWhere('s.collection LIKE :habitat')
-                ->setParameter('habitat', '%' . $this->sessionData['habitat'] . '%');
+                ->setParameter('habitat', '%' . $this->searchFormSessionService->getFilter('habitat') . '%');
         }
 
-        if (!empty($this->sessionData['taxonAlternative'])) {
+        if (!empty($this->searchFormSessionService->getFilter('taxonAlternative'))) {
             $this->queryBuilder->andWhere('s.taxonAlternative LIKE :taxonAlternative')
-                ->setParameter('taxonAlternative', '%' . $this->sessionData['taxonAlternative'] . '%');
+                ->setParameter('taxonAlternative', '%' . $this->searchFormSessionService->getFilter('taxonAlternative') . '%');
         }
 
-        if (!empty($this->sessionData['annotation'])) {
+        if (!empty($this->searchFormSessionService->getFilter('annotation'))) {
             $this->queryBuilder->andWhere('s.collection LIKE :annotation')
-                ->setParameter('annotation', '%' . $this->sessionData['annotation'] . '%');
+                ->setParameter('annotation', '%' . $this->searchFormSessionService->getFilter('annotation') . '%');
         }
 
-        if (!empty($this->sessionData['country'])) {
-            $this->queryCountry($this->sessionData['country']);
+        if (!empty($this->searchFormSessionService->getFilter('country'))) {
+            $this->queryCountry($this->searchFormSessionService->getFilter('country'));
         }
 
-        if (!empty($this->sessionData['province'])) {
-            $this->queryProvince($this->sessionData['province']);
+        if (!empty($this->searchFormSessionService->getFilter('province'))) {
+            $this->queryProvince($this->searchFormSessionService->getFilter('province'));
         }
 
-        if (!empty($this->sessionData['onlyType'])) {
+        if (!empty($this->searchFormSessionService->getFilter('onlyType'))) {
             $this->queryType();
         }
 
-        if (!empty($this->sessionData['onlyImages'])) {
+        if (!empty($this->searchFormSessionService->getFilter('onlyImages'))) {
             $this->queryImages();
         }
 
-        if (!empty($this->sessionData['family'])) {
-            $this->queryFamily($this->sessionData['family']);
+        if (!empty($this->searchFormSessionService->getFilter('family'))) {
+            $this->queryFamily($this->searchFormSessionService->getFilter('family'));
         }
 
-        if (!empty($this->sessionData['taxon'])) {
-            $this->queryTaxon($this->sessionData['taxon']);
+        if (!empty($this->searchFormSessionService->getFilter('taxon'))) {
+            $this->queryTaxon($this->searchFormSessionService->getFilter('taxon'));
         }
 
     }
@@ -146,7 +146,7 @@ class SearchFormFacade
     {
         $pattern = '/^(?<code>[a-zA-Z]+)\s+(?<rest>.*)$/';
         $this->queryBuilder->andWhere('s.herbNumber LIKE :herbNr');
-        if (preg_match($pattern, $value, $matches) && empty($this->sessionData['institution'])) {
+        if (preg_match($pattern, $value, $matches) && empty($this->searchFormSessionService->getFilter('institution'))) {
             try {
                 $institution = $this->institutionService->findByCode($matches['code']);
                 $this->queryInstitution($institution->getId());
@@ -298,7 +298,7 @@ class SearchFormFacade
         $taxonId = array_filter(array_column($taxaIds, 'taxonID'), fn($value) => $value !== null);
         $basID = array_filter(array_column($taxaIds, 'basID'), fn($value) => $value !== null);
         $synID = array_filter(array_column($taxaIds, 'synID'), fn($value) => $value !== null);
-        if (!empty($this->sessionData['includeSynonym'])) {
+        if (!empty($this->searchFormSessionService->getFilter('includeSynonym'))) {
             if (!empty($taxonId)) {
                 $conditions[] = $this->queryBuilder->expr()->orX(
                     $this->queryBuilder->expr()->in('species.id', $taxonId),
@@ -373,11 +373,11 @@ class SearchFormFacade
         return $this->entityManager->getConnection()->executeQuery($sql, ['part1' => $part1 . '%', 'part2' => $part2 . '%'])->fetchAllAssociative();
     }
 
-    public function providePaginationInfo(array $filters, ?array $settings = null): array
+    public function providePaginationInfo(): array
     {
-        $totalRecordCount = $this->countResults($filters);
-        $recordsPerPage = $settings['recordsPerPage'] ?? HomeController::RECORDS_PER_PAGE[0];
-        $currentPage = $settings['page'] ?? 1;
+        $totalRecordCount = $this->countResults();
+        $recordsPerPage = $this->searchFormSessionService->getSetting('recordsPerPage', SearchFormController::RECORDS_PER_PAGE[0]);
+        $currentPage = $this->searchFormSessionService->getSetting('page', 1);
 
         $totalPages = ceil($totalRecordCount / $recordsPerPage);
 
@@ -404,12 +404,11 @@ class SearchFormFacade
         if ($totalPages > 1) {
             $pages[] = $totalPages;
         }
-        return ["totalRecords" => $totalRecordCount, "totalPages" => $totalPages, "currentPage" => $currentPage, "pages" => $pages];
+        return ["totalRecords" => $totalRecordCount, "totalPages" => $totalPages, "pages" => $pages];
     }
 
-    public function countResults($sessionData): int
+    public function countResults(): int
     {
-        $this->sessionData = $sessionData;
         $this->buildQuery();
         return $this->queryBuilder->select('count(DISTINCT s.id)')->getQuery()->getSingleScalarResult();
     }

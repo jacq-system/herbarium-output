@@ -1,43 +1,55 @@
 {# debug list of form fields #}
-{#    {% for key, value in data %}#}
-{#        {{ key }}: {{ value }}<br>#}
-{#    {% endfor %}#}
+{#    {% for key, value in data %} #}
+{#        {{ key }}: {{ value }}<br> #}
+{#    {% endfor %} #}
 
 <div class="divider"></div>
 <div class="row">
     <div class="s12 m3 col"><b>{{ recordsCount|number_format }} record{% if recordsCount|length >1 %}s{% endif %}
             found</b></div>
     <div class="s12 m6 col">
-         <ul class="pagination">
-                {# previous page #}
-                {% if currentPage > 1 %}
-                    <li class="page" data-number="{{ currentPage - 1 }}" data-path="{{ path('app_front_databaseSearchSettings') }}"><button class="waves-effect btn">&lt;</button></li>
-                {% endif %}
+        <ul class="pagination">
+            {# previous page #}
+            {% if sessionService.getSetting('page',1) > 1 %}
+                <li class="page" data-number="{{ sessionService.getSetting('page',1) - 1 }}"
+                    data-path="{{ path('app_front_databaseSearchSettings') }}">
+                    <button class="waves-effect btn">&lt;</button>
+                </li>
+            {% endif %}
 
-                {# page range #}
-                {% for page in pages %}
-                    {% if page == currentPage %}
-                        <li><strong> <button class="waves-effect btn active">{{ page }}</button></strong></li>
-                    {% elseif page is same as ('...') %}
-                        <li> .... </li>
-                    {% else %}
-                        <li class="page" data-number="{{ page }}" data-path="{{ path('app_front_databaseSearchSettings') }}">
-                            <button class="waves-effect btn">{{ page }}</button></li>
-                    {% endif %}
-                {% endfor %}
-
-                {# Odkaz na následující stránku #}
-                {% if currentPage < totalPages %}
-                    <li class="page" data-number="{{ currentPage + 1 }}" data-path="{{ path('app_front_databaseSearchSettings') }}"><button class="waves-effect btn">&gt;</button></li>
+            {# page range #}
+            {% for page in pages %}
+                {% if page == sessionService.getSetting('page',1) %}
+                    <li><strong>
+                            <button class="waves-effect btn active">{{ page }}</button>
+                        </strong></li>
+                {% elseif page is same as ('...') %}
+                    <li> ....</li>
+                {% else %}
+                    <li class="page" data-number="{{ page }}"
+                        data-path="{{ path('app_front_databaseSearchSettings') }}">
+                        <button class="waves-effect btn">{{ page }}</button>
+                    </li>
                 {% endif %}
-            </ul>
+            {% endfor %}
+
+            {# Odkaz na následující stránku #}
+            {% if sessionService.getSetting('page',1) < totalPages %}
+                <li class="page" data-number="{{ sessionService.getSetting('page',1) + 1 }}"
+                    data-path="{{ path('app_front_databaseSearchSettings') }}">
+                    <button class="waves-effect btn">&gt;</button>
+                </li>
+            {% endif %}
+        </ul>
     </div>
     <div class="s8 m2 col">
         <form>
             <div class="input-field">
-                <select id="recordsPerPage" name="recordsPerPage" data-path="{{ path('app_front_databaseSearchSettings') }}">
+                <select id="recordsPerPage" name="recordsPerPage"
+                        data-path="{{ path('app_front_databaseSearchSettings') }}">
                     {% for value in recordsPerPage %}
-                        <option value="{{ value }}" {% if value == settings['recordsPerPage'] %}selected{% endif %}>{{ value }}</option>
+                        <option value="{{ value }}"
+                                {% if value == sessionService.getSetting('recordsPerPage',10) %}selected{% endif %}>{{ value }}</option>
                     {% endfor %}
                 </select>
                 <label for="recordsPerPage">Items per Page</label>

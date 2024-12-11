@@ -36,12 +36,12 @@
     </div>
     <!-- form -->
     <div class="container">
-        <form id="searchForm" action="{{ path('app_front_databaseSearch') }}" method="POST" data-prefilled="{% if values is not empty %}1{% else %}0{% endif %}">
+        <form id="searchForm" action="{{ path('app_front_databaseSearch') }}" method="POST" data-prefilled="{% if sessionService.hasFilters() %}1{% else %}0{% endif %}">
             <div class="row">
                 <!-- Taxon -->
                 <div class="col s12 m6">
                     <div class="input-field ">
-                        <input value="{{ values['taxon'] | default(null)}}" name="taxon" id="taxon" type="text">
+                        <input value="{{ sessionService.getFilter('taxon')}}" name="taxon" id="taxon" type="text">
                         <label for="taxon">Scientific name</label>
                     </div>
                     <!-- Institution -->
@@ -49,14 +49,14 @@
                         <select id="institution" name="institution" data-source="{{ path('app_front_collectionsSelectOptions') }}">
                             <option value="">all herbaria</option>
                             {% for id, name in institutions %}
-                                <option value="{{ id }}" {% if values['institution'] is defined and values['institution'] == id %}selected{% endif %}>{{ name }}</option>
+                                <option value="{{ id }}" {% if sessionService.getFilter('institution') == id %}selected{% endif %}>{{ name }}</option>
                             {% endfor %}
                         </select>
                         <label for="institution">Search in</label>
                     </div>
                     <!-- Collector -->
                     <div class="input-field ">
-                        <input value="{{ values['collector'] | default(null)}}" name="collector" type="text">
+                        <input value="{{ sessionService.getFilter('collector')}}" name="collector" type="text">
                         <label for="collector">Collector</label>
                     </div>
 
@@ -64,18 +64,18 @@
                 <div class="col s12 m6">
                     <!-- Family -->
                     <div class="input-field ">
-                        <input value="{{ values['family'] | default(null)}}" name="family" type="text">
+                        <input value="{{ sessionService.getFilter('family')}}" name="family" type="text">
                         <label for="family">Family</label>
                     </div>
                     <!-- Herbar Number -->
                     <div class="input-field ">
-                        <input value="{{ values['herbNr'] | default(null)}}" name="herbNr" id="herbNr" type="text">
+                        <input value="{{ sessionService.getFilter('herbNr')}}" name="herbNr" id="herbNr" type="text">
                         <label for="herbNr">Herbar Nr#</label>
                     </div>
 
                     <!-- Collector Number -->
                     <div class="input-field  ">
-                        <input value="{{ values['collectorNr'] | default(null)}}" name="collectorNr" id="collectorNr" type="text">
+                        <input value="{{ sessionService.getFilter('collectorNr')}}" name="collectorNr" id="collectorNr" type="text">
                         <label for="collectorNr">Collector Nr#</label>
                     </div>
                 </div>
@@ -91,65 +91,65 @@
                                     <div class="col s12 m6">
                                         <!-- Ident. History -->
                                         <div class="input-field">
-                                            <input name="taxonAlternative" id="taxonAlternative" type="text" value="{{ values['taxonAlternative'] | default(null)}}">
+                                            <input name="taxonAlternative" id="taxonAlternative" type="text" value="{{ sessionService.getFilter('taxonAlternative')}}">
                                             <label for="taxonAlternative">Ident. History</label>
                                         </div>
                                         <div class="input-field">
                                             <select id="collection" name="collection">
                                                 <option value="">all subcollections</option>
                                                 {% for id, name in collections %}
-                                                    <option value="{{ id }}" {% if values['collection'] is defined and values['collection'] == id %}selected{% endif %}>{{ name }}</option>
+                                                    <option value="{{ id }}" {% if sessionService.getFilter('collection') == id %}selected{% endif %}>{{ name }}</option>
                                                 {% endfor %}
                                             </select>
                                             <label for="collection">Search in</label>
                                         </div>
                                         <!-- Series -->
                                         <div class="input-field">
-                                            <input name="series" id="series" type="text" value="{{ values['series'] | default(null)}}">
+                                            <input name="series" id="series" type="text" value="{{ sessionService.getFilter('series')}}">
                                             <label for="series">Series</label>
                                         </div>
                                         <!-- Country -->
                                         <div  class="input-field">
-                                            <input id="country" name="country" type="text" value="{{ values['country'] | default(null)}}">
+                                            <input id="country" name="country" type="text" value="{{ sessionService.getFilter('country')}}">
                                             <label for="country">Country</label>
                                         </div>
                                         <!-- Habitat -->
                                         <div class="input-field">
-                                            <input name="habitat" id="habitat" type="text" value="{{ values['habitat'] | default(null)}}">
+                                            <input name="habitat" id="habitat" type="text" value="{{ sessionService.getFilter('habitat')}}">
                                             <label for="habitat">Habitat</label>
                                         </div>
                                         <div class="input-field">
-                                            <input name="annotation" id="annotation" type="text" value="{{ values['annotation'] | default(null)}}">
+                                            <input name="annotation" id="annotation" type="text" value="{{ sessionService.getFilter('annotation')}}">
                                             <label for="annotation">Annotation</label>
                                         </div>
                                     </div>
                                     <div class="col s12 m6">
                                         <!-- CollectionDate -->
                                         <div class="input-field">
-                                            <input name="collectionDate" id="collectionDate" type="text" value="{{ values['collectionDate'] | default(null)}}">
+                                            <input name="collectionDate" id="collectionDate" type="text" value="{{ sessionService.getFilter('collectionDate')}}">
                                             <label for="collectionDate">Collection date</label>
                                         </div>
                                         <!-- Collection Number -->
                                         <div class="input-field">
-                                            <input name="collectionNr" id="collectionNr" type="text" value="{{ values['collectionNr'] | default(null)}}">
+                                            <input name="collectionNr" id="collectionNr" type="text" value="{{ sessionService.getFilter('collectionNr')}}">
                                             <label for="collectionNr">Collection Nr#</label>
                                         </div>
 
                                         <!-- Locality -->
                                         <div class="input-field">
-                                            <input name="locality" id="locality" type="text" value="{{ values['locality'] | default(null)}}">
+                                            <input name="locality" id="locality" type="text" value="{{ sessionService.getFilter('locality')}}">
                                             <label for="locality">Locality</label>
                                         </div>
 
                                         <!-- State/Province -->
                                         <div class="input-field">
-                                            <input id="province" name="province" type="text" value="{{ values['province'] | default(null)}}">
+                                            <input id="province" name="province" type="text" value="{{ sessionService.getFilter('province')}}">
                                             <label for="province">State/Province</label>
                                         </div>
 
                                         <!-- Habitus -->
                                         <div class="input-field">
-                                            <input name="habitus" id="habitus" type="text" value="{{ values['habitus'] | default(null)}}">
+                                            <input name="habitus" id="habitus" type="text" value="{{ sessionService.getFilter('habitus')}}">
                                             <label for="habitus">Habitus</label>
                                         </div>
 
@@ -165,7 +165,7 @@
                         <div class="switch">
                             <label>
                                 Only display Type Records
-                                <input type="checkbox" id="checkbox_type" name="onlyType" {% if values['onlyType'] is defined and values['onlyType'] == 'on' %}checked{% endif %}>
+                                <input type="checkbox" id="checkbox_type" name="onlyType" {% if sessionService.getFilter('onlyType') == 'on' %}checked{% endif %}>
                                 <span class="lever"></span>
                             </label>
                         </div>
@@ -177,7 +177,7 @@
                         <div class="switch">
                             <label>
                                 Only display Records with Images
-                                <input type="checkbox" id="checkbox_images" name="onlyImages" {% if values['onlyImages'] is defined and values['onlyImages'] == 'on' %}checked{% endif %}>
+                                <input type="checkbox" id="checkbox_images" name="onlyImages" {% if sessionService.getFilter('onlyImages') == 'on' %}checked{% endif %}>
                                 <span class="lever"></span>
                             </label>
                         </div>
@@ -189,7 +189,7 @@
                         <div class="switch">
                             <label>
                                 Incl. synonym search
-                                <input type="checkbox" id="checkbox_synonym" name="includeSynonym" {% if values['includeSynonym'] is defined and values['includeSynonym'] == 'on' %}checked{% endif %}>
+                                <input type="checkbox" id="checkbox_synonym" name="includeSynonym" {% if sessionService.getFilter('includeSynonym') == 'on' %}checked{% endif %}>
                                 <span class="lever"></span>
                             </label>
                         </div>
