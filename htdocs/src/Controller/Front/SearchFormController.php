@@ -8,6 +8,7 @@ use App\Enum\TimeIntervalEnum;
 use App\Facade\SearchFormFacade;
 use App\Service\CollectionService;
 use App\Service\DjatokaService;
+use App\Service\ImageService;
 use App\Service\InstitutionService;
 use App\Service\Rest\DevelopersService;
 use App\Service\Rest\StatisticsService;
@@ -27,7 +28,7 @@ class SearchFormController extends AbstractController
     //TODO the name of taxon is not part of the query now, hard to sort
     public const array SORT = ["taxon"=> '', 'collector'=>'s.collector'];
 
-    public function __construct( protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService)
+    public function __construct( protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly ImageService $imageService)
     {
     }
 
@@ -90,5 +91,13 @@ class SearchFormController extends AbstractController
         $result = $this->collectionService->getAllFromHerbariumAsPairs($herbariumID);
 
         return new JsonResponse($result);
+    }
+
+    #[Route('/showImage', name: 'app_front_showImage', methods: ['GET'])]
+    public function showImage(#[MapQueryParameter] string $filename): Response
+    {
+        $picDetails = $this->imageService->getPicDetails($filename);
+        $url = $this->imageService->doRedirectShowPic($picDetails);
+        return $this->redirect($url);
     }
 }
