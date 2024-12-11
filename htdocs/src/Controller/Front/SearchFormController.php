@@ -106,4 +106,25 @@ class SearchFormController extends AbstractController
     {
         return new Response();
     }
+
+    #[Route('/exportKml', name: 'app_front_exportKml', methods: ['GET'])]
+    public function exportKml(): Response
+    {
+        return new Response();
+    }
+    #[Route('/exportExcel', name: 'app_front_exportExcel', methods: ['GET'])]
+    public function exportExcel(): Response
+    {
+        return new Response();
+    }
+    #[Route('/exportCsv', name: 'app_front_exportCsv', methods: ['GET'])]
+    public function exportCsv(): Response
+    {
+        return new Response();
+    }
+    #[Route('/exportOds', name: 'app_front_exportOds', methods: ['GET'])]
+    public function exportOds(): Response
+    {
+        return new Response();
+    }
 }

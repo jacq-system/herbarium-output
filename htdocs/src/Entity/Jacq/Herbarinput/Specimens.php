@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace App\Entity\Jacq\Herbarinput;
 
@@ -62,6 +62,44 @@ class Specimens
     #[ORM\Column(name: 'taxon_alt')]
     private string $taxonAlternative;
 
+
+    #[ORM\Column(name: 'Coord_S')]
+    private ?int $degreeS;
+
+    #[ORM\Column(name: 'S_Min')]
+    private ?int $minuteS;
+
+    #[ORM\Column(name: 'S_Sec')]
+    private ?float $secondS;
+
+    #[ORM\Column(name: 'Coord_N')]
+    private ?int $degreeN;
+
+    #[ORM\Column(name: 'N_Min')]
+    private ?int $minuteN;
+
+    #[ORM\Column(name: 'N_Sec')]
+    private ?float $secondN;
+
+    #[ORM\Column(name: 'Coord_W')]
+    private ?int $degreeW;
+
+    #[ORM\Column(name: 'W_Min')]
+    private ?int $minuteW;
+
+    #[ORM\Column(name: 'W_Sec')]
+    private ?float $secondW;
+
+    #[ORM\Column(name: 'Coord_E')]
+    private ?int $degreeE;
+
+    #[ORM\Column(name: 'E_Min')]
+    private ?int $minuteE;
+
+    #[ORM\Column(name: 'E_Sec')]
+    private ?float $secondE;
+
+
     #[ORM\ManyToOne(targetEntity: HerbCollection::class)]
     #[ORM\JoinColumn(name: 'collectionID', referencedColumnName: 'collectionID')]
     private HerbCollection $collection;
@@ -90,13 +128,14 @@ class Specimens
 
     #[ORM\ManyToOne(targetEntity: Province::class)]
     #[ORM\JoinColumn(name: 'provinceID', referencedColumnName: 'provinceID')]
-    private ?Province $province  = null;
+    private ?Province $province = null;
 
     #[ORM\ManyToOne(targetEntity: Country::class)]
     #[ORM\JoinColumn(name: 'NationID', referencedColumnName: 'NationID')]
-    private ?Country $country  = null;
+    private ?Country $country = null;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->typus = new ArrayCollection();
     }
 
@@ -130,11 +169,6 @@ class Specimens
         return $this->collectionNumber;
     }
 
-    public function isObservation(): ?bool
-    {
-        return $this->observation;
-    }
-
     public function getDate(): ?string
     {
         return $this->date;
@@ -165,16 +199,6 @@ class Specimens
         return $this->annotation;
     }
 
-    public function hasImage(): ?bool
-    {
-        return $this->image;
-    }
-
-    public function hasObservationImage(): ?bool
-    {
-        return $this->imageObservation;
-    }
-
     public function getTaxonAlternative(): string
     {
         return $this->taxonAlternative;
@@ -200,7 +224,6 @@ class Specimens
         return $this->species;
     }
 
-
     public function getImageIconFilename(): ?string
     {
         if ($this->isObservation()) {
@@ -221,6 +244,21 @@ class Specimens
             }
         }
         return null;
+    }
+
+    public function isObservation(): ?bool
+    {
+        return $this->observation;
+    }
+
+    public function hasObservationImage(): ?bool
+    {
+        return $this->imageObservation;
+    }
+
+    public function hasImage(): ?bool
+    {
+        return $this->image;
     }
 
     public function getPhaidraImage(): ?PhaidraCache
@@ -249,5 +287,23 @@ class Specimens
         return $this->country;
     }
 
+    public function getLatitude(): ?float
+    {
+        if ($this->degreeS > 0 || $this->minuteS > 0 || $this->secondS > 0) {
+            return -($this->degreeS + $this->minuteS / 60 + $this->secondS / 3600);
+        } else if ($this->degreeN > 0 || $this->minuteN > 0 || $this->secondN > 0) {
+            return $this->degreeN + $this->minuteN / 60 + $this->secondN / 3600;
+        }
+        return null;
+    }
 
+    public function getLongitude(): ?float
+    {
+        if ($this->degreeW > 0 || $this->minuteW > 0 || $this->secondW > 0) {
+            return -($this->degreeW + $this->minuteW / 60 + $this->secondW / 3600);
+        } else if ($this->degreeE > 0 || $this->minuteE > 0 || $this->secondE > 0) {
+            return $this->degreeE + $this->minuteE / 60 + $this->secondE / 3600;
+        }
+        return null;
+    }
 }

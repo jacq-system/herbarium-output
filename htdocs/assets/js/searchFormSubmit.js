@@ -1,4 +1,5 @@
 import paginationInit from "./searchFormPagination";
+import popupMap from "./popupMap";
 
 export function searchFormSubmit() {
 
@@ -37,6 +38,7 @@ export function searchResults(form) {
             let paginator = document.getElementById('recordsPerPage');
             M.FormSelect.init(paginator);
             paginationInit();
+            popupMap();
             hideProgressBar();
         })
         .catch((error) => {

@@ -188,6 +188,9 @@ class SpecimenExtension extends AbstractExtension
     public function getGps(Specimens $specimen): string
     {
         $text ='';
+        if ($specimen->getLongitude() != null || $specimen->getLatitude() != null) {
+            $text.="<img class='gps' width='15' height='15' src='logo/institutions/OpenStreetMap.png'  data-gps='".round($specimen->getLatitude(),5).",".$specimen->getLongitude()."'>";
+        }
 
         return $text;
     }

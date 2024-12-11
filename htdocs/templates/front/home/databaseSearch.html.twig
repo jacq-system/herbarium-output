@@ -5,6 +5,25 @@
 
 <div class="divider"></div>
 <div class="row">
+    <div class="s12 m8 col offset-m2">
+        <br>
+        <button class="btn waves-effect" type="button"  value="Create map">Create map</button>
+        <a href="{{ path('app_front_exportKml') }}" download>
+            <button class="btn waves-effect ">Download KML</button>
+        </a>
+        <a href="{{ path('app_front_exportExcel') }}" download>
+            <button class="btn waves-effect ">Download XLSX</button>
+        </a>
+        <a href="{{ path('app_front_exportOds') }}" download>
+            <button class="btn waves-effect ">Download ODS</button>
+        </a>
+        <a href="{{ path('app_front_exportCsv') }}" download>
+            <button class="btn waves-effect ">Download CSV</button>
+        </a>
+    </div>
+</div>
+<div class="divider"></div>
+<div class="row">
     <div class="s12 m3 col"><b>{{ recordsCount|number_format }} record{% if recordsCount|length >1 %}s{% endif %}
             found</b></div>
     <div class="s12 m6 col">
@@ -58,25 +77,6 @@
     </div>
 
 </div>
-<div class="row">
-    <div class="s12 m8 col">
-        <button class="btn-flat waves-effect waves-light" type="button" name="action" value="Create map">Create map
-        </button>
-        <a href="exportKml.php" download>
-            <button class="btn-flat waves-effect waves-light exportKML">Download KML</button>
-        </a>
-        <a href="exportCsv.php" download>
-            <button class="btn-flat waves-effect waves-light exportContent">Download XLSX</button>
-        </a>
-        <a href="exportCsv.php?type=ods" download>
-            <button class="btn-flat waves-effect waves-light exportContent">Download ODS</button>
-        </a>
-        <a href="exportCsv.php?type=csv" download>
-            <button class="btn-flat waves-effect waves-light exportContent">Download CSV</button>
-        </a>
-    </div>
-</div>
-<div class="divider"></div>
 <div class="row">
     <table id="result-table" class="striped responsive-table">
         <thead>
