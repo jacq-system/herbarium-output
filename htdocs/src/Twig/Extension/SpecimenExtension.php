@@ -24,6 +24,7 @@ class SpecimenExtension extends AbstractExtension
             new TwigFilter('collectorBotanyPilot', [$this, 'getSpecimenCollectorBotanyPilot']),
             new TwigFilter('scientificName', [$this, 'getScientificName']),
             new TwigFilter('locality', [$this, 'getLocality']),
+            new TwigFilter('localityLong', [$this, 'getLocalityLong']),
             new TwigFilter('typus', [$this, 'getTypus']),
             new TwigFilter('institution', [$this, 'getCollection']),
             new TwigFilter('gps', [$this, 'getGps']),
@@ -170,6 +171,27 @@ class SpecimenExtension extends AbstractExtension
             } else {
                 $text .= trim($specimen->getLocality());
             }
+        }
+        return $text;
+    }
+
+    public function getLocalityLong(Specimens $specimen): string
+    {
+        $text = '';
+        $switch = false;
+        if ($specimen?->getCountry()?->getNameEng() !== null) {
+            $text .= "<img src='flags/" . strtolower($specimen->getCountry()->getIsoCode()) . ".png'> " . $specimen->getCountry()->getNameEng();
+            $switch = true;
+        }
+        if ($specimen->getProvince() !== null) {
+            if ($switch) {
+                $text .= " / ";
+            }
+            $text .= $specimen->getProvince()->getName();
+        }
+
+        if ($specimen->getLongitude() != null || $specimen->getLatitude() != null) {
+            $text .= " - ". round($specimen->getLatitude(), 5) . "," . $specimen->getLongitude();
         }
         return $text;
     }

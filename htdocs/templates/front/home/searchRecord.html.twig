@@ -1,19 +1,19 @@
 <tr>
     <td>
-        {% if specimen.isObservation() or specimen.hasObservationImage() or specimen.hasImage() %}
+        {% if specimen.isObservation() or specimen.hasImageObservation() or specimen.hasImage() %}
 
-            {% if specimen.isObservation() and not specimen.hasObservationImage() %} {#  has no link #}
+            {% if specimen.isObservation() and not specimen.hasImageObservation() %} {#  has no link #}
                 <img height="15" alt='' src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}"
                      width="15"/>
             {% else %}
-                {% if (specimen.getCollection().getInstitution().getImageDefinition() is not null and specimen.getCollection().getInstitution().getImageDefinition().isIiifCapable()) or (specimen.getPhaidraImage() is not empty) %}
+                {% if (specimen.getHerbCollection().getInstitution().getImageDefinition() is not null and specimen.getHerbCollection().getInstitution().getImageDefinition().isIiifCapable()) or (specimen.getPhaidraImage() is not empty) %}
 
-                    <a href='{{ specimen.getCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ specimen.getId()|manifestUrl }}'
+                    <a href='{{ specimen.getHerbCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ specimen.getId()|manifestUrl }}'
                        target='imgBrowser'>
                         <img height='15' width="15" alt=''
                              src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}">
                     </a><br>
-                    <a href='{{ specimen.getCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ specimen.getId()|manifestUrl }}'
+                    <a href='{{ specimen.getHerbCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ specimen.getId()|manifestUrl }}'
                        target='_blank'>
                         <img height='15' width='15' alt='' src='{{ asset('recordIcons') }}/logo-iiif.png'>
                     </a>
@@ -34,5 +34,5 @@
     <td>{{ specimen | locality | raw }}</td>
     <td>{{ specimen | typus | raw }}</td>
     {{ specimen | institution | raw}}
-    <td>{{ specimen | gps | raw}}
+    <td>{{ specimen | gps | raw}}</td>
 </tr>

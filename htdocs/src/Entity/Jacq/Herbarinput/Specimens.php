@@ -20,8 +20,13 @@ class Specimens
     #[ORM\Column(name: 'Nummer')]
     private ?int $number = null;
 
+    #[ORM\Column(name: 'altitude_min')]
+    private ?int $altitudeMin = null;
+    #[ORM\Column(name: 'altitude_max')]
+    private ?int $altitudeMax = null;
+
     #[ORM\Column(name: 'HerbNummer')]
-    private string $herbNumber;
+    private ?string $herbNumber = null;
 
     #[ORM\Column(name: 'alt_number')]
     private ?string $altNumber = null;
@@ -45,7 +50,7 @@ class Specimens
     private ?string $locality = null;
 
     #[ORM\Column(name: 'Fundort_engl')]
-    private string $localityEng;
+    private ?string $localityEng;
 
     #[ORM\Column(name: 'habitus')]
     private ?string $habitus = null;
@@ -54,10 +59,10 @@ class Specimens
     private ?string $determination = null;
 
     #[ORM\Column(name: 'habitat')]
-    private string $habitat;
+    private ?string $habitat;
 
     #[ORM\Column(name: 'Bemerkungen')]
-    private string $annotation;
+    private ?string $annotation;
 
     #[ORM\Column(name: 'digital_image')]
     private ?bool $image;
@@ -126,7 +131,7 @@ class Specimens
     private Collection $typus;
 
     #[ORM\OneToMany(targetEntity: StableIdentifier::class, mappedBy: 'specimen')]
-    private Collection $stableIdentifier;
+    private Collection $stableIdentifiers;
 
     #[ORM\OneToOne(targetEntity: PhaidraCache::class, mappedBy: 'specimen')]
     private ?PhaidraCache $phaidraImages = null;
@@ -146,107 +151,23 @@ class Specimens
     public function __construct()
     {
         $this->typus = new ArrayCollection();
-        $this->stableIdentifier = new ArrayCollection();
+        $this->stableIdentifiers = new ArrayCollection();
     }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getNumber(): ?int
-    {
-        return $this->number;
-    }
-
-    public function getHerbNumber(): string
-    {
-        return $this->herbNumber;
-    }
-
-    public function getAltNumber(): ?string
-    {
-        return $this->altNumber;
-    }
-
-    public function getSeriesNumber(): ?string
-    {
-        return $this->seriesNumber;
-    }
-
-    public function getCollectionNumber(): ?string
-    {
-        return $this->collectionNumber;
-    }
-
-    public function getDate(): ?string
-    {
-        return $this->date;
-    }
-
-    public function getLocality(): ?string
-    {
-        return $this->locality;
-    }
-
-    public function getLocalityEng(): string
-    {
-        return $this->localityEng;
-    }
-
-    public function getHabitus(): ?string
-    {
-        return $this->habitus;
-    }
-
-    public function getHabitat(): string
-    {
-        return $this->habitat;
-    }
-
-    public function getAnnotation(): string
-    {
-        return $this->annotation;
-    }
-
-    public function getTaxonAlternative(): string
-    {
-        return $this->taxonAlternative;
-    }
-
-    public function getHerbCollection(): HerbCollection
-    {
-        return $this->herbCollection;
-    }
-
-    public function getSeries(): ?Series
-    {
-        return $this->series;
-    }
-
-    public function getTypus(): Typus
-    {
-        return $this->typus;
-    }
-
-    public function getSpecies(): Species
-    {
-        return $this->species;
-    }
 
     public function getImageIconFilename(): ?string
     {
         if ($this->isObservation()) {
-            if ($this->hasObservationImage()) {
+            if ($this->hasImageObservation()) {
                 return "obs.png";
             } else {
                 return "obs_bw.png";
             }
         } else {
-            if ($this->hasImage() || $this->hasObservationImage()) {
-                if ($this->hasObservationImage() && $this->hasImage()) {
+            if ($this->hasImage() || $this->hasImageObservation()) {
+                if ($this->hasImageObservation() && $this->hasImage()) {
                     return "spec_obs.png";
-                } elseif ($this->hasObservationImage() && !$this->hasImage()) {
+                } elseif ($this->hasImageObservation() && !$this->hasImage()) {
                     return "obs.png";
                 } else {
                     return "camera.png";
@@ -256,46 +177,6 @@ class Specimens
         return null;
     }
 
-    public function isObservation(): ?bool
-    {
-        return $this->observation;
-    }
-
-    public function hasObservationImage(): ?bool
-    {
-        return $this->imageObservation;
-    }
-
-    public function hasImage(): ?bool
-    {
-        return $this->image;
-    }
-
-    public function getPhaidraImage(): ?PhaidraCache
-    {
-        return $this->phaidraImages;
-    }
-
-    public function getCollector(): ?Collector
-    {
-        return $this->collector;
-    }
-
-
-    public function getCollector2(): ?Collector2
-    {
-        return $this->collector2;
-    }
-
-    public function getProvince(): ?Province
-    {
-        return $this->province;
-    }
-
-    public function getCountry(): ?Country
-    {
-        return $this->country;
-    }
 
     public function getLatitude(): ?float
     {
@@ -317,9 +198,74 @@ class Specimens
         return null;
     }
 
-    public function getStableIdentifiers(): Collection
+    public function getId(): ?int
     {
-        return $this->stableIdentifier;
+        return $this->id;
+    }
+
+    public function getNumber(): ?int
+    {
+        return $this->number;
+    }
+
+    public function getAltitudeMin(): ?int
+    {
+        return $this->altitudeMin;
+    }
+
+    public function getAltitudeMax(): ?int
+    {
+        return $this->altitudeMax;
+    }
+
+    public function getHerbNumber(): ?string
+    {
+        return $this->herbNumber;
+    }
+
+    public function getAltNumber(): ?string
+    {
+        return $this->altNumber;
+    }
+
+    public function getSeriesNumber(): ?string
+    {
+        return $this->seriesNumber;
+    }
+
+    public function getCollectionNumber(): ?string
+    {
+        return $this->collectionNumber;
+    }
+
+    public function isObservation(): ?bool
+    {
+        return $this->observation;
+    }
+
+    public function isAccessibleForPublic(): bool
+    {
+        return $this->accessibleForPublic;
+    }
+
+    public function getDate(): ?string
+    {
+        return $this->date;
+    }
+
+    public function getLocality(): ?string
+    {
+        return $this->locality;
+    }
+
+    public function getLocalityEng(): ?string
+    {
+        return $this->localityEng;
+    }
+
+    public function getHabitus(): ?string
+    {
+        return $this->habitus;
     }
 
     public function getDetermination(): ?string
@@ -327,9 +273,79 @@ class Specimens
         return $this->determination;
     }
 
-    public function isAccessibleForPublic(): bool
+    public function getHabitat(): ?string
     {
-        return $this->accessibleForPublic;
+        return $this->habitat;
+    }
+
+    public function getAnnotation(): ?string
+    {
+        return $this->annotation;
+    }
+
+    public function hasImage(): ?bool
+    {
+        return $this->image;
+    }
+
+    public function hasImageObservation(): ?bool
+    {
+        return $this->imageObservation;
+    }
+
+    public function getTaxonAlternative(): string
+    {
+        return $this->taxonAlternative;
+    }
+
+    public function getHerbCollection(): HerbCollection
+    {
+        return $this->herbCollection;
+    }
+
+    public function getSeries(): ?Series
+    {
+        return $this->series;
+    }
+
+    public function getCollector(): ?Collector
+    {
+        return $this->collector;
+    }
+
+    public function getCollector2(): ?Collector2
+    {
+        return $this->collector2;
+    }
+
+    public function getTypus(): Collection
+    {
+        return $this->typus;
+    }
+
+    public function getStableIdentifiers(): Collection
+    {
+        return $this->stableIdentifiers;
+    }
+
+    public function getPhaidraImages(): ?PhaidraCache
+    {
+        return $this->phaidraImages;
+    }
+
+    public function getSpecies(): Species
+    {
+        return $this->species;
+    }
+
+    public function getProvince(): ?Province
+    {
+        return $this->province;
+    }
+
+    public function getCountry(): ?Country
+    {
+        return $this->country;
     }
 
 

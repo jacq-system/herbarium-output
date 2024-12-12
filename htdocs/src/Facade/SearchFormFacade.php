@@ -40,7 +40,8 @@ class SearchFormFacade
     {
         $this->queryBuilder = $this->entityManager->getRepository(Specimens::class)
             ->createQueryBuilder('s')
-            ->join('s.species', 'species');
+            ->join('s.species', 'species')
+            ->join('s.herbCollection', 'c');
 
         if (!empty($this->searchFormSessionService->getFilter('institution'))) {
             $this->queryInstitution((int)$this->searchFormSessionService->getFilter('institution'));
@@ -51,7 +52,7 @@ class SearchFormFacade
         }
 
         if (!empty($this->searchFormSessionService->getFilter('collection'))) {
-            $this->queryBuilder->andWhere('s.collection = :collection')
+            $this->queryBuilder->andWhere('c.id = :collection')
                 ->setParameter('collection', $this->searchFormSessionService->getFilter('collection'));
         }
 
@@ -82,12 +83,12 @@ class SearchFormFacade
         }
 
         if (!empty($this->searchFormSessionService->getFilter('habitus'))) {
-            $this->queryBuilder->andWhere('s.collection LIKE :habitus')
+            $this->queryBuilder->andWhere('s.habitus LIKE :habitus')
                 ->setParameter('habitus', '%' . $this->searchFormSessionService->getFilter('habitus') . '%');
         }
 
         if (!empty($this->searchFormSessionService->getFilter('habitat'))) {
-            $this->queryBuilder->andWhere('s.collection LIKE :habitat')
+            $this->queryBuilder->andWhere('s.habitat LIKE :habitat')
                 ->setParameter('habitat', '%' . $this->searchFormSessionService->getFilter('habitat') . '%');
         }
 
@@ -97,7 +98,7 @@ class SearchFormFacade
         }
 
         if (!empty($this->searchFormSessionService->getFilter('annotation'))) {
-            $this->queryBuilder->andWhere('s.collection LIKE :annotation')
+            $this->queryBuilder->andWhere('s.annotation LIKE :annotation')
                 ->setParameter('annotation', '%' . $this->searchFormSessionService->getFilter('annotation') . '%');
         }
 
@@ -130,7 +131,6 @@ class SearchFormFacade
     protected function queryInstitution(int $id): void
     {
         $this->queryBuilder
-            ->join('s.collection', 'c')
             ->join('c.institution', 'i')
             ->andWhere('i.id = :institution')
             ->setParameter('institution', $id);

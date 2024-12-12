@@ -17,7 +17,7 @@
                 <img src="{{ asset('recordIcons/access_denied.jpg') }}" alt="access denied">
             </div>
         </div>
-        {% else %}
+    {% else %}
         <div class="container-fluid">
             <div class="row">
                 <div class="col s12 m6 offset-l1">
@@ -52,19 +52,21 @@
                             " . $specimen['epithet']); &exact=true" title="Search in tropicos" target="_blank">
                             <img alt="tropicos" src="images/tropicos.png" border="0" width="16" height="16">
                             </a>
-                             echo nl2br($output['taxonAuth'], true); </div>
+                            echo nl2br($output['taxonAuth'], true);
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
                             <h7>Family</h7>
                         </div>
-                        <div class="col s12 m9"><p><b>{{ specimen.getSpecies().getGenus().getFamily().getName()}}</b></p></div>
+                        <div class="col s12 m9"><p><b>{{ specimen.getSpecies().getGenus().getFamily().getName() }}</b>
+                            </p></div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
                             <h7>Det./rev./conf./assigned</h7>
                         </div>
-                        <div class="col s12 m9"><p><b>{{ specimen.getDetermination()}}</b></p></div>
+                        <div class="col s12 m9"><p><b>{{ specimen.getDetermination() }}</b></p></div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
@@ -81,31 +83,32 @@
                         <div class="col s12 m3">
                             <h7>Collector</h7>
                         </div>
-                        <div class="col s12 m9"><p><b>{{ specimen | collector | raw}} {{ specimen | collectorBotanyPilot | raw}}</b></p></div>
+                        <div class="col s12 m9"><p>
+                                <b>{{ specimen | collector | raw }} {{ specimen | collectorBotanyPilot | raw }}</b></p>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
                             <h7>Date</h7>
                         </div>
-                        <div class="col s12 m9"><p><b>{{ specimen.getDate()}}</b></p></div>
+                        <div class="col s12 m9"><p><b>{{ specimen.getDate() }}</b></p></div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
                             <h7>Location</h7>
                         </div>
-                        <div class="col s12 m9"><p><b> echo $output['location']; |nl2br </b></p></div>
+                        <div class="col s12 m9"><p><b>{{ specimen | localityLong | raw}}</b></p></div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
                             <h7>Label</h7>
                         </div>
-                        <div class="col s12 m9"><p><b> echo nl2br($specimen['Fundort'], true);
-                                      if (!empty($specimen['altitude_min'])):
-                                    ;&nbsp;Alt.  echo nl2br($specimen['altitude_min'], true); &nbsp;m
-                                     if (!empty($specimen['altitude_max'])):
-                                    &nbsp; - &nbsp;  echo nl2br($specimen['altitude_max'], true); &nbsp;m
-                                     endif;
-                                     endif;
+                        <div class="col s12 m9"><p><b>{{ specimen.getLocality() | nl2br }}
+                                    {% if specimen.getAltitudeMin() is not empty %}
+                                        Alt. {{ specimen.getAltitudeMin() }}
+                                        {% if specimen.getAltitudeMax() is not empty %} - {{ specimen.getAltitudeMax() }}
+                                        {% endif %}
+                                    {% endif %}
                                 </b></p></div>
                     </div>
                     <div class="row">
@@ -124,21 +127,21 @@
                         <div class="col s12 m3">
                             <h7>Annotations</h7>
                         </div>
-                        <div class="col s12 m9"><p><b>{{ specimen | annotation}}</b></p></div>
+                        <div class="col s12 m9"><p><b>{{ specimen | annotation }}</b></p></div>
                     </div>
 
-{#                    TODO not implemented#}
-{#                    <div class="row">#}
-{#                        <div class="col s12 m3">#}
-{#                            <h7>Annosys annotations </h7>#}
-{#                        </div>#}
-{#                        <div class="col s12 m9"><p><b>#}
-{#                                     not implemented#}
-{#                                </b></p></div>#}
-{#                    </div> #}
+                    {#                    TODO not implemented #}
+                    {#                    <div class="row"> #}
+                    {#                        <div class="col s12 m3"> #}
+                    {#                            <h7>Annosys annotations </h7> #}
+                    {#                        </div> #}
+                    {#                        <div class="col s12 m9"><p><b> #}
+                    {#                                     not implemented #}
+                    {#                                </b></p></div> #}
+                    {#                    </div> #}
                 </div>
                 <div class="col">
-                      if (!empty($output['picture_include'])) { include $output['picture_include']; }
+                    if (!empty($output['picture_include'])) { include $output['picture_include']; }
                 </div>
             </div>
         </div>
