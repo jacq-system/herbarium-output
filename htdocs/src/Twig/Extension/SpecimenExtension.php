@@ -82,7 +82,6 @@ class SpecimenExtension extends AbstractExtension
 
         }
 
-
         if (!empty($specimen->getCollector2())) {
             if (strstr($specimen->getCollector2()->getName(), "&") || strstr($specimen->getCollector2()->getName(), "et al.")) {
                 $text .= " et al.";
@@ -140,7 +139,7 @@ class SpecimenExtension extends AbstractExtension
             $text.=  $specimen->getProvince()->getName();
             $switch = true;
         }
-        if (trim($specimen->getLocality())) {
+        if (!empty($specimen->getLocality())) {
             if ($switch) {
                 $text .= ". ";
             }

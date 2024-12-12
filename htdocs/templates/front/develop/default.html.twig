@@ -10,6 +10,9 @@
         <a href="{{ path('app_front_checkDjatokaServers') }}">checkDjatokaServers</a><br/>
         <a href="{{ path('app_front_jacqStatistics') }}">jacqStatistics</a><br/>
 
-
+<div class="row">
+    <h5>TODO </h5>
+    <p>SELECT * FROM `tbl_specimens` where Sammler_2ID IS NULL; | SELECT * FROM `tbl_specimens` where Sammler_2ID = 0; - all zeros should be replaced by NULL</p>
+</div>
     </div>
 {% endblock %}

@@ -39,7 +39,7 @@ class Specimens
     private ?string $date;
 
     #[ORM\Column(name: 'Fundort')]
-    private string $locality;
+    private ?string $locality = null;
 
     #[ORM\Column(name: 'Fundort_engl')]
     private string $localityEng;
@@ -174,7 +174,7 @@ class Specimens
         return $this->date;
     }
 
-    public function getLocality(): string
+    public function getLocality(): ?string
     {
         return $this->locality;
     }
