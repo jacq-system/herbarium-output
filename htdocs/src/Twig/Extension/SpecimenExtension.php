@@ -4,13 +4,14 @@ namespace App\Twig\Extension;
 
 use App\Entity\Jacq\Herbarinput\Specimens;
 use App\Facade\Rest\IiifFacade;
+use App\Service\SpecimenService;
 use Doctrine\ORM\EntityManagerInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 
 class SpecimenExtension extends AbstractExtension
 {
-    public function __construct(protected readonly IiifFacade $iiifFacade, protected readonly EntityManagerInterface $entityManager)
+    public function __construct(protected readonly IiifFacade $iiifFacade, protected readonly EntityManagerInterface $entityManager, protected readonly SpecimenService $specimenService)
     {
     }
 
@@ -20,12 +21,15 @@ class SpecimenExtension extends AbstractExtension
             new TwigFilter('manifestUrl', [$this, 'getManifest']),
             new TwigFilter('taxonAuthority', [$this, 'getTaxonAuthority']),
             new TwigFilter('collector', [$this, 'getSpecimenCollector']),
+            new TwigFilter('collectorBotanyPilot', [$this, 'getSpecimenCollectorBotanyPilot']),
             new TwigFilter('scientificName', [$this, 'getScientificName']),
             new TwigFilter('locality', [$this, 'getLocality']),
             new TwigFilter('typus', [$this, 'getTypus']),
             new TwigFilter('institution', [$this, 'getCollection']),
             new TwigFilter('gps', [$this, 'getGps']),
-
+            new TwigFilter('pid', [$this, 'getStableIdentifiers']),
+            new TwigFilter('herbariumNr', [$this, 'getHerbariumNumber']),
+            new TwigFilter('annotation', [$this, 'getAnnotation']),
         ];
     }
 
@@ -116,6 +120,24 @@ class SpecimenExtension extends AbstractExtension
         return trim($text);
     }
 
+    public function getSpecimenCollectorBotanyPilot(Specimens $specimen): string
+    {
+        $text = '';
+        $collector = $specimen->getCollector();
+        if ($collector !== null) {
+          if (!empty($collector->getWikidataId())) {
+                    $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/q/" . basename($collector->getWikidataId()) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
+                } elseif (!empty($collector->getHuhId())) {
+                    $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/h/" . basename($collector->getHuhId()) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
+                } elseif (!empty($collector->getViafId())) {
+                    $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/v/" . basename($collector->getHuhId()) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
+                } elseif (!empty($collector->getOrcidId())) {
+                    $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/o/" . basename($collector->getOrcidId()) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
+                }
+        }
+        return $text;
+    }
+
     public function getScientificName(Specimens $specimen): string
     {
 
@@ -126,17 +148,17 @@ class SpecimenExtension extends AbstractExtension
 
     public function getLocality(Specimens $specimen): string
     {
-        $text ='';
+        $text = '';
         $switch = false;
         if ($specimen?->getCountry()?->getNameEng() !== null) {
-            $text.= "<img src='flags/" . strtolower($specimen->getCountry()->getIsoCode()) . ".png'> " . $specimen->getCountry()->getNameEng();
+            $text .= "<img src='flags/" . strtolower($specimen->getCountry()->getIsoCode()) . ".png'> " . $specimen->getCountry()->getNameEng();
             $switch = true;
         }
-        if ($specimen->getProvince()!== null) {
+        if ($specimen->getProvince() !== null) {
             if ($switch) {
                 $text .= ". ";
             }
-            $text.=  $specimen->getProvince()->getName();
+            $text .= $specimen->getProvince()->getName();
             $switch = true;
         }
         if (!empty($specimen->getLocality())) {
@@ -151,46 +173,90 @@ class SpecimenExtension extends AbstractExtension
         }
         return $text;
     }
+
     public function getTypus(Specimens $specimen): string
     {
-        $text ='';
+        $text = '';
         $sql = "SELECT t.typus
                 FROM tbl_specimens_types tst
                  LEFT JOIN tbl_typi t ON t.typusID = tst.typusID
                 WHERE tst.specimenID = :specimen";
 
-        $typi = $this->entityManager->getConnection()->executeQuery($sql, ['specimen'=> $specimen->getId()])->fetchFirstColumn();
+        $typi = $this->entityManager->getConnection()->executeQuery($sql, ['specimen' => $specimen->getId()])->fetchFirstColumn();
         $first = true;
         foreach ($typi as $typus) {
             if (!$first) {
-                $text.= "<br>";
+                $text .= "<br>";
             }
-            $text .= '<span class="red-text"><b>'.$typus . '</b></span>';
+            $text .= '<span class="red-text"><b>' . $typus . '</b></span>';
             $first = false;
         }
 
         return $text;
     }
+
     public function getCollection(Specimens $specimen): string
     {//TODO some smarter way to provide title in <td>
-        $text ='';
-        if ($specimen->getCollection()->getInstitution()->getId() == '29') {
-           $text.= "<td title=\"".$specimen->getCollection()->getName() . "\">";
-        $text.=  $specimen->getHerbNumber() ."</td>";
+        $text = '';
+        if ($specimen->getHerbCollection()->getInstitution()->getId() == '29') {
+            $text .= "<td title=\"" . $specimen->getHerbCollection()->getName() . "\">";
+            $text .= $specimen->getHerbNumber() . "</td>";
         } else {
-            $text.= "<td title='" . $specimen->getCollection()->getName() . "'>"   ;
-            $text.= (mb_strtoupper($specimen->getCollection()->getCollShortPrj())) . " " . $specimen->getHerbNumber() . "</td>";
+            $text .= "<td title='" . $specimen->getHerbCollection()->getName() . "'>";
+            $text .= (mb_strtoupper($specimen->getHerbCollection()->getCollShortPrj())) . " " . $specimen->getHerbNumber() . "</td>";
             //. htmlspecialchars(collectionItem($specimen['collection'])) . " " . htmlspecialchars($specimen['HerbNummer']) . "</td>";
         }
         return $text;
     }
+
     public function getGps(Specimens $specimen): string
     {
-        $text ='';
+        $text = '';
         if ($specimen->getLongitude() != null || $specimen->getLatitude() != null) {
-            $text.="<img class='gps' width='15' height='15' src='logo/institutions/OpenStreetMap.png'  data-gps='".round($specimen->getLatitude(),5).",".$specimen->getLongitude()."'>";
+            $text .= "<img class='gps' width='15' height='15' src='logo/institutions/OpenStreetMap.png'  data-gps='" . round($specimen->getLatitude(), 5) . "," . $specimen->getLongitude() . "'>";
         }
 
         return $text;
+    }
+
+    public function getStableIdentifiers(Specimens $specimen): string
+    {
+        $text = '';
+        if (count($specimen->getStableIdentifiers()) > 1) {
+            foreach ($specimen->getStableIdentifiers() as $pid) {
+                $text .= "<b><a href=" . $pid->getIdentifier() . " target='_blank'>" . $pid->getIdentifier() . "</a></b>";
+                $text .= $pid->getTimestamp()->format('d-m-Y') . "<br>";
+            }
+        } elseif (count($specimen->getStableIdentifiers()) == 1) {
+            foreach ($specimen->getStableIdentifiers() as $pid) {
+                $text .= "<b><a href=" . $pid->getIdentifier() . " target='_blank'>" . $pid->getIdentifier() . "</a></b>";
+            }
+        } else {
+            $text .= $this->specimenService->constructStableIdentifier($specimen);
+        }
+
+        return $text;
+    }
+
+    public function getHerbariumNumber(Specimens $specimen): string
+    {
+        $sourceId = $specimen->getHerbCollection()->getId();
+        if ($sourceId === 29) {
+            return ($specimen->getHerbNumber()) ?: ('B (JACQ-ID ' . $specimen->getId() . ')');
+        } elseif ($sourceId === 50) {
+            return ($specimen->getHerbNumber()) ?: ('Willing (JACQ-ID ' . $specimen->getId() . ')');
+        } else {
+            return $specimen->getHerbCollection()->getInstitution()->getCode() . " " . $specimen->getHerbNumber();
+        }
+
+    }
+    public function getAnnotation(Specimens $specimen): string
+    {
+        $sourceId = $specimen->getHerbCollection()->getId();
+        if ($sourceId == '35') {
+            return (preg_replace("#<a .*a>#", "", $specimen->getAnnotation()));
+        }
+        return $specimen->getAnnotation();
+
     }
 }

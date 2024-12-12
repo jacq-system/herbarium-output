@@ -30,10 +30,13 @@ class Specimens
     private ?string $seriesNumber;
 
     #[ORM\Column(name: 'CollNummer')]
-    private string $collectionNumber;
+    private ?string $collectionNumber = null;
 
     #[ORM\Column(name: 'observation')]
     private ?bool $observation;
+
+    #[ORM\Column(name: 'accessible')]
+    private bool $accessibleForPublic;
 
     #[ORM\Column(name: 'Datum')]
     private ?string $date;
@@ -45,7 +48,10 @@ class Specimens
     private string $localityEng;
 
     #[ORM\Column(name: 'habitus')]
-    private string $habitus;
+    private ?string $habitus = null;
+
+    #[ORM\Column(name: 'det')]
+    private ?string $determination = null;
 
     #[ORM\Column(name: 'habitat')]
     private string $habitat;
@@ -102,7 +108,7 @@ class Specimens
 
     #[ORM\ManyToOne(targetEntity: HerbCollection::class)]
     #[ORM\JoinColumn(name: 'collectionID', referencedColumnName: 'collectionID')]
-    private HerbCollection $collection;
+    private HerbCollection $herbCollection;
 
     #[ORM\ManyToOne(targetEntity: Series::class)]
     #[ORM\JoinColumn(name: 'seriesID', referencedColumnName: 'seriesID')]
@@ -118,6 +124,9 @@ class Specimens
 
     #[ORM\OneToMany(targetEntity: Typus::class, mappedBy: 'specimen')]
     private Collection $typus;
+
+    #[ORM\OneToMany(targetEntity: StableIdentifier::class, mappedBy: 'specimen')]
+    private Collection $stableIdentifier;
 
     #[ORM\OneToOne(targetEntity: PhaidraCache::class, mappedBy: 'specimen')]
     private ?PhaidraCache $phaidraImages = null;
@@ -137,6 +146,7 @@ class Specimens
     public function __construct()
     {
         $this->typus = new ArrayCollection();
+        $this->stableIdentifier = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -164,7 +174,7 @@ class Specimens
         return $this->seriesNumber;
     }
 
-    public function getCollectionNumber(): string
+    public function getCollectionNumber(): ?string
     {
         return $this->collectionNumber;
     }
@@ -184,7 +194,7 @@ class Specimens
         return $this->localityEng;
     }
 
-    public function getHabitus(): string
+    public function getHabitus(): ?string
     {
         return $this->habitus;
     }
@@ -204,9 +214,9 @@ class Specimens
         return $this->taxonAlternative;
     }
 
-    public function getCollection(): HerbCollection
+    public function getHerbCollection(): HerbCollection
     {
-        return $this->collection;
+        return $this->herbCollection;
     }
 
     public function getSeries(): ?Series
@@ -214,7 +224,7 @@ class Specimens
         return $this->series;
     }
 
-    public function getTypus(): Collection
+    public function getTypus(): Typus
     {
         return $this->typus;
     }
@@ -306,4 +316,22 @@ class Specimens
         }
         return null;
     }
+
+    public function getStableIdentifiers(): Collection
+    {
+        return $this->stableIdentifier;
+    }
+
+    public function getDetermination(): ?string
+    {
+        return $this->determination;
+    }
+
+    public function isAccessibleForPublic(): bool
+    {
+        return $this->accessibleForPublic;
+    }
+
+
+
 }

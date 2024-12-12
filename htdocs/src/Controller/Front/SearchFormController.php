@@ -13,6 +13,7 @@ use App\Service\InstitutionService;
 use App\Service\Rest\DevelopersService;
 use App\Service\Rest\StatisticsService;
 use App\Service\SearchFormSessionService;
+use App\Service\SpecimenService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,7 +29,7 @@ class SearchFormController extends AbstractController
     //TODO the name of taxon is not part of the query now, hard to sort
     public const array SORT = ["taxon"=> '', 'collector'=>'s.collector'];
 
-    public function __construct( protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly ImageService $imageService)
+    public function __construct( protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly ImageService $imageService, protected readonly SpecimenService $specimenService)
     {
     }
 
@@ -104,7 +105,7 @@ class SearchFormController extends AbstractController
     #[Route('/detail', name: 'app_front_specimenDetail', methods: ['GET'])]
     public function detail(#[MapQueryParameter] int $id): Response
     {
-        return new Response();
+        return $this->render('front/home/detail.html.twig', ['specimen'=> $this->specimenService->find($id)]);
     }
 
     #[Route('/exportKml', name: 'app_front_exportKml', methods: ['GET'])]

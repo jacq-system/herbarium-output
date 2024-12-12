@@ -18,4 +18,21 @@ class Family
 
     #[ORM\Column(name: 'family_alt')]
     private string $nameAlternative;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getNameAlternative(): string
+    {
+        return $this->nameAlternative;
+    }
+
+
 }

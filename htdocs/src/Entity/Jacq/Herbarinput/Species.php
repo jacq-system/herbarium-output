@@ -28,5 +28,11 @@ class Species
         return $this->id;
     }
 
+    public function getGenus(): Genus
+    {
+        return $this->genus;
+    }
+
+
 
 }

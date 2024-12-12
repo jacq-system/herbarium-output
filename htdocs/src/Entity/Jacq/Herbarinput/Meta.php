@@ -29,4 +29,11 @@ class Meta
     {
         return $this->imageDefinition;
     }
+
+    public function getCode(): string
+    {
+        return $this->code;
+    }
+
+
 }

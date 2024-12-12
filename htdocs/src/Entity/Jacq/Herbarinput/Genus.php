@@ -16,4 +16,11 @@ class Genus
     #[ORM\ManyToOne(targetEntity: Family::class)]
     #[ORM\JoinColumn(name: 'familyID', referencedColumnName: 'familyID')]
     private Family $family;
+
+    public function getFamily(): Family
+    {
+        return $this->family;
+    }
+
+
 }
