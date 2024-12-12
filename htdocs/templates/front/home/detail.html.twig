@@ -46,13 +46,12 @@
                             <h7>Stored under taxonname</h7>
                         </div>
                         <div class="col s12 m9"><p><b></b></p>
-                            <b> echo $output['taxon']; </b>
-                            &nbsp;
-                            <a href="http://www.tropicos.org/NameSearch.aspx?name= echo urlencode($specimen['genus'] . "
-                            " . $specimen['epithet']); &exact=true" title="Search in tropicos" target="_blank">
-                            <img alt="tropicos" src="images/tropicos.png" border="0" width="16" height="16">
+                            <b>{{ specimen | taxonName | raw}}</b>
+
+                            <a href="http://www.tropicos.org/NameSearch.aspx?name={{ specimen | tropicos}}&exact=true" title="Search in tropicos" target="_blank">
+                            <img alt="tropicos" src="{{ asset('recordIcons/tropicos.png') }}" width="16" height="16">
                             </a>
-                            echo nl2br($output['taxonAuth'], true);
+                            {{ specimen.getId() | taxonAuthority | raw | nl2br }}
                         </div>
                     </div>
                     <div class="row">
@@ -72,11 +71,8 @@
                         <div class="col s12 m3">
                             <h7>Ident. history</h7>
                         </div>
-                        <div class="col s12 m9"><p><b> echo $specimen['taxon_alt']; </b></p>
-
-                            if (strlen($output['typusText']) > 0) {
-                            echo nl2br($output['typusText'], true);
-                            }
+                        <div class="col s12 m9"><p><b>{{ specimen.getTaxonAlternative() }}</b></p>
+                            {{ specimen | typusText | raw}}
                         </div>
                     </div>
                     <div class="row">
@@ -96,7 +92,7 @@
                     <div class="row">
                         <div class="col s12 m3">
                             <h7>Location</h7>
-                        </div>
+                        </div>XX ad MAP XX
                         <div class="col s12 m9"><p><b>{{ specimen | localityLong | raw}}</b></p></div>
                     </div>
                     <div class="row">

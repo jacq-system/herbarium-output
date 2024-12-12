@@ -5,13 +5,14 @@ namespace App\Twig\Extension;
 use App\Entity\Jacq\Herbarinput\Specimens;
 use App\Facade\Rest\IiifFacade;
 use App\Service\SpecimenService;
+use App\Service\TypusService;
 use Doctrine\ORM\EntityManagerInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 
 class SpecimenExtension extends AbstractExtension
 {
-    public function __construct(protected readonly IiifFacade $iiifFacade, protected readonly EntityManagerInterface $entityManager, protected readonly SpecimenService $specimenService)
+    public function __construct(protected readonly IiifFacade $iiifFacade, protected readonly EntityManagerInterface $entityManager, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService)
     {
     }
 
@@ -31,6 +32,10 @@ class SpecimenExtension extends AbstractExtension
             new TwigFilter('pid', [$this, 'getStableIdentifiers']),
             new TwigFilter('herbariumNr', [$this, 'getHerbariumNumber']),
             new TwigFilter('annotation', [$this, 'getAnnotation']),
+            new TwigFilter('typusText', [$this, 'getTypusText']),
+            new TwigFilter('tropicos', [$this, 'getTropicos']),
+            new TwigFilter('taxonName', [$this, 'getTaxonName']),
+            new TwigFilter('imageIframe', [$this, 'getImageIframe']),
         ];
     }
 
@@ -280,5 +285,32 @@ class SpecimenExtension extends AbstractExtension
         }
         return $specimen->getAnnotation();
 
+    }
+
+    public function getTypusText(Specimens $specimen): string
+    {
+        return $this->typusService->makeTypus($specimen->getId());
+    }
+
+    public function getTaxonName(Specimens $specimen): string
+    {
+        return $this->typusService->taxonName($specimen);
+    }
+
+    public function getImageIframe(Specimens $specimen): string
+    {
+        return $this->typusService->taxonAuth($specimen);
+    }
+
+    public function getTropicos(Specimens $specimen): string
+    {
+        $sql = "SELECT  tg.genus, te.epithet
+                FROM tbl_specimens s
+                 LEFT JOIN tbl_tax_species ts                ON ts.taxonID = s.taxonID
+                 LEFT JOIN tbl_tax_epithets te               ON te.epithetID = ts.speciesID
+                 LEFT JOIN tbl_tax_genera tg                 ON tg.genID = ts.genID
+                 WHERE s.specimen_ID = :specimen";
+        $name = $this->entityManager->getConnection()->executeQuery($sql, ['specimen'=>$specimen->getId()])->fetchAssociative();
+        return $name['genus']." ".$name['epithet'];
     }
 }
