@@ -13,7 +13,7 @@ class PhaidraCache
     #[ORM\Id]
     #[ORM\OneToOne(targetEntity: Specimens::class, inversedBy: 'phaidraImages')]
     #[ORM\JoinColumn(name: 'specimenID', referencedColumnName: 'specimen_ID')]
-    private int $specimen;
+    private Specimens $specimen;
 
 
 }
