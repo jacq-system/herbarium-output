@@ -196,7 +196,7 @@ class SpecimenExtension extends AbstractExtension
         }
 
         if ($specimen->getLongitude() != null || $specimen->getLatitude() != null) {
-            $text .= " - ". round($specimen->getLatitude(), 5) . "," . $specimen->getLongitude();
+            $text .= " - ". $specimen->getCoords();
         }
         return $text;
     }
@@ -240,7 +240,7 @@ class SpecimenExtension extends AbstractExtension
     {
         $text = '';
         if ($specimen->getLongitude() != null || $specimen->getLatitude() != null) {
-            $text .= "<img class='gps' width='15' height='15' src='logo/institutions/OpenStreetMap.png'  data-gps='" . round($specimen->getLatitude(), 5) . "," . $specimen->getLongitude() . "'>";
+            $text .= "<img class='gps' width='15' height='15' src='logo/institutions/OpenStreetMap.png'  data-gps='" . $specimen->getCoords() . "'>";
         }
 
         return $text;

@@ -177,6 +177,39 @@ class Specimens
         return null;
     }
 
+    public function isObservation(): ?bool
+    {
+        return $this->observation;
+    }
+
+    public function hasImageObservation(): ?bool
+    {
+        return $this->imageObservation;
+    }
+
+    public function hasImage(): ?bool
+    {
+        return $this->image;
+    }
+
+    public function getCoords(bool $round = true): ?string
+    {
+        if (!$this->hasCoords()) {
+            return null;
+        }
+        if ($round) {
+            return round($this->getLatitude(), 5) . "," . round($this->getLongitude(), 5);
+        }
+        return $this->getLatitude() . "," . $this->getLongitude();
+    }
+
+    public function hasCoords(): bool
+    {
+        if ($this->getLatitude() !== null && $this->getLongitude() !== null) {
+            return true;
+        }
+        return false;
+    }
 
     public function getLatitude(): ?float
     {
@@ -238,11 +271,6 @@ class Specimens
         return $this->collectionNumber;
     }
 
-    public function isObservation(): ?bool
-    {
-        return $this->observation;
-    }
-
     public function isAccessibleForPublic(): bool
     {
         return $this->accessibleForPublic;
@@ -281,16 +309,6 @@ class Specimens
     public function getAnnotation(): ?string
     {
         return $this->annotation;
-    }
-
-    public function hasImage(): ?bool
-    {
-        return $this->image;
-    }
-
-    public function hasImageObservation(): ?bool
-    {
-        return $this->imageObservation;
     }
 
     public function getTaxonAlternative(): string
@@ -347,7 +365,6 @@ class Specimens
     {
         return $this->country;
     }
-
 
 
 }
