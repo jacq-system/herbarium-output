@@ -20,6 +20,13 @@ class ImageDefinition
     #[ORM\Column(name: 'iiif_url')]
     private string $iiifUrl;
 
+    #[ORM\Column(name: 'HerbNummerNrDigits')]
+    private int $herbNummerNrDigits;
+
+
+    #[ORM\Column(name: 'imgserver_type')]
+    private string $serverType;
+
     #[ORM\OneToOne(targetEntity: Meta::class, inversedBy: 'imageDefinition')]
     #[ORM\JoinColumn(name: 'source_id_fk', referencedColumnName: 'source_id')]
     private Meta|null $institution = null;
@@ -39,6 +46,15 @@ class ImageDefinition
         return $this->iiifUrl;
     }
 
+    public function getHerbNummerNrDigits(): int
+    {
+        return $this->herbNummerNrDigits;
+    }
+
+    public function getServerType(): string
+    {
+        return $this->serverType;
+    }
 
 
 

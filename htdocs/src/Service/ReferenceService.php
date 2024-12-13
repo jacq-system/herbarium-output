@@ -4,7 +4,6 @@ namespace App\Service;
 
 
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 
 readonly class ReferenceService

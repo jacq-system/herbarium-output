@@ -3,11 +3,12 @@
 namespace App\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 readonly class ImageService
 {
-    public function __construct(protected EntityManagerInterface $entityManager, protected HttpClientInterface $client)
+    public function __construct(protected EntityManagerInterface $entityManager, protected HttpClientInterface $client, protected RouterInterface $router)
     {
     }
 
@@ -17,7 +18,7 @@ readonly class ImageService
      * @param mixed $id either the specimen_ID or the wanted filename
      * @param string $specimenId specimenID (optional, default=empty)
      */
-    public function getPicDetails(string $id, ?string $specimenId = null):array
+    public function getPicDetails(string $id, ?string $sid = null):array
     {
          $originalFilename = null;
 
@@ -89,7 +90,7 @@ readonly class ImageService
                                         OR s.`CollNummer` = :HerbNummerAlternative
                                    ))
                                 )
-                         AND mc.`coll_short_prj` = :$coll_short_prj";
+                         AND mc.`coll_short_prj` = :coll_short_prj";
                         $result = $this->entityManager->getConnection()->executeQuery($sql, ['HerbNummer' => $HerbNummer, 'HerbNummerAlternative'=>$HerbNummerAlternative, 'coll_short_prj'=>$coll_short_prj])->fetchOne();
 
                         if ($result!== false) {
@@ -394,7 +395,7 @@ readonly class ImageService
      * @param array $picdetails result of getPicDetails
      * @return array decoded response of the picture server
      */
-    function getPicInfo($picdetails)
+    public function getPicInfo($picdetails)
     {
         $return = array('output' => '',
             'pics'   => array(),
@@ -536,4 +537,188 @@ readonly class ImageService
 
         return $return;
     }
+
+    public function checkPhaidra (int $specimenID): bool
+    {
+        $sql = "SELECT count(specimenID) FROM herbar_pictures.phaidra_cache WHERE specimenID = :specimen";
+        return (bool) $this->entityManager->getConnection()->executeQuery($sql, ['specimen' => $specimenID])->fetchOne();
+    }
+
+    //TODO completely enigmatic. Kept the hard redirect out of Symfony as unable understand all consequences
+    public function doRedirectDownloadPic(array $picdetails, string $format, int $thumb = 0)
+    {
+        // Setup default mime-type & file-extension
+        $mime = 'image/jpeg';
+        $fileExt = 'jpg';
+        $downloadPic = true;
+
+        if ($picdetails['imgserver_type'] == 'iiif') {
+            if ($thumb == 1) {
+                $url = $this->router->generate("services_rest_images_thumb", ["specimenID"=>$picdetails['specimenID']]);
+            } elseif ($thumb == 3) {
+                $url = $this->router->generate("services_rest_images_europeana", ["specimenID"=>$picdetails['specimenID']]);
+            } else {
+                $url = $this->router->generate("services_rest_images_thumb", ["specimenID"=>$picdetails['specimenID']]);
+            }
+            // Check if we are using djatoka
+        } elseif ($picdetails['imgserver_type'] == 'djatoka') {
+            // Check requested format
+            switch ($format) {
+                case 'jpeg2000':
+                    $mime = 'image/jp2';  $fileExt = 'jp2'; break;
+                case'tiff':
+                    $mime = 'image/tiff'; $fileExt = 'tif'; break;
+                default:
+                    $mime = 'image/jpeg'; $fileExt = 'jpg'; break;
+            }
+            // Default scaling is 50%
+            $scale = '0.5';
+
+            // Check if we need a thumbnail
+            if ($thumb != 0) {
+
+                if ($thumb == 2) {          // Thumbnail for kulturpool
+                    $scale = '0,1300';
+                } else if ($thumb == 3) {   // thumbnail for europeana
+//                $downloadPic = false;
+                    $scale = '1200,0';
+                } else if ($thumb == 4) {   // thumbnail for nhmw digitization project
+                    $scale = '160,0';
+                } else {                    // Default thumbnail
+                    $scale = '160,0';
+                }
+            }
+
+            $picinfo = $this->getPicInfo($picdetails);
+            if (!empty($picinfo['pics'][0]) && !in_array($picdetails['originalFilename'], $picinfo['pics']))  {
+                $filename = $picinfo['pics'][0];
+            } else {
+                $filename = $picdetails['originalFilename'];
+            }
+
+            // Construct URL to djatoka-resolver
+            $url = $this->cleanURL($picdetails['url']
+                .          "adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id={$filename}"
+                .          "&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format={$mime}&svc.scale={$scale}");
+
+        } elseif ($picdetails['imgserver_type'] == 'phaidra') {  // special treatment for PHAIDRA (WU only), for europeana only
+            $ch = curl_init("https://app05a.phaidra.org/manifests/WU" . substr($picdetails['requestFileName'], 3));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $curl_response = curl_exec($ch);
+            curl_close($ch);
+            $decoded = json_decode($curl_response, true);
+            $phaidraImages = array();
+            foreach ($decoded['sequences'] as $sequence) {
+                foreach ($sequence['canvases'] as $canvas) {
+                    foreach ($canvas['images'] as $image) {
+                        $phaidraImages[] = $image['resource']['service']['@id'];
+                    }
+                }
+            }
+            if (!empty($phaidraImages)) {
+                switch ($thumb) {
+                    case 0:
+                        $scale = "pct:25";  // about 50%
+                        break;
+                    case 3:
+                        $scale = "1200,";   // europeana
+                        break;
+                    default:
+                        $scale = "160,";    // default thumbnail
+                }
+                $url = $phaidraImages[0] . "/full/$scale/0/default.jpg";
+            } else {
+                $url = "";
+            }
+        } elseif ($picdetails['imgserver_type'] == 'bgbm') {
+            //... Check if we are using djatoka = 2 (Berlin image server)
+            // Check requested format
+            switch ($format) {
+                case 'jpeg2000':
+                    $mime = 'image/jp2';  $fileExt = 'jp2'; break;
+                case'tiff':
+                    $mime = 'image/tiff'; $fileExt = 'tif'; break;
+                default:
+                    $mime = 'image/jpeg'; $fileExt = 'jpg'; break;
+            }
+
+            // Construct URL to Berlin Server
+            // Remove hyphens
+            $fp = fopen('http://ww2.bgbm.org/rest/herb/thumb/' . $picdetails['filename'], "r");
+            $response = "";
+            while ($row = fgets($fp)) {
+                $response .= trim($row) . "\n";
+            }
+            $response_decoded = json_decode($response, true);
+            //$url = $picdetails['url'].'images'.$response_decoded['value'];
+            $url = $this->cleanURL('https://image.bgbm.org/images/herbarium/' . $response_decoded['value']);
+
+        } elseif ($picdetails['imgserver_type'] == 'baku') {           // depricated
+            //... Check if we are using djatoka = 3 (Baku image server)
+            // Check requested format
+            switch ($format) {
+                case 'jpeg2000':
+                    $mime = 'image/jp2';  $fileExt = 'jp2'; break;
+                case'tiff':
+                    $mime = 'image/tiff'; $fileExt = 'tif'; break;
+                default:
+                    $mime = 'image/jpeg'; $fileExt = 'jpg'; break;
+            }
+
+            $url = $this->cleanURL($picdetails['url'] . $picdetails['originalFilename']);
+
+        } else {                                                        // depricated
+            // ... if not fall back to old system
+            switch ($format) {
+                case'tiff':
+                    $urlExt = '&type=1';
+                    $mime = 'image/tiff';
+                    $fileExt = 'tif';
+                    break;
+                default:
+                    $urlExt = '';
+                    $mime = 'image/jp2';
+                    $fileExt = 'jp2';
+                    break;
+            }
+            $fileurl = 'downPic.php';
+            if ($thumb != 0) {
+                $mime = 'image/jpeg';
+                $fileExt = 'jpg';
+                if ($thumb == 2) {
+                    $fileurl = 'mktn_kp.php';
+                }
+                else {
+                    $fileurl = 'mktn.php';
+                }
+            }
+
+            $q = '';
+            foreach ($_GET as $k => $v) {
+                if (in_array($k, array('method', 'filename', 'format')) === false) {
+                    $q .= "&{$k}=" . rawurlencode($v);
+                }
+            }
+            $url = $this->cleanURL("{$picdetails['url']}/img/{$fileurl}?name={$picdetails['requestFileName']}{$urlExt}{$q}");
+        }
+
+        // ignore broken certificates
+        $context = stream_context_create(array("ssl"=>array("verify_peer"      => false,
+            "verify_peer_name" => false),
+            "http"=>array('timeout' => 60)));
+        // Send correct headers
+        header('Content-Type: ' . $mime);
+        if ($downloadPic) {
+            header('Content-Disposition: attachment; filename="' . $picdetails['requestFileName'] . '.' . $fileExt . '"');
+        }
+        ob_end_clean();
+        readfile($url, false, $context);
+    }
+
+    protected function cleanURL($url)
+    {
+        return preg_replace('/([^:])\/\//', '$1/', $url);
+    }
 }
+
+

@@ -20,7 +20,7 @@
     {% else %}
         <div class="container-fluid">
             <div class="row">
-                <div class="col s12 m5 offset-l1">
+                <div class="col s12 l5 offset-l1 condensed">
                     <div class="row">
                         <div class="col s12 m3">
                             <h7>Stable identifiers</h7>
@@ -97,7 +97,7 @@
                         </div>
                         <div class="col s12 m9">
                             {% if specimen.hasCoords() %}
-                                <div id="map" style="height: 200px; width: 100%;"
+                                <div id="map" style="height: 200px; width: 80%;"
                                      data-gps="{{ specimen.getCoords() }}"></div>
                             {% endif %}
                             <p><b>{{ specimen | localityLong | raw }}</b></p></div>
@@ -143,8 +143,8 @@
                     {#                                </b></p></div> #}
                     {#                    </div> #}
                 </div>
-                <div class="col">
-                    if (!empty($output['picture_include'])) { include $output['picture_include']; }
+                <div class="col s12 l6">
+                    {{ specimen | photoIframe | raw }}
                 </div>
             </div>
         </div>

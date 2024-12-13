@@ -110,6 +110,9 @@ class Specimens
     #[ORM\Column(name: 'E_Sec')]
     private ?float $secondE;
 
+    #[ORM\Column(name: 'ncbi_accession')]
+    private ?string $ncbiAccession;
+
 
     #[ORM\ManyToOne(targetEntity: HerbCollection::class)]
     #[ORM\JoinColumn(name: 'collectionID', referencedColumnName: 'collectionID')]
@@ -364,6 +367,11 @@ class Specimens
     public function getCountry(): ?Country
     {
         return $this->country;
+    }
+
+    public function getNcbiAccession(): ?string
+    {
+        return $this->ncbiAccession;
     }
 
 

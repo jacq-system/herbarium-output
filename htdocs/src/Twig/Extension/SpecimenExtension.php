@@ -123,6 +123,11 @@ class SpecimenExtension extends AbstractExtension
             }
         }
 
+        if(!empty($specimen->getNcbiAccession())) {
+           $text.= " &mdash; " . $specimen->getNcbiAccession()
+            . " <a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term=" . $specimen->getNcbiAccession() . "' target='_blank'>"
+            . "<img   height='16' src='logo/institutions/ncbi.gif' width='14'></a>";
+        }
         return trim($text);
     }
 
