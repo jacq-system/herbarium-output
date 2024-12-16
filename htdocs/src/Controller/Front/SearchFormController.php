@@ -11,6 +11,7 @@ use App\Service\DjatokaService;
 use App\Service\ExcelService;
 use App\Service\ImageService;
 use App\Service\InstitutionService;
+use App\Service\KmlService;
 use App\Service\Rest\DevelopersService;
 use App\Service\Rest\StatisticsService;
 use App\Service\SearchFormSessionService;
@@ -179,7 +180,12 @@ class SearchFormController extends AbstractController
     #[Route('/exportKml', name: 'app_front_exportKml', methods: ['GET'])]
     public function exportKml(): Response
     {
-        return new Response();
+        $kmlContent = $this->searchFormFacade->getKmlExport();
+        $response = new Response($kmlContent);
+        $response->headers->set('Content-Type', 'application/vnd.google-earth.kml+xml');
+        $response->headers->set('Content-Disposition', 'attachment; filename="specimens_download.kml"');
+
+        return $response;
     }
     #[Route('/exportExcel', name: 'app_front_exportExcel', methods: ['GET'])]
     public function exportExcel(): Response

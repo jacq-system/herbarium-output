@@ -348,5 +348,41 @@ readonly class SpecimenService
     }
 
 
+    public function collection(array $row): string
+    {
+        $text = $row['Sammler'];
+        if (strstr((string) $row['Sammler_2'], "&") || strstr((string)$row['Sammler_2'], "et al.")) {
+            $text .= " et al.";
+        } else if ($row['Sammler_2']) {
+            $text .= " & " . $row['Sammler_2'];
+        }
 
+        if ($row['series_number']) {
+            if ($row['Nummer']) {
+                $text .= " " . $row['Nummer'];
+            }
+            if ($row['alt_number'] && $row['alt_number'] != "s.n.") {
+                $text .= " " . $row['alt_number'];
+            }
+            if ($row['series']) {
+                $text .= " " . $row['series'];
+            }
+            $text .= " " . $row['series_number'];
+        } else {
+            if ($row['series']) {
+                $text .= " " . $row['series'];
+            }
+            if ($row['Nummer']) {
+                $text .= " " . $row['Nummer'];
+            }
+            if ($row['alt_number']) {
+                $text .= " " . $row['alt_number'];
+            }
+//        if (strstr($row['alt_number'], "s.n.")) {
+//            $text .= " [" . $row['Datum'] . "]";
+//        }
+        }
+
+        return trim($text);
+    }
 }

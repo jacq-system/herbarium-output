@@ -8,6 +8,7 @@ use App\Entity\Jacq\Herbarinput\StableIdentifier;
 use App\Entity\Jacq\Herbarinput\Typus;
 use App\Service\ExcelService;
 use App\Service\InstitutionService;
+use App\Service\KmlService;
 use App\Service\SearchFormSessionService;
 use App\Service\SpecimenService;
 use App\Service\TypusService;
@@ -22,7 +23,7 @@ class SearchFormFacade
     public const int PAGINATION_RANGE = 3;
     protected QueryBuilder $queryBuilder;
 
-    public function __construct(protected readonly EntityManagerInterface $entityManager, protected readonly InstitutionService $institutionService, protected readonly SearchFormSessionService $searchFormSessionService, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService)
+    public function __construct(protected readonly EntityManagerInterface $entityManager, protected readonly InstitutionService $institutionService, protected readonly SearchFormSessionService $searchFormSessionService, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService, protected readonly KmlService $kmlService)
     {
     }
 
@@ -600,7 +601,7 @@ class SearchFormFacade
             $rowSpecimen['family'],
             $rowSpecimen['garten'],
             $rowSpecimen['voucher'],
-            $this->collection($rowSpecimen),
+            $this->specimenService->collection($rowSpecimen),
             $rowSpecimen['Sammler'],
             $rowSpecimen['Nummer'],
             $rowSpecimen['Sammler_2'],
@@ -714,43 +715,7 @@ class SearchFormFacade
         return $text;
     }
 
-    protected function collection(array $row): string
-    {
-        $text = $row['Sammler'];
-        if (strstr((string) $row['Sammler_2'], "&") || strstr((string)$row['Sammler_2'], "et al.")) {
-            $text .= " et al.";
-        } else if ($row['Sammler_2']) {
-            $text .= " & " . $row['Sammler_2'];
-        }
 
-        if ($row['series_number']) {
-            if ($row['Nummer']) {
-                $text .= " " . $row['Nummer'];
-            }
-            if ($row['alt_number'] && $row['alt_number'] != "s.n.") {
-                $text .= " " . $row['alt_number'];
-            }
-            if ($row['series']) {
-                $text .= " " . $row['series'];
-            }
-            $text .= " " . $row['series_number'];
-        } else {
-            if ($row['series']) {
-                $text .= " " . $row['series'];
-            }
-            if ($row['Nummer']) {
-                $text .= " " . $row['Nummer'];
-            }
-            if ($row['alt_number']) {
-                $text .= " " . $row['alt_number'];
-            }
-//        if (strstr($row['alt_number'], "s.n.")) {
-//            $text .= " [" . $row['Datum'] . "]";
-//        }
-        }
-
-        return trim($text);
-    }
 
     protected function getStableIdentifier(int $specimenID): string
     {
@@ -761,5 +726,55 @@ class SearchFormFacade
             return $this->specimenService->constructStableIdentifier($specimen);
         }
 
+    }
+
+    public function getKmlExport():string
+    {
+        $text = '';
+        $specimenIds = $this->searchOnlyIds(KmlService::EXPORT_LIMIT);
+        $sqlSpecimen = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
+             s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
+             n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,
+             mc.collection, mc.collectionID, mc.coll_short, s.typified,
+             s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession,
+             s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
+             s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
+             ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+             ta4.author author4, ta5.author author5,
+             te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+             te4.epithet epithet4, te5.epithet epithet5,
+             ts.synID, ts.taxonID, ts.statusID
+            FROM tbl_specimens s
+             LEFT JOIN tbl_specimens_series ss ON ss.seriesID=s.seriesID
+             LEFT JOIN tbl_management_collections mc ON mc.collectionID=s.collectionID
+             LEFT JOIN tbl_geo_nation n ON n.NationID=s.NationID
+             LEFT JOIN tbl_geo_province p ON p.provinceID=s.provinceID
+             LEFT JOIN tbl_collector c ON c.SammlerID=s.SammlerID
+             LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID=s.Sammler_2ID
+             LEFT JOIN tbl_tax_species ts ON ts.taxonID=s.taxonID
+             LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID
+             LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
+             LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID
+             LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID
+             LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID
+             LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID
+             LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID
+             LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID
+             LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID
+             LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID
+             LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
+             LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
+             LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
+             LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID
+             LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID=tsc.categoryID
+            WHERE specimen_ID IN (:specimenIDs)";
+        $parameterTypes = [
+            "specimenIDs" => ArrayParameterType::INTEGER
+        ];
+        $result = $this->entityManager->getConnection()->executeQuery($sqlSpecimen, ['specimenIDs' => $specimenIds], $parameterTypes);
+        while ($rowSpecimen = $result->fetchAssociative()) {
+            $text .= $this->kmlService->prepareRow($rowSpecimen);
+        }
+        return $this->kmlService->export($text);
     }
 }
