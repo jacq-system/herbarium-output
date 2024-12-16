@@ -7,6 +7,67 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class ExcelService
 {
+    public const int EXPORT_LIMIT = 1000;
+
+    public const array HEADER = [
+        'Specimen ID',
+        'observation',
+        'dig_image',
+        'dig_img_obs',
+        'Institution_Code',
+        'Herbarium-Number/BarCode',
+        'institution_subcollection',
+        'Collection Number',
+        'Type information',
+        'Typified by',
+        'Taxon',
+        'status',
+        'Genus',
+        'Species',
+        'Author',
+        'Rank',
+        'Infra_spec',
+        'Infra_author',
+        'Family',
+        'Garden',
+        'voucher',
+        'Collection',
+        'First_collector',
+        'First_collectors_number',
+        'Add_collectors',
+        'Alt_number',
+        'Series',
+        'Series_number',
+        'Coll_Date',
+        'Coll_Date_2',
+        'Country',
+        'Province',
+        'geonames',
+        'Latitude',
+        'Latitude_DMS',
+        'Lat_Hemisphere',
+        'Lat_degree',
+        'Lat_minute',
+        'Lat_second',
+        'Longitude',
+        'Longitude_DMS',
+        'Long_Hemisphere',
+        'Long_degree',
+        'Long_minute',
+        'Long_second',
+        'exactness',
+        'Altitude lower',
+        'Altitude higher',
+        'Quadrant',
+        'Quadrant_sub',
+        'Location',
+        'det./rev./conf./assigned',
+        'ident. history',
+        'annotations',
+        'habitat',
+        'habitus',
+        'stable identifier'
+    ];
     public function __construct()
     {
     }
@@ -15,17 +76,17 @@ class ExcelService
     {
         $spreadsheet = new Spreadsheet();
         $spreadsheet->setActiveSheetIndex(0);
-        $spreadsheet->getActiveSheet()->setTitle($this->translator->translate('download.excel.title'));
+        $spreadsheet->getActiveSheet()->setTitle('JACQ specimens export');
 
         $spreadsheet->getProperties()
-            ->setCreator($this->translator->translate('download.excel.creator'))
-            ->setLastModifiedBy($this->translator->translate('download.excel.contributors'))
+            ->setCreator('JACQ')
+            ->setLastModifiedBy('JACQ contributors')
             ->setTitle($title)
-            ->setSubject($this->translator->translate('download.excel.exportDate') . date('d.j.Y', time()))
+            ->setSubject('export date: ' . date('d.j.Y', time()))
             ->setDescription("")
-            ->setKeywords("JACQ export");
+            ->setKeywords("JACQ, export");
 
-        $spreadsheet->getActiveSheet()->getStyle('A1:DD1')->getFont()->setBold(true);
+        $spreadsheet->getActiveSheet()->getStyle('A1:BE1')->getFont()->setBold(true);
         return $spreadsheet;
     }
 

@@ -12,13 +12,13 @@
             <button class="btn waves-effect ">Download KML</button>
         </a>
         <a href="{{ path('app_front_exportExcel') }}" download>
-            <button class="btn waves-effect ">Download XLSX</button>
+            <button class="btn waves-effect tooltipped" data-position="bottom" data-tooltip="Download is limited to {{ constant('App\\Service\\ExcelService::EXPORT_LIMIT') }} rows, takes approx 5 sec.">Download XLSX</button>
         </a>
         <a href="{{ path('app_front_exportOds') }}" download>
-            <button class="btn waves-effect ">Download ODS</button>
+            <button class="btn waves-effect tooltipped" data-position="bottom" data-tooltip="Download is limited to {{ constant('App\\Service\\ExcelService::EXPORT_LIMIT') }} rows, takes approx 5 sec.">Download ODS</button>
         </a>
         <a href="{{ path('app_front_exportCsv') }}" download>
-            <button class="btn waves-effect ">Download CSV</button>
+            <button class="btn waves-effect tooltipped" data-position="bottom" data-tooltip="Download is limited to {{ constant('App\\Service\\ExcelService::EXPORT_LIMIT') }} rows, takes approx 5 sec.">Download CSV</button>
         </a>
     </div>
 </div>

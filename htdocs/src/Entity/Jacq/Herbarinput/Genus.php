@@ -22,5 +22,12 @@ class Genus
         return $this->family;
     }
 
+    #[ORM\Column(name: 'genus')]
+    private string $name;
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
 
 }

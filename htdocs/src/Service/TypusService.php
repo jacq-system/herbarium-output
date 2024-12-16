@@ -104,9 +104,9 @@ readonly class TypusService
         return $text;
     }
 
-    protected function taxonWithHybrids($row): string
+    public function taxonWithHybrids($row): string
     {
-        if ($row['statusID'] == 1 && strlen($row['epithet']) == 0 && strlen($row['author']) == 0) {
+        if ($row['statusID'] == 1 && strlen((string)$row['epithet']) == 0 && strlen((string)$row['author']) == 0) {
             $sql = "SELECT parent_1_ID, parent_2_ID
                         FROM tbl_tax_hybrids
                         WHERE taxon_ID_fk = :taxon";
@@ -187,7 +187,7 @@ readonly class TypusService
         return $text;
     }
 
-    protected function protolog($row): string
+    public function protolog($row): string
     {
         $text = "";
         if ($row['suptitel']) {

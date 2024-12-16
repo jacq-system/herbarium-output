@@ -58,4 +58,9 @@ export function hideProgressBar() {
     const progressBar = document.getElementById('progressBar');
     progressBar.classList.remove('show');
     progressBar.classList.add('hide');
+
+
+        let elems = document.querySelectorAll('.tooltipped');
+        M.Tooltip.init(elems);
+
 }

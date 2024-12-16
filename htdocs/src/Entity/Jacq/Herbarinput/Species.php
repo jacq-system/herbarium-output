@@ -17,6 +17,14 @@ class Species
     #[ORM\JoinColumn(name: 'genID', referencedColumnName: 'genID')]
     private Genus $genus;
 
+    #[ORM\ManyToOne(targetEntity: Authors::class)]
+    #[ORM\JoinColumn(name: 'authorID', referencedColumnName: 'authorID')]
+    private Authors $author;
+
+    #[ORM\ManyToOne(targetEntity: EpithetSpecies::class)]
+    #[ORM\JoinColumn(name: 'speciesID', referencedColumnName: 'epithetID')]
+    private EpithetSpecies $epithet;
+
     #[ORM\Column(name: 'basID')]
     private int $basID;
 
@@ -33,6 +41,15 @@ class Species
         return $this->genus;
     }
 
+    public function getAuthor(): Authors
+    {
+        return $this->author;
+    }
+
+    public function getEpithet(): EpithetSpecies
+    {
+        return $this->epithet;
+    }
 
 
 }

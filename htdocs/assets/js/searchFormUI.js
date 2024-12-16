@@ -10,10 +10,7 @@ export default function searchFormUI() {
     subsetCollections(element);
 
     if (form.dataset.prefilled === "1") {
-        console.log("2");
         searchResults(form);
-        console.log("3");
-
     }
 }
 

@@ -8,12 +8,16 @@ use App\Enum\TimeIntervalEnum;
 use App\Facade\SearchFormFacade;
 use App\Service\CollectionService;
 use App\Service\DjatokaService;
+use App\Service\ExcelService;
 use App\Service\ImageService;
 use App\Service\InstitutionService;
 use App\Service\Rest\DevelopersService;
 use App\Service\Rest\StatisticsService;
 use App\Service\SearchFormSessionService;
 use App\Service\SpecimenService;
+use PhpOffice\PhpSpreadsheet\Writer\Csv;
+use PhpOffice\PhpSpreadsheet\Writer\Ods;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -32,7 +36,7 @@ class SearchFormController extends AbstractController
     //TODO the name of taxon is not part of the query now, hard to sort
     public const array SORT = ["taxon"=> '', 'collector'=>'s.collector'];
 
-    public function __construct( protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly ImageService $imageService, protected readonly SpecimenService $specimenService)
+    public function __construct( protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly ImageService $imageService, protected readonly SpecimenService $specimenService, protected readonly ExcelService $excelService)
     {
     }
 
@@ -180,16 +184,53 @@ class SearchFormController extends AbstractController
     #[Route('/exportExcel', name: 'app_front_exportExcel', methods: ['GET'])]
     public function exportExcel(): Response
     {
-        return new Response();
+        $spreadsheet = $this->excelService->prepareExcel();
+        $filledSpreadsheet = $this->excelService->easyFillExcel($spreadsheet, ExcelService::HEADER, $this->searchFormFacade->getSpecimenDataforExport());
+
+        $response = new StreamedResponse(function () use ($filledSpreadsheet) {
+            $writer = new Xlsx($filledSpreadsheet);
+            $writer->save('php://output');
+        });
+
+        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $response->headers->set('Content-Disposition', 'attachment;filename="specimens_download.xlsx"');
+        $response->headers->set('Cache-Control', 'max-age=0');
+
+        return $response;
     }
     #[Route('/exportCsv', name: 'app_front_exportCsv', methods: ['GET'])]
     public function exportCsv(): Response
     {
-        return new Response();
+        $spreadsheet = $this->excelService->prepareExcel();
+        $filledSpreadsheet = $this->excelService->easyFillExcel($spreadsheet, ExcelService::HEADER, $this->searchFormFacade->getSpecimenDataforExport());
+
+        $response = new StreamedResponse(function () use ($filledSpreadsheet) {
+            $writer = new Csv($filledSpreadsheet);
+            $writer->save('php://output');
+        });
+
+        $response->headers->set('Content-Type', 'text/csv');
+        $response->headers->set('Content-Disposition', 'attachment;filename="specimens_download.csv"');
+        $response->headers->set('Cache-Control', 'max-age=0');
+
+        return $response;
     }
     #[Route('/exportOds', name: 'app_front_exportOds', methods: ['GET'])]
     public function exportOds(): Response
     {
-        return new Response();
+        $spreadsheet = $this->excelService->prepareExcel();
+        $filledSpreadsheet = $this->excelService->easyFillExcel($spreadsheet, ExcelService::HEADER, $this->searchFormFacade->getSpecimenDataforExport());
+
+        $response = new StreamedResponse(function () use ($filledSpreadsheet) {
+            $writer = new Ods($filledSpreadsheet);
+            $writer->save('php://output');
+        });
+
+        $response->headers->set('Content-Type', 'application/vnd.oasis.opendocument.spreadsheet');
+        $response->headers->set('Content-Disposition', 'attachment;filename="specimens_download.ods"');
+        $response->headers->set('Cache-Control', 'max-age=0');
+
+        return $response;
     }
+
 }

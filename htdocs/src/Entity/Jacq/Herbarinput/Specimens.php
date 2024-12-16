@@ -134,6 +134,7 @@ class Specimens
     private Collection $typus;
 
     #[ORM\OneToMany(targetEntity: StableIdentifier::class, mappedBy: 'specimen')]
+    #[ORM\OrderBy(['timestamp' => 'DESC'])]
     private Collection $stableIdentifiers;
 
     #[ORM\OneToOne(targetEntity: PhaidraCache::class, mappedBy: 'specimen')]
@@ -347,6 +348,14 @@ class Specimens
     public function getStableIdentifiers(): Collection
     {
         return $this->stableIdentifiers;
+    }
+
+    public function getMainStableIdentifier(): ?StableIdentifier
+    {
+        if(count($this->stableIdentifiers) > 0){
+            return $this->stableIdentifiers[0];
+        }
+        return null;
     }
 
     public function getPhaidraImages(): ?PhaidraCache
