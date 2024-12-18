@@ -3,13 +3,12 @@
 namespace App\Service;
 
 use App\Entity\Jacq\Herbarinput\Meta;
-use Doctrine\ORM\EntityManagerInterface;
 
-readonly class InstitutionService
+/**
+ * I call it "Institution" as the Meta is enigmatic - but overall in the code the table/service is used as an institution-like object
+ */
+readonly class InstitutionService extends BaseService
 {
-    public function __construct(protected EntityManagerInterface $entityManager)
-    {
-    }
 
     public function getAllAsPairs(): array
     {
@@ -27,7 +26,7 @@ readonly class InstitutionService
                 )
                 ORDER BY herbname";
 
-        return $this->entityManager->getConnection()->executeQuery($sql)->fetchAllKeyValue();
+        return $this->query($sql)->fetchAllKeyValue();
     }
 
     public function findByCode(string $code): Meta

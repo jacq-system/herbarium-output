@@ -51,6 +51,12 @@ readonly class SearchFormSessionService
         return $this;
     }
 
+    public function setSettings($formData): static
+    {
+        $this->session->set(self::SESSION_SETTINGS, $formData);
+        return $this;
+    }
+
     public function reset(): static
     {
         $this->session->remove(self::SESSION_FILTERS);
@@ -61,12 +67,6 @@ readonly class SearchFormSessionService
     public function setFilters($formData): static
     {
         $this->session->set(self::SESSION_FILTERS, $formData);
-        return $this;
-    }
-
-    public function setSettings($formData): static
-    {
-        $this->session->set(self::SESSION_SETTINGS, $formData);
         return $this;
     }
 

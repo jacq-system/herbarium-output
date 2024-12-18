@@ -2,16 +2,8 @@
 
 namespace App\Service;
 
-
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Routing\RouterInterface;
-
-readonly class ReferenceService
+readonly class ReferenceService extends BaseService
 {
-
-    public function __construct(protected EntityManagerInterface $entityManager, protected RouterInterface $router)
-    {
-    }
 
     public function getCitationReferences(?int $referenceID): array
     {
@@ -21,7 +13,7 @@ readonly class ReferenceService
                     FROM tbl_lit
                     WHERE citationID = :id
                     SQL;
-            return $this->entityManager->getConnection()->executeQuery($sql, ['id' => $referenceID])->fetchAllAssociative();
+            return $this->query($sql, ['id' => $referenceID])->fetchAllAssociative();
             //TODO fetchAssociative make sense when ID is provided, but to fulfill compatibility with original keep single element array
         } else {
             $sql = <<<SQL
@@ -35,7 +27,7 @@ readonly class ReferenceService
                     GROUP BY ts.source_citationID
                     ORDER BY `name`
                     SQL;
-            return $this->entityManager->getConnection()->executeQuery($sql)->fetchAllAssociative();
+            return $this->query($sql)->fetchAllAssociative();
         }
 
     }
@@ -48,8 +40,8 @@ readonly class ReferenceService
                     FROM tbl_lit_periodicals
                     WHERE periodicalID = :id
                     SQL;
-            return $this->entityManager->getConnection()->executeQuery($sql, ['id' => $referenceID])->fetchAllAssociative();
-            //TODO see above
+            return $this->query($sql, ['id' => $referenceID])->fetchAllAssociative();
+            //TODO see getCitationReferences
         } else {
             $sql = <<<SQL
                             SELECT lp.periodical AS `name`, l.periodicalID AS `id`
@@ -63,7 +55,7 @@ readonly class ReferenceService
                             GROUP BY l.periodicalID
                             ORDER BY `name`
                             SQL;
-            return $this->entityManager->getConnection()->executeQuery($sql)->fetchAllAssociative();
+            return $this->query($sql)->fetchAllAssociative();
         }
 
 
@@ -80,18 +72,17 @@ readonly class ReferenceService
                                        WHERE ts.source_citationID = :referenceID
                                         AND ts.acc_taxon_ID IS NULL
                                         AND tc.parent_taxonID = :taxonID";
-        $child = $this->entityManager->getConnection()->executeQuery($sqlQueryChild, ['taxonID' => $taxonID, 'referenceID' => $referenceID])->fetchAssociative();
+        $child = $this->query($sqlQueryChild, ['taxonID' => $taxonID, 'referenceID' => $referenceID])->fetchAssociative();
         if ($child !== false) {
-            $hasChildren = true;
+            return true;
         } else {
             $sqlQueryChild = "SELECT ts.taxonID
                                        FROM tbl_tax_synonymy ts
                                        WHERE ts.source_citationID = :referenceID
                                         AND ts.acc_taxon_ID = $taxonID";
-            $child = $this->entityManager->getConnection()->executeQuery($sqlQueryChild, ['referenceID' => $referenceID])->fetchAssociative();
-            $hasChildren = (bool)$child;
+            $child = $this->query($sqlQueryChild, ['referenceID' => $referenceID])->fetchAssociative();
+            return (bool)$child;
         }
-        return $hasChildren;
     }
 
     /**
@@ -109,7 +100,7 @@ readonly class ReferenceService
                      AND l.periodicalID = :referenceID
                     GROUP BY ts.source_citationID
                     ORDER BY referenceName";
-        return $this->entityManager->getConnection()->executeQuery($sql, ['referenceID' => $referenceID])->fetchAllAssociative();
+        return $this->query($sql, ['referenceID' => $referenceID])->fetchAllAssociative();
 
     }
 
@@ -152,7 +143,7 @@ readonly class ReferenceService
         }
         $sql .= " GROUP BY ts.taxonID ORDER BY `order`, `scientificName`";
 
-        return $this->entityManager->getConnection()->executeQuery($sql, ['referenceID' => $referenceID, 'taxonID' => $taxonID])->fetchAllAssociative();
+        return $this->query($sql, ['referenceID' => $referenceID, 'taxonID' => $taxonID])->fetchAllAssociative();
 
     }
 
@@ -164,20 +155,17 @@ readonly class ReferenceService
                  AND taxonID = :taxonID
                  AND referenceId = :referenceID
                 ORDER BY sequence";
-        return $this->entityManager->getConnection()->executeQuery($sql, ['taxonID' => $taxonID, 'insertSeries' => $insertSeries, 'referenceID' => $referenceID])->fetchAllAssociative();
+        return $this->query($sql, ['taxonID' => $taxonID, 'insertSeries' => $insertSeries, 'referenceID' => $referenceID])->fetchAllAssociative();
 
     }
 
     public function getCitationName(int $id): ?string
     {
         $sql = "SELECT `herbar_view`.GetProtolog(`citationID`) AS `referenceName`
-                                               FROM `tbl_lit`
-                                               WHERE `citationID` = :id";
-        $name = $this->entityManager->getConnection()->executeQuery($sql, ['id' => $id])->fetchOne();
-        if ($name === false) {
-            return null;
-        }
-        return $name;
+                           FROM `tbl_lit`
+                           WHERE `citationID` = :id";
+        $name = $this->query($sql, ['id' => $id])->fetchOne();
+        return $name === false ? null : $name;
     }
 
 

@@ -2,17 +2,11 @@
 
 namespace App\Service;
 
-use Doctrine\ORM\EntityManagerInterface;
-
-readonly class CollectionService
+readonly class CollectionService extends BaseService
 {
-    public function __construct(protected EntityManagerInterface $entityManager)
-    {
-    }
 
     public function getAllAsPairs(): array
     {
-        //TODO use right join instead of distinct?
         $sql = "SELECT `collectionID`, `collection`
                 FROM `tbl_management_collections`
                 WHERE `collectionID`
@@ -22,7 +16,7 @@ readonly class CollectionService
                 )
                 ORDER BY `collection`";
 
-        return $this->entityManager->getConnection()->executeQuery($sql)->fetchAllKeyValue();
+        return $this->query($sql)->fetchAllKeyValue();
     }
 
     public function getAllFromHerbariumAsPairs(int $herbariumID): array
@@ -34,7 +28,7 @@ readonly class CollectionService
                  AND collections.source_id = :herbariumID
                 ORDER BY collection;";
 
-        return $this->entityManager->getConnection()->executeQuery($sql, ['herbariumID' => $herbariumID])->fetchAllKeyValue();
+        return $this->query($sql, ['herbariumID' => $herbariumID])->fetchAllKeyValue();
     }
 
 }
