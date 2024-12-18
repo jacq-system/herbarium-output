@@ -53,7 +53,7 @@ class SpecimenIframeExtension extends AbstractExtension
         if ($phaidra) {  // phaidra picture found, use iiif
             return $this->includeIiif($imageDefinition, $phaidraManifest);
         } elseif ($imageDefinition->isIiifCapable()) {
-            return $this->includeIiif($imageDefinition, $this->iiifFacade->resolveManifestUri($specimen->getId()));
+            return $this->includeIiif($imageDefinition, $this->iiifFacade->resolveManifestUri($specimen));
         } elseif ($imageDefinition->getServerType() === 'bgbm') {  // but not iiif_capable
             $bgbm = '?filename=' . rawurlencode(basename((string)$specimen->getId())) . '&sid=' . $specimen->getId();
             return $this->includeBgbm($bgbm);

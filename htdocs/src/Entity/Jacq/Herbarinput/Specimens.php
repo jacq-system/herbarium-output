@@ -3,6 +3,7 @@
 namespace App\Entity\Jacq\Herbarinput;
 
 
+use App\Entity\Jacq\GbifPilot\EuropeanaImages;
 use App\Entity\Jacq\HerbarPictures\PhaidraCache;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -139,6 +140,9 @@ class Specimens
 
     #[ORM\OneToOne(targetEntity: PhaidraCache::class, mappedBy: 'specimen')]
     private ?PhaidraCache $phaidraImages = null;
+
+    #[ORM\OneToOne(targetEntity: EuropeanaImages::class, mappedBy: 'specimen')]
+    private ?EuropeanaImages $europeanaImages = null;
 
     #[ORM\ManyToOne(targetEntity: Species::class)]
     #[ORM\JoinColumn(name: 'taxonID', referencedColumnName: 'taxonID')]
@@ -381,6 +385,11 @@ class Specimens
     public function getNcbiAccession(): ?string
     {
         return $this->ncbiAccession;
+    }
+
+    public function getEuropeanaImages(): ?EuropeanaImages
+    {
+        return $this->europeanaImages;
     }
 
 

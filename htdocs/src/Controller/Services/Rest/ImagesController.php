@@ -73,7 +73,7 @@ class ImagesController extends AbstractFOSRestController
     public function show(int $specimenID, int $imageNr = 0): Response
     {
         //todo ignoring "withredirect" param
-        $this->imageLinkMapper->setSpecimenId($specimenID);
+        $this->imageLinkMapper->setSpecimen($specimenID);
         $results['link'] = $this->imageLinkMapper->getShowLink($imageNr);
 
         $view = $this->view($results, 200);
@@ -134,7 +134,7 @@ class ImagesController extends AbstractFOSRestController
     #[Route('/services/rest/images/download/{specimenID}/{imageNr}.{_format}', name: "services_rest_images_download", defaults: ['_format' => 'json'], methods: ['GET'])]
     public function download(int $specimenID, int $imageNr = 0): Response
     {
-        $this->imageLinkMapper->setSpecimenId($specimenID);
+        $this->imageLinkMapper->setSpecimen($specimenID);
         $results['link'] = $this->imageLinkMapper->getDownloadLink($imageNr);
 
         $view = $this->view($results, 200);
@@ -195,7 +195,7 @@ class ImagesController extends AbstractFOSRestController
     #[Route('/services/rest/images/europeana/{specimenID}/{imageNr}.{_format}', name: "services_rest_images_europeana", defaults: ['_format' => 'json'], methods: ['GET'])]
     public function europeana(int $specimenID, int $imageNr = 0): Response
     {
-        $this->imageLinkMapper->setSpecimenId($specimenID);
+        $this->imageLinkMapper->setSpecimen($specimenID);
         $results['link'] = $this->imageLinkMapper->getEuropeanaLink($imageNr);
 
         $view = $this->view($results, 200);
@@ -256,7 +256,7 @@ class ImagesController extends AbstractFOSRestController
     #[Route('/services/rest/images/thumb/{specimenID}/{imageNr}.{_format}', name: "services_rest_images_thumb", defaults: ['_format' => 'json'], methods: ['GET'])]
     public function thumb(int $specimenID, int $imageNr = 0): Response
     {
-        $this->imageLinkMapper->setSpecimenId($specimenID);
+        $this->imageLinkMapper->setSpecimen($specimenID);
         $results['link'] = $this->imageLinkMapper->getThumbLink($imageNr);
 
         $view = $this->view($results, 200);
@@ -309,7 +309,7 @@ class ImagesController extends AbstractFOSRestController
     #[Route('/services/rest/images/list/{specimenID}.{_format}', name: "services_rest_images_list", defaults: ['_format' => 'json'], methods: ['GET'])]
     public function list(int $specimenID, int $imageNr = 0): Response
     {
-        $this->imageLinkMapper->setSpecimenId($specimenID);
+        $this->imageLinkMapper->setSpecimen($specimenID);
         $results = $this->imageLinkMapper->getList($imageNr);
 
         $view = $this->view($results, 200);

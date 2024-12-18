@@ -719,7 +719,7 @@ class SearchFormFacade
 
     protected function getStableIdentifier(int $specimenID): string
     {
-        $specimen = $this->specimenService->find($specimenID);
+        $specimen = $this->specimenService->findAccessibleForPublic($specimenID);
         if (!empty($specimen->getMainStableIdentifier())) {
             return $specimen->getMainStableIdentifier()->getIdentifier();
         } else {

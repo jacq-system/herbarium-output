@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace App\Service;
+namespace App\Facade\Rest;
 
 use Doctrine\DBAL\Result;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\RouterInterface;
 
-readonly abstract class BaseService
+readonly abstract class BaseFacade
 {
     public function __construct(protected EntityManagerInterface $entityManager, protected RouterInterface $router)
     {
@@ -16,5 +16,6 @@ readonly abstract class BaseService
     {
         return $this->entityManager->getConnection()->executeQuery($sql, $params, $types);
     }
+
 
 }

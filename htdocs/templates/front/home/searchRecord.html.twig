@@ -8,12 +8,12 @@
             {% else %}
                 {% if (specimen.getHerbCollection().getInstitution().getImageDefinition() is not null and specimen.getHerbCollection().getInstitution().getImageDefinition().isIiifCapable()) or (specimen.getPhaidraImages() is not empty) %}
 
-                    <a href='{{ specimen.getHerbCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ specimen.getId()|manifestUrl }}'
+                    <a href='{{ specimen.getHerbCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ specimen|manifestUrl }}'
                        target='imgBrowser'>
                         <img height='15' width="15" alt=''
                              src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}">
                     </a><br>
-                    <a href='{{ specimen.getHerbCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ specimen.getId()|manifestUrl }}'
+                    <a href='{{ specimen.getHerbCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ specimen|manifestUrl }}'
                        target='_blank'>
                         <img height='15' width='15' alt='' src='{{ asset('recordIcons') }}/logo-iiif.png'>
                     </a>

@@ -18,7 +18,10 @@ class ImageDefinition
 
 
     #[ORM\Column(name: 'iiif_url')]
-    private string $iiifUrl;
+    private ?string $iiifUrl = null;
+
+    #[ORM\Column(name: 'imgserver_url')]
+    private ?string $imageserverUrl = null;
 
     #[ORM\Column(name: 'HerbNummerNrDigits')]
     private int $herbNummerNrDigits;
@@ -27,9 +30,18 @@ class ImageDefinition
     #[ORM\Column(name: 'imgserver_type')]
     private string $serverType;
 
+    #[ORM\Column(name: 'key')]
+    private string $apiKey;
+
     #[ORM\OneToOne(targetEntity: Meta::class, inversedBy: 'imageDefinition')]
     #[ORM\JoinColumn(name: 'source_id_fk', referencedColumnName: 'source_id')]
     private Meta|null $institution = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
 
     public function getInstitution(): ?Meta
     {
@@ -41,7 +53,7 @@ class ImageDefinition
         return $this->iiifCapable;
     }
 
-    public function getIiifUrl(): string
+    public function getIiifUrl(): ?string
     {
         return $this->iiifUrl;
     }
@@ -51,9 +63,22 @@ class ImageDefinition
         return $this->herbNummerNrDigits;
     }
 
+    public function getImageserverUrl(): ?string
+    {
+        return $this->imageserverUrl;
+    }
+
+
+
     public function getServerType(): string
     {
         return $this->serverType;
+    }
+
+
+    public function getApiKey(): string
+    {
+        return $this->apiKey;
     }
 
 

@@ -39,9 +39,9 @@ class SpecimenExtension extends AbstractExtension
         ];
     }
 
-    public function getManifest(int $specimenId): string
+    public function getManifest(Specimens $specimen): string
     {
-        return $this->iiifFacade->resolveManifestUri($specimenId);
+        return $this->iiifFacade->resolveManifestUri($specimen);
     }
 
     public function getTaxonAuthority(int $taxonId): string

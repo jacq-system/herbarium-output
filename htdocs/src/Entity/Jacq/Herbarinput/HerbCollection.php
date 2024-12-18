@@ -2,6 +2,7 @@
 
 namespace App\Entity\Jacq\Herbarinput;
 
+use App\Entity\Jacq\HerbarPictures\IiifDefinition;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity()]
@@ -19,10 +20,16 @@ class HerbCollection
     #[ORM\Column(name: 'coll_short_prj')]
     private string $collShortPrj;
 
+    #[ORM\Column(name: 'picture_filename')]
+    private ?string $pictureFilename = null;
+
+
     #[ORM\ManyToOne(targetEntity: Meta::class)]
     #[ORM\JoinColumn(name: 'source_id', referencedColumnName: 'source_id')]
     private Meta $institution;
 
+    #[ORM\OneToOne(targetEntity: IiifDefinition::class, mappedBy: 'herbCollection')]
+    private ?IiifDefinition $iiifDefinition = null;
 
 
     public function getInstitution(): Meta
@@ -35,6 +42,12 @@ class HerbCollection
         return $this->name;
     }
 
+    public function getPictureFilename(): ?string
+    {
+        return $this->pictureFilename;
+    }
+
+
     public function getId(): ?int
     {
         return $this->id;
@@ -43,6 +56,11 @@ class HerbCollection
     public function getCollShortPrj(): string
     {
         return $this->collShortPrj;
+    }
+
+    public function getIiifDefinition(): ?IiifDefinition
+    {
+        return $this->iiifDefinition;
     }
 
 

@@ -4,6 +4,7 @@ namespace App\Controller\Services\Rest;
 
 use App\Facade\Rest\IiifFacade;
 use App\Service\IiifService;
+use App\Service\SpecimenService;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\MediaType;
@@ -16,7 +17,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class IiifController extends AbstractFOSRestController
 {
-    public function __construct(protected readonly IiifFacade $iiifFacade)
+    public function __construct(protected readonly IiifFacade $iiifFacade, protected readonly SpecimenService $specimenService)
     {
     }
 
@@ -65,7 +66,13 @@ class IiifController extends AbstractFOSRestController
     #[Route('/services/rest/iiif/manifestUri/{specimenID}.{_format}', name: "services_rest_iiif_manifest_uri", defaults: ['_format' => 'json'], methods: ['GET'])]
     public function manifestUri(int $specimenID): Response
     {
-        $results['uri'] = $this->iiifFacade->resolveManifestUri($specimenID);
+        try {
+            $specimen = $this->specimenService->findAccessibleForPublic($specimenID);
+        }catch (\Exception $e){
+            $view = $this->view([], 404);
+            return $this->handleView($view);
+        }
+        $results['uri'] = $this->iiifFacade->resolveManifestUri($specimen);
 
         $view = $this->view($results, 200);
 
@@ -119,7 +126,14 @@ If no backend is configured, the webservice tries to get the manifest from the a
     #[Route('/services/rest/iiif/manifest/{specimenID}.{_format}', name: "services_rest_iiif_manifest", defaults: ['_format' => 'json'], methods: ['GET'])]
     public function manifest(int $specimenID): Response
     {
-        $results = $this->iiifFacade->getManifest($specimenID);
+        try {
+            $specimen = $this->specimenService->findAccessibleForPublic($specimenID);
+        }catch (\Exception $e){
+            $view = $this->view([], 404);
+            return $this->handleView($view);
+        }
+
+        $results = $this->iiifFacade->getManifest($specimen);
         $view = $this->view($results, 200);
 
         return $this->handleView($view);

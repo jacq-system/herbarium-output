@@ -174,7 +174,7 @@ class SearchFormController extends AbstractController
     #[Route('/detail', name: 'app_front_specimenDetail', methods: ['GET'])]
     public function detail(#[MapQueryParameter] int $id): Response
     {
-        return $this->render('front/home/detail.html.twig', ['specimen'=> $this->specimenService->find($id)]);
+        return $this->render('front/home/detail.html.twig', ['specimen'=> $this->specimenService->findAccessibleForPublic($id)]);
     }
 
     #[Route('/exportKml', name: 'app_front_exportKml', methods: ['GET'])]

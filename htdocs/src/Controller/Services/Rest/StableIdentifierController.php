@@ -112,7 +112,7 @@ class StableIdentifierController extends AbstractFOSRestController
     {
         $results = [];
         try {
-            $specimen = $this->specimenService->find($specimenID);
+            $specimen = $this->specimenService->findAccessibleForPublic($specimenID);
         }catch (\Exception $e){
             $view = $this->view([], 404);
             return $this->handleView($view);
