@@ -110,16 +110,22 @@ class StableIdentifierController extends AbstractFOSRestController
     #[Route('/services/rest/stableIdentifier/sid/{specimenID}.{_format}', defaults: ['_format' => 'json'], methods: ['GET'])]
     public function sid(int $specimenID): Response
     {
-        $sids = $this->specimenService->getAllStableIdentifiers($specimenID);
-        if (!empty($sids)) {
-            $results = array('specimenID' => $specimenID,
-                'stableIdentifierLatest' => $sids['latest'],
-                'stableIdentifierList' => $sids['list']);
-        } else {
-            $results = [];
+        $results = [];
+        try {
+            $specimen = $this->specimenService->find($specimenID);
+        }catch (\Exception $e){
+            $view = $this->view([], 404);
+            return $this->handleView($view);
         }
-        //TODO better to use http codes, left for backward compatibility
-        $results['error'] = (empty($results)) ? "nothing to do" : '';
+        if (!empty($specimen->getStableIdentifiers())){
+            $results['specimenID'] = $specimen->getId();
+            $results['stableIdentifierLatest'] = $this->specimenService->sid2array($specimen);
+            $results['stableIdentifierList'] = $this->specimenService->sids2array($specimen);
+        }else{
+            //TODO better to use http codes, left for backward compatibility
+
+            $results['error'] = (empty($results)) ? "nothing to do" : '';
+        }
         $view = $this->view($results, 200);
 
         return $this->handleView($view);
@@ -186,8 +192,7 @@ class StableIdentifierController extends AbstractFOSRestController
     {
         //TODO removed the "withRedirect" option in OPenApi, solving by "nonvisible" forward inside the framework
         $sid = urldecode($sid);
-        $specimenID = $this->specimenService->findSpecimenIdUsingSid($sid);
-        return $this->forward(self::class . '::sid', ['specimenID' => $specimenID]);
+        return $this->forward(self::class . '::sid', ['specimenID' => $this->specimenService->findSpecimenIdUsingSid($sid)]);
     }
 
     #[Get(

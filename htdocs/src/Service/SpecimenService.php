@@ -6,40 +6,43 @@ namespace App\Service;
 use App\Entity\Jacq\Herbarinput\Specimens;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\ParameterType;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Routing\RouterInterface;
 
-readonly class SpecimenService
+readonly class SpecimenService extends BaseService
 {
-
-    public function __construct(protected EntityManagerInterface $entityManager, protected RouterInterface $router)
-    {
-    }
+    public const string JACQID_PREFIX = "JACQID";
 
     /**
      * get specimen-id of a given stable identifier
      */
-    public function findSpecimenIiUsingSid(string $sid): ?int
+    public function findSpecimenIdUsingSid(string $sid): ?int
     {
-        $pos = strpos($sid, "JACQID");
+        $pos = strpos($sid, self::JACQID_PREFIX);
         if ($pos !== false) {  // we've found a sid with JACQID in it, so check the attached specimen-ID and return it, if valid
-            //todo - hard coded 6 digits of ID
-            $specimenID = intval(substr($sid, $pos + 6));
-            $sql = "SELECT specimen_ID
-                             FROM tbl_specimens
-                             WHERE specimen_ID = :specimenID";
-            $id = $this->entityManager->getConnection()->executeQuery($sql, ['specimenID' => $specimenID])->fetchOne();
+            $specimenID = intval(substr($sid, $pos + strlen(self::JACQID_PREFIX)));
+            $id = $this->find($specimenID)->getId();
         } else {
-            $sql = "SELECT specimen_ID
-                             FROM tbl_specimens_stblid
-                             WHERE stableIdentifier = :sid";
-            $id = $this->entityManager->getConnection()->executeQuery($sql, ['sid' => $sid])->fetchOne();
+            $id = $this->findBySid($sid);
         }
-        if ($id === null || $id === false) {
-            return null;
+        return $id === 0 ? null : $id;
+    }
+
+    public function find(int $id): Specimens
+    {
+        $specimen = $this->entityManager->getRepository(Specimens::class)->find($id);
+        if ($specimen === null) {
+            throw new EntityNotFoundException('Specimen not found');
         }
-        return $id;
+        return $specimen;
+    }
+
+    public function findBySid(string $sid): int
+    {
+        $sql = "SELECT specimen_ID
+                     FROM tbl_specimens_stblid
+                     WHERE stableIdentifier = :sid";
+        return $this->query($sql, ['sid' => $sid])->fetchOne();
     }
 
     /**
@@ -47,58 +50,43 @@ readonly class SpecimenService
      */
     public function getEntriesWithErrors(?int $sourceID): array
     {
-        if ($sourceID !== null) {
-            $sql = "SELECT ss.specimen_ID AS specimenID, CONCAT('https://www.jacq.org/detail.php?ID=', ss.specimen_ID) AS link
-                              FROM tbl_specimens_stblid ss
-                               JOIN tbl_specimens s ON ss.specimen_ID = s.specimen_ID
-                               JOIN tbl_management_collections mc ON s.collectionID = mc.collectionID
-                              WHERE ss.stableIdentifier IS NULL
-                               AND mc.source_id = :sourceID
-                              GROUP BY ss.specimen_ID
-                              ORDER BY ss.specimen_ID";
-            $rows = $this->entityManager->getConnection()->executeQuery($sql, ['sourceID' => $sourceID])->fetchAllAssociative();
-        } else {
-            $sql = "SELECT specimen_ID AS specimenID, CONCAT('https://www.jacq.org/detail.php?ID=', specimen_ID) AS link
-                              FROM tbl_specimens_stblid
-                              WHERE stableIdentifier IS NULL
-                              GROUP BY specimen_ID
-                              ORDER BY specimen_ID";
-            $rows = $this->entityManager->getConnection()->executeQuery($sql)->fetchAllAssociative();
-        }
-        $data = array('total' => count($rows));
-        foreach ($rows as $line => $row) {
-            $data['result'][$line] = $row;
-            $data['result'][$line]['errorList'] = $this->getAllStableIdentifiers($row['specimenID'])['list'];
+        $data = [];
+        $specimens = $this->specimensWithErrors($sourceID);
+        $data['total'] = count($specimens);
+        foreach ($specimens as $line => $specimen) {
+            $data['result'][$line] = ['specimenID' => $specimen->getId(), 'link' => $this->router->generate('app_front_specimenDetail', ['specimenID' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL)];
+            $data['result'][$line]['errorList'] = $this->sids2array($specimen);
         }
 
         return $data;
     }
 
-    /**
-     * get all stable identifiers and their respective timestamps of a given specimen-id
-     */
-    public function getAllStableIdentifiers(int $specimenID): array
+    protected function specimensWithErrors(?int $sourceID): array
     {
-        //TODO refactor to Router in future
-        $sql = "SELECT stableIdentifier, timestamp, CONCAT('https://www.jacq.org/detail.php?ID=', specimen_ID) AS link
-                                       FROM tbl_specimens_stblid
-                                       WHERE specimen_ID = :specimenID
-                                        AND stableIdentifier IS NOT NULL
-                                       ORDER BY timestamp DESC
-                                       LIMIT 1";
+        $queryBuilder = $this->entityManager->createQueryBuilder();
+        $queryBuilder = $queryBuilder->select('DISTINCT s')->from(Specimens::class, 's')->join('s.stableIdentifiers', 'sid')->where('sid.identifier IS NULL');
 
-        $ret['latest'] = $this->entityManager->getConnection()->executeQuery($sql, ['specimenID' => $specimenID])->fetchAssociative();
-        $sql = "SELECT stableIdentifier, timestamp, error
-                                     FROM tbl_specimens_stblid
-                                     WHERE specimen_ID = :specimenID
-                                     ORDER BY timestamp DESC";
-        $ret['list'] = $this->entityManager->getConnection()->executeQuery($sql, ['specimenID' => $specimenID])->fetchAllAssociative();
-        //TODO ???
-        foreach ($ret['list'] as $key => $val) {
-            if (!empty($val['error'])) {
-                preg_match("/already exists \((?P<number>\d+)\)$/", $val['error'], $parts);
-                //TODO refactor to Router when "output" ready
-                $ret['list'][$key]['link'] = (!empty($parts['number'])) ? "https://www.jacq.org/detail.php?ID=" . $parts['number'] : '';
+        if ($sourceID !== null) {
+            $queryBuilder = $queryBuilder->join('s.herbCollection', 'col')->andWhere('col.institution = :sourceID')->setParameter('sourceID', $sourceID);
+        }
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    public function sids2array(Specimens $specimen): array
+    {
+        $ret = [];
+        $sids = $specimen->getStableIdentifiers();
+        foreach ($sids as $key => $stableIdentifier) {
+            $ret[$key]['stableIdentifier'] = $stableIdentifier->getIdentifier();
+            $ret[$key]['timestamp'] = $stableIdentifier->getTimestamp()->format('Y-m-d H:i:s');
+
+            if (!empty($stableIdentifier->getError())) {
+                $ret[$key]['error'] = $stableIdentifier->getError();
+
+                preg_match("/already exists \((?P<number>\d+)\)$/", $stableIdentifier->getError(), $parts);
+
+                $ret[$key]['link'] = (!empty($parts['number'])) ? $this->router->generate('app_front_specimenDetail', ['specimenID' => $parts['number']], UrlGeneratorInterface::ABSOLUTE_URL) : '';
+
             }
         }
 
@@ -120,7 +108,7 @@ readonly class SpecimenService
                               HAVING numberOfEntries > 1
                               ORDER BY numberOfEntries DESC, specimenID";
 
-        $rows = $this->entityManager->getConnection()->executeQuery($sql, ['sourceID' => $sourceID])->fetchAllAssociative();
+        $rows = $this->query($sql, ['sourceID' => $sourceID])->fetchAllAssociative();
 
         $data = array('total' => count($rows));
         foreach ($rows as $line => $row) {
@@ -129,6 +117,27 @@ readonly class SpecimenService
         }
 
         return $data;
+    }
+
+    /**
+     * get all stable identifiers and their respective timestamps of a given specimen-id
+     */
+    public function getAllStableIdentifiers(int $specimenID): array
+    {
+        $specimen = $this->find($specimenID);
+        if (empty($specimen->getStableIdentifiers())) {
+            return [];
+        }
+        $ret['latest'] = $this->sid2array($specimen);
+        $ret['list'] = $this->sids2array($specimen);
+        return $ret;
+    }
+
+    public function sid2array(Specimens $specimen): array
+    {
+        return ['stableIdentifier' => $specimen->getMainStableIdentifier()->getIdentifier(), 'timestamp' => $specimen->getMainStableIdentifier()->getTimestamp()->format('Y-m-d H:i:s'), 'link' => $this->router->generate('app_front_specimenDetail', ['specimenID' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL)
+
+        ];
     }
 
     /**
@@ -151,7 +160,7 @@ readonly class SpecimenService
                                 WHERE stableIdentifier IS NOT NULL
                                 GROUP BY specimen_ID
                                 HAVING numberEntries > 1) AS subquery";
-        $rowCount = $this->entityManager->getConnection()->executeQuery($sql)->fetchOne();
+        $rowCount = $this->query($sql)->fetchOne();
 
         $lastPage = (int)floor(($rowCount - 1) / $entriesPerPage);
         if ($page > $lastPage) {
@@ -160,14 +169,7 @@ readonly class SpecimenService
             $page = 0;
         }
 
-        $data = array('page' => $page + 1,
-            'previousPage' => $this->urlHelperRouteMulti((($page > 0) ? ($page - 1) : 0), $entriesPerPage),
-            'nextPage' => $this->urlHelperRouteMulti((($page < $lastPage) ? ($page + 1) : $lastPage), $entriesPerPage),
-            'firstPage' => $this->urlHelperRouteMulti(0, $entriesPerPage),
-            'lastPage' => $this->urlHelperRouteMulti($lastPage, $entriesPerPage),
-            'totalPages' => $lastPage + 1,
-            'total' => $rowCount,
-        );
+        $data = array('page' => $page + 1, 'previousPage' => $this->urlHelperRouteMulti((($page > 0) ? ($page - 1) : 0), $entriesPerPage), 'nextPage' => $this->urlHelperRouteMulti((($page < $lastPage) ? ($page + 1) : $lastPage), $entriesPerPage), 'firstPage' => $this->urlHelperRouteMulti(0, $entriesPerPage), 'lastPage' => $this->urlHelperRouteMulti($lastPage, $entriesPerPage), 'totalPages' => $lastPage + 1, 'total' => $rowCount,);
         $offset = ($page * $entriesPerPage);
         $sql = "SELECT specimen_ID AS specimenID, count(specimen_ID) AS `numberOfEntries`
                               FROM tbl_specimens_stblid
@@ -177,7 +179,7 @@ readonly class SpecimenService
                               ORDER BY numberOfEntries DESC, specimenID
                               LIMIT :entriesPerPage OFFSET :offset";
 
-        $rows = $this->entityManager->getConnection()->executeQuery($sql, ["offset" => $offset, "entriesPerPage" => $entriesPerPage], ['offset' => ParameterType::INTEGER, "entriesPerPage" => ParameterType::INTEGER])->fetchAllAssociative();
+        $rows = $this->query($sql, ["offset" => $offset, "entriesPerPage" => $entriesPerPage], ['offset' => ParameterType::INTEGER, "entriesPerPage" => ParameterType::INTEGER])->fetchAllAssociative();
 
         foreach ($rows as $line => $row) {
             $data['result'][$line] = $row;
@@ -217,7 +219,7 @@ readonly class SpecimenService
                                  ORDER BY timestamp DESC
                                  LIMIT 1";
 
-                        $stableIdentifier = $this->entityManager->getConnection()->executeQuery($sql, ["specimenID" => $specimenID])->fetchOne();
+                        $stableIdentifier = $this->query($sql, ["specimenID" => $specimenID])->fetchOne();
 
                         if (!empty($stableIdentifier)) {
                             switch ($subtoken) {
@@ -239,7 +241,7 @@ readonly class SpecimenService
                                               LEFT JOIN `tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
                                               LEFT JOIN `tbl_img_definition` id ON id.`source_id_fk` = mc.`source_id`
                                              WHERE s.`specimen_ID` = :specimenID";
-                        $row = $this->entityManager->getConnection()->executeQuery($sql, ["specimenID" => $specimenID])->fetchAssociative();
+                        $row = $this->query($sql, ["specimenID" => $specimenID])->fetchAssociative();
                         $HerbNummer = str_replace(['-', ' '], '', $row['HerbNummer']); // remove hyphens and spaces
                         // first check subtoken :num
                         if (in_array('num', $tokenParts)) {                         // ignore text with digits within, only use the last number
@@ -265,7 +267,7 @@ readonly class SpecimenService
                                      WHERE specimen_ID = :specimenID
                                      ORDER BY timestamp DESC
                                      LIMIT 1";
-                            $stableIdentifier = $this->entityManager->getConnection()->executeQuery($sql, ["specimenID" => $specimenID])->fetchAssociative();
+                            $stableIdentifier = $this->query($sql, ["specimenID" => $specimenID])->fetchAssociative();
 
                             // SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(manifest, '/', -2), '/', 1) AS derivate_ID FROM `stblid_manifest` WHERE 1
                             $sql = "SELECT " . $tokenParts[2] . "
@@ -301,18 +303,13 @@ readonly class SpecimenService
                               LEFT JOIN tbl_management_collections mc on s.collectionID = mc.collectionID
                              WHERE s.HerbNummer = :herbNummer
                               AND mc.source_id = :source_id";
-        $id = $this->entityManager->getConnection()->executeQuery($sql, ["herbNummer" => $herbNummer, "source_id" => $source_id])->fetchOne();
+        $id = $this->query($sql, ["herbNummer" => $herbNummer, "source_id" => $source_id])->fetchOne();
 
         if ($id !== false) {
             return $id;
         }
         return null;
 
-    }
-
-    public function find(int $id)
-    {
-        return $this->entityManager->getRepository(Specimens::class)->find($id);
     }
 
     /**
@@ -328,7 +325,7 @@ readonly class SpecimenService
                 if (strlen(trim($modifiedHerbNumber)) > 0) {
                     $modifiedHerbNumber = str_replace('-', '', $modifiedHerbNumber);
                 } else {
-                    $modifiedHerbNumber = 'JACQID' . $specimen->getId();
+                    $modifiedHerbNumber = self::JACQID_PREFIX . $specimen->getId();
                 }
                 return "https://herbarium.bgbm.org/object/" . $modifiedHerbNumber;
             } elseif ($sourceId == '27') { // LAGU
@@ -339,7 +336,7 @@ readonly class SpecimenService
                 if (strlen(trim($modifiedHerbNumber)) > 0) {
                     $modifiedHerbNumber = str_replace('-', '', $modifiedHerbNumber);
                 } else {
-                    $modifiedHerbNumber = 'JACQID' . $specimen->getId();
+                    $modifiedHerbNumber = self::JACQID_PREFIX . $specimen->getId();
                 }
                 return "https://willing.jacq.org/object/" . $modifiedHerbNumber;
             }
@@ -351,7 +348,7 @@ readonly class SpecimenService
     public function collection(array $row): string
     {
         $text = $row['Sammler'];
-        if (strstr((string) $row['Sammler_2'], "&") || strstr((string)$row['Sammler_2'], "et al.")) {
+        if (strstr((string)$row['Sammler_2'], "&") || strstr((string)$row['Sammler_2'], "et al.")) {
             $text .= " et al.";
         } else if ($row['Sammler_2']) {
             $text .= " & " . $row['Sammler_2'];

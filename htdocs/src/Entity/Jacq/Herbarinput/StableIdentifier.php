@@ -25,6 +25,9 @@ class StableIdentifier
     #[ORM\Column(name: 'timestamp',type: 'datetime')]
     private \DateTime $timestamp;
 
+    #[ORM\Column(name: 'error')]
+    private ?string $error;
+
     #[ORM\ManyToOne(targetEntity: Specimens::class, inversedBy: 'stableIdentifier')]
     #[ORM\JoinColumn(name: 'specimen_ID', referencedColumnName: 'specimen_ID')]
     private Specimens $specimen;
@@ -48,6 +51,12 @@ class StableIdentifier
     {
         return $this->timestamp;
     }
+
+    public function getError(): ?string
+    {
+        return $this->error;
+    }
+
 
 
 }
