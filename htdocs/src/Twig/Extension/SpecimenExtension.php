@@ -152,8 +152,7 @@ class SpecimenExtension extends AbstractExtension
     public function getScientificName(Specimens $specimen): string
     {
 
-        $sql = "SELECT herbar_view.GetScientificName(:species, 0) AS scientificName";
-        return $this->entityManager->getConnection()->executeQuery($sql, ['species' => $specimen->getSpecies()->getId()])->fetchOne();
+        return $this->specimenService->getScientificName($specimen);
 
     }
 
@@ -162,7 +161,7 @@ class SpecimenExtension extends AbstractExtension
         $text = '';
         $switch = false;
         if ($specimen?->getCountry()?->getNameEng() !== null) {
-            $text .= "<img src='flags/" . strtolower($specimen->getCountry()->getIsoCode()) . ".png'> " . $specimen->getCountry()->getNameEng();
+            $text .= "<img src='flags/" . strtolower($specimen->getCountry()->getIsoCode2()) . ".png'> " . $specimen->getCountry()->getNameEng();
             $switch = true;
         }
         if ($specimen->getProvince() !== null) {
@@ -190,7 +189,7 @@ class SpecimenExtension extends AbstractExtension
         $text = '';
         $switch = false;
         if ($specimen?->getCountry()?->getNameEng() !== null) {
-            $text .= "<img src='flags/" . strtolower($specimen->getCountry()->getIsoCode()) . ".png'> " . $specimen->getCountry()->getNameEng();
+            $text .= "<img src='flags/" . strtolower($specimen->getCountry()->getIsoCode2()) . ".png'> " . $specimen->getCountry()->getNameEng();
             $switch = true;
         }
         if ($specimen->getProvince() !== null) {

@@ -4,7 +4,6 @@ namespace App\Service;
 
 
 use App\Entity\Jacq\Herbarinput\Specimens;
-use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\ORM\EntityNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -28,18 +27,9 @@ readonly class SpecimenService extends BaseService
         return $id === 0 ? null : $id;
     }
 
-    public function find(int $id): Specimens
-    {
-        $specimen = $this->entityManager->getRepository(Specimens::class)->find($id);
-        if ($specimen === null) {
-            throw new EntityNotFoundException('Specimen not found');
-        }
-        return $specimen;
-    }
-
     public function findAccessibleForPublic(int $id): Specimens
     {
-        $specimen = $this->entityManager->getRepository(Specimens::class)->findOneBy(["id"=>$id, 'accessibleForPublic'=>true]);
+        $specimen = $this->entityManager->getRepository(Specimens::class)->findOneBy(["id" => $id, 'accessibleForPublic' => true]);
         if ($specimen === null) {
             throw new EntityNotFoundException('Specimen not found');
         }
@@ -52,6 +42,15 @@ readonly class SpecimenService extends BaseService
                      FROM tbl_specimens_stblid
                      WHERE stableIdentifier = :sid";
         return $this->query($sql, ['sid' => $sid])->fetchOne();
+    }
+
+    public function find(int $id): Specimens
+    {
+        $specimen = $this->entityManager->getRepository(Specimens::class)->find($id);
+        if ($specimen === null) {
+            throw new EntityNotFoundException('Specimen not found');
+        }
+        return $specimen;
     }
 
     /**
@@ -292,5 +291,112 @@ readonly class SpecimenService extends BaseService
         }
 
         return trim($text);
+    }
+
+    /**
+     * get the properties of this specimen with Dublin Core Names (dc:...)
+     */
+    public function getDublinCore(Specimens $specimen): array
+    {
+        $scientificName = $this->getScientificName($specimen);
+        return array('dc:title' => $scientificName,
+            'dc:description' => $this->getSpecimenDescription($specimen),
+            'dc:creator' => $specimen->getCollectorsTeam(),
+            'dc:created' => $specimen->getDatesAsString(),
+            'dc:type' => $specimen->getBasisOfRecordField());
+    }
+
+    public function getScientificName(Specimens $specimen): string
+    {
+        $sql = "SELECT herbar_view.GetScientificName(:species, 0) AS scientificName";
+        return $this->entityManager->getConnection()->executeQuery($sql, ['species' => $specimen->getSpecies()->getId()])->fetchOne();
+
+    }
+
+    public function getSpecimenDescription(Specimens $specimen): string
+    {
+        $scientificName = $this->getScientificName($specimen);
+        return "A " . $specimen->getBasisOfRecordField() . " of " . $scientificName . " collected by {$specimen->getCollectorsTeam()}";
+    }
+
+    /**
+     * get the properties of this specimen with Darwin Core Names (dwc:...)
+     */
+    public function getDarwinCore(Specimens $specimen): array
+    {
+
+        return [
+            'dwc:materialSampleID' => $specimen->getMainStableIdentifier(),
+            'dwc:basisOfRecord' => $specimen->getBasisOfRecordField(),
+            'dwc:collectionCode' => $specimen->getHerbCollection()->getInstitution()->getAbbreviation(),
+            'dwc:catalogNumber' => ($specimen->getHerbNumber()) ?: ('JACQ-ID ' . $specimen->getId()),
+            'dwc:scientificName' => $this->getScientificName($specimen),
+            'dwc:previousIdentifications' => $specimen->getTaxonAlternative(),
+            'dwc:family' => $specimen->getSpecies()->getGenus()->getFamily()->getName(),
+            'dwc:genus' => $specimen->getSpecies()->getGenus()->getName(),
+            'dwc:specificEpithet' => $specimen->getSpecies()->getEpithet(),
+            'dwc:country' => $specimen->getCountry()->getNameEng(),
+            'dwc:countryCode' => $specimen->getCountry()->getIsoCode3(),
+            'dwc:locality' => $specimen->getLocality(),
+            'dwc:decimalLatitude' => $specimen->getLatitude(),
+            'dwc:decimalLongitude' => $specimen->getLongitude(),
+            'dwc:verbatimLatitude' => $specimen->getVerbatimLatitude(),
+            'dwc:verbatimLongitude' => $specimen->getVerbatimLongitude(),
+            'dwc:eventDate' => $specimen->getDatesAsString(),
+            'dwc:recordNumber' => ($specimen->getHerbNumber()) ?: ('JACQ-ID ' . $specimen->getId()),
+            'dwc:recordedBy' => $specimen->getCollectorsTeam(),
+            'dwc:fieldNumber' => trim($specimen->getNumber() . ' ' . $specimen->getAltNumber())
+        ];
+
+    }
+
+    /**
+     * get the properties of this specimen with JACQ Names (jacq:...)
+     */
+    public function getJACQ(Specimens $specimen):array
+    {
+//TODO - using german terms as identifiers - but probably nobody use this service
+
+        if ($specimen->hasImage() || $specimen->hasImageObservation()) {
+            $firstImageLink = $this->router->generate('services_rest_images_show', ['specimenID' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+            $firstImageDownloadLink = $this->router->generate('services_rest_images_download', ['specimenID' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        } else {
+            $firstImageLink = $firstImageDownloadLink = '';
+        }
+
+        return [
+            'jacq:stableIdentifier' => $specimen->getMainStableIdentifier(),
+            'jacq:specimenID' => $specimen->getId(),
+            'jacq:scientificName' => $this->getScientificName($specimen),
+            'jacq:family' => $specimen->getSpecies()->getGenus()->getFamily()->getName(),
+            'jacq:genus' => $specimen->getSpecies()->getGenus()->getName(),
+            'jacq:epithet' => $specimen->getSpecies()->getEpithet(),
+            'jacq:HerbNummer' => $specimen->getHerbNumber(),
+            'jacq:CollNummer' => $specimen->getCollectionNumber(),
+            'jacq:observation' => $specimen->isObservation() ? '1' : '0',
+            'jacq:taxon_alt' => $specimen->getTaxonAlternative(),
+            'jacq:Fundort' => $specimen->getLocality(),
+             'jacq:decimalLatitude' => $specimen->getLatitude(),
+            'jacq:decimalLongitude' => $specimen->getLongitude(),
+            'jacq:verbatimLatitude' => $specimen->getVerbatimLatitude(),
+            'jacq:verbatimLongitude' => $specimen->getVerbatimLongitude(),
+            'jacq:collectorTeam' => $specimen->getCollectorsTeam(),
+            'jacq:created' => $specimen->getDatesAsString(),
+            'jacq:Nummer' => $specimen->getNumber(),
+            'jacq:series' => $specimen->getSeries()->getName(),
+            'jacq:alt_number' => $specimen->getAltNumber(),
+            'jacq:WIKIDATA_ID' => $specimen->getCollector()->getWikidataId(),
+            'jacq:HUH_ID' => $specimen->getCollector()->getHuhId(),
+            'jacq:VIAF_ID' => $specimen->getCollector()->getViafId(),
+            'jacq:ORCID' => $specimen->getCollector()->getOrcidId(),
+            'jacq:OwnerOrganizationAbbrev' => $specimen->getHerbCollection()->getInstitution()->getAbbreviation(),
+            'jacq:OwnerLogoURI' => $specimen->getHerbCollection()->getInstitution()->getOwnerLogoUri(),
+            'jacq:LicenseURI' => $specimen->getHerbCollection()->getInstitution()->getLicenseUri(),
+            'jacq:nation_engl' => $specimen->getCountry()->getNameEng(),
+            'jacq:iso_alpha_3_code' => $specimen->getCountry()->getIsoCode3(),
+            'jacq:image' => $firstImageLink,
+            'jacq:downloadImage' => $firstImageDownloadLink
+
+        ];
     }
 }

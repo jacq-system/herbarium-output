@@ -3,8 +3,8 @@
 namespace App\Facade\Rest;
 
 
+use App\Entity\Jacq\Herbarinput\Specimens;
 use App\Service\Rest\HerbNumberScan;
-use App\Service\Rest\SpecimenMapper;
 use App\Service\SpecimenService;
 use App\Service\TaxonService;
 use Doctrine\DBAL\ArrayParameterType;
@@ -109,7 +109,8 @@ readonly class ObjectsFacade
             'result' => array()
         );
         foreach ($list as $item) {
-            $data['result'][] = (!empty($listOnly)) ? intval($item['specimenID']) : $this->resolveSpecimen($item['specimenID']);
+            $specimen = $this->specimenService->findAccessibleForPublic($item['specimenID']);
+            $data['result'][] = (!empty($listOnly)) ? intval($item['specimenID']) : $this->resolveSpecimen($specimen);
         }
 
         return $data;
@@ -242,23 +243,22 @@ readonly class ObjectsFacade
      * @param string $fieldGroups which groups should be returned (dc, dwc, jacq), defaults to all
      * @return array properties (dc, dwc and jacq)
      */
-    public function resolveSpecimen(int $specimenID, string $fieldGroups = '', bool $removeEmptyValues = false): array
+    public function resolveSpecimen(Specimens $specimen, string $fieldGroups = '', bool $removeEmptyValues = false): array
     {
+
         if (!str_contains($fieldGroups, "dc") && !str_contains($fieldGroups, "dwc") && !str_contains($fieldGroups, "jacq")) {
             $fieldGroups = "dc, dwc, jacq";
         }
-// TODO breaking DI
-        $specimen = new SpecimenMapper($this->entityManager->getConnection(), $specimenID, $this->router);
 
         $ret = array();
         if (str_contains($fieldGroups, "dc")) {
-            $ret['dc'] = $specimen->getDC();
+            $ret['dc'] = $this->specimenService->getDublinCore($specimen);
         }
         if (str_contains($fieldGroups, "dwc")) {
-            $ret['dwc'] = $specimen->getDWC();
+            $ret['dwc'] = $this->specimenService->getDarwinCore($specimen);
         }
         if (str_contains($fieldGroups, "jacq")) {
-            $ret['jacq'] = $specimen->getJACQ();
+            $ret['jacq'] = $this->specimenService->getJACQ($specimen);
         }
 
         if ($removeEmptyValues) {
@@ -285,7 +285,8 @@ readonly class ObjectsFacade
             if (is_numeric(substr($item, 0, 1))) {
                 $specimenID = intval($item);
                 if (!in_array($specimenID, $alreadyFound)) {
-                    $data = $this->resolveSpecimen($specimenID, $fieldGroups, true);
+                    $specimen = $this->specimenService->findAccessibleForPublic($specimenID);
+                    $data = $this->resolveSpecimen($specimen, $fieldGroups, true);
                     if (!empty($data)) {
                         $alreadyFound[] = $specimenID;
                         $result[] = array_merge(["searchterm" => $specimenID], $data);
@@ -298,7 +299,8 @@ readonly class ObjectsFacade
                 $specimenID = $this->specimenService->getSpecimenIdFromHerbNummer($this->herbNumberScan->getHerbNumber(), $this->herbNumberScan->getSourceId());
                 if ($specimenID) {
                     if (!in_array($specimenID, $alreadyFound)) {
-                        $data = $this->resolveSpecimen($specimenID, $fieldGroups, true);
+                        $specimen = $this->specimenService->findAccessibleForPublic($specimenID);
+                        $data = $this->resolveSpecimen($specimen, $fieldGroups, true);
                         if (!empty($data)) {
                             $alreadyFound[] = $specimenID;
                         }

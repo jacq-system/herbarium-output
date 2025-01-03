@@ -47,6 +47,9 @@ class Specimens
     #[ORM\Column(name: 'Datum')]
     private ?string $date;
 
+    #[ORM\Column(name: 'Datum2')]
+    private ?string $date2;
+
     #[ORM\Column(name: 'Fundort')]
     private ?string $locality = null;
 
@@ -229,6 +232,17 @@ class Specimens
         return null;
     }
 
+    public function getVerbatimLatitude(): string
+    {
+        if ($this->degreeS > 0 || $this->minuteS > 0 || $this->secondS > 0) {
+            return $this->degreeS . "d " . (($this->minuteS) ?: '?') . "m " . (($this->secondS) ?: '?') . 's S';
+        } else if ($this->degreeN > 0 || $this->minuteN > 0 || $this->secondN > 0) {
+            return $this->degreeN . "d " . (($this->minuteN) ?: '?') . "m " . (($this->secondN) ?: '?') . 's N';
+        } else {
+           return '';
+        }
+    }
+
     public function getLongitude(): ?float
     {
         if ($this->degreeW > 0 || $this->minuteW > 0 || $this->secondW > 0) {
@@ -237,6 +251,17 @@ class Specimens
             return $this->degreeE + $this->minuteE / 60 + $this->secondE / 3600;
         }
         return null;
+    }
+
+    public function getVerbatimLongitude(): string
+    {
+        if ($this->degreeW > 0 || $this->minuteW > 0 || $this->secondW > 0) {
+            return $this->degreeW . "d " . (($this->minuteW) ?: '?') . "m " . (($this->secondW) ?: '?') . 's W';
+        } else if ($this->degreeE > 0 || $this->minuteE > 0 || $this->secondE > 0) {
+           return $this->degreeE . "d " . (($this->minuteE) ?: '?') . "m " . (($this->secondE) ?: '?') . 's E';
+        } else {
+            return '';
+        }
     }
 
     public function getId(): ?int
@@ -284,11 +309,6 @@ class Specimens
         return $this->accessibleForPublic;
     }
 
-    public function getDate(): ?string
-    {
-        return $this->date;
-    }
-
     public function getLocality(): ?string
     {
         return $this->locality;
@@ -334,16 +354,6 @@ class Specimens
         return $this->series;
     }
 
-    public function getCollector(): ?Collector
-    {
-        return $this->collector;
-    }
-
-    public function getCollector2(): ?Collector2
-    {
-        return $this->collector2;
-    }
-
     public function getTypus(): Collection
     {
         return $this->typus;
@@ -356,7 +366,7 @@ class Specimens
 
     public function getMainStableIdentifier(): ?StableIdentifier
     {
-        if(count($this->stableIdentifiers) > 0){
+        if (count($this->stableIdentifiers) > 0) {
             return $this->stableIdentifiers[0];
         }
         return null;
@@ -392,5 +402,62 @@ class Specimens
         return $this->europeanaImages;
     }
 
+    public function getCollectorsTeam(): string
+    {
+        $collectorTeam = $this->getCollector()->getName();
+        $secondCollector = $this->getCollector2();
+        if ($secondCollector !== null && (strstr($secondCollector->getName(), "et al.") || strstr($secondCollector->getName(), "alii"))) {
+            $collectorTeam .= " et al.";
+        } elseif ($secondCollector !== null) {
+            $parts = explode(',', $secondCollector->getName());           // some people forget the final "&"
+            if (count($parts) > 2) {                            // so we have to use an alternative way
+                $collectorTeam .= ", " . $secondCollector->getName();
+            } else {
+                $collectorTeam .= " & " . $secondCollector->getName();
+            }
+        }
+        return $collectorTeam;
+    }
 
+    public function getCollector(): ?Collector
+    {
+        return $this->collector;
+    }
+
+    public function getCollector2(): ?Collector2
+    {
+        return $this->collector2;
+    }
+
+    public function getDatesAsString(): string
+    {
+
+        if ($this->getDate() === "s.d.") {
+            return '';
+        }
+        if ($this->getDate() === null) {
+            return (string)$this->getDate2();
+        }
+
+        $created = $this->getDate();
+        if ($this->getDate2() !== null && !empty($this->getDate2())) {
+            $created .= " - " . $this->getDate2();
+        }
+        return $created;
+    }
+
+    public function getDate(): ?string
+    {
+        return $this->date !== null ? trim($this->date) : null;
+    }
+
+    public function getDate2(): ?string
+    {
+        return $this->date2 !== null ? trim($this->date2) : null;
+    }
+
+    public function getBasisOfRecordField():string
+    {
+        return $this->isObservation() ? "HumanObservation" : "PreservedSpecimen";
+    }
 }

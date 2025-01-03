@@ -24,15 +24,15 @@ class HerbCollection
     private ?string $pictureFilename = null;
 
 
-    #[ORM\ManyToOne(targetEntity: Meta::class)]
+    #[ORM\ManyToOne(targetEntity: Institution::class)]
     #[ORM\JoinColumn(name: 'source_id', referencedColumnName: 'source_id')]
-    private Meta $institution;
+    private Institution $institution;
 
     #[ORM\OneToOne(targetEntity: IiifDefinition::class, mappedBy: 'herbCollection')]
     private ?IiifDefinition $iiifDefinition = null;
 
 
-    public function getInstitution(): Meta
+    public function getInstitution(): Institution
     {
         return $this->institution;
     }

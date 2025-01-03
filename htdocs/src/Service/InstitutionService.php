@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Entity\Jacq\Herbarinput\Meta;
+use App\Entity\Jacq\Herbarinput\Institution;
 
 /**
  * I call it "Institution" as the Meta is enigmatic - but overall in the code the table/service is used as an institution-like object
@@ -29,9 +29,9 @@ readonly class InstitutionService extends BaseService
         return $this->query($sql)->fetchAllKeyValue();
     }
 
-    public function findByCode(string $code): Meta
+    public function findByCode(string $code): Institution
     {
-        return $this->entityManager->getRepository(Meta::class)->findOneBy(['code' => $code]);
+        return $this->entityManager->getRepository(Institution::class)->findOneBy(['code' => $code]);
     }
 
 

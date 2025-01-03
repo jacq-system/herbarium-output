@@ -5,7 +5,6 @@ namespace App\Facade\Rest;
 
 use App\Entity\Jacq\Herbarinput\Specimens;
 use App\Service\ReferenceService;
-use App\Service\Rest\SpecimenMapper;
 use App\Service\SpecimenService;
 use App\Service\TaxonService;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
@@ -86,15 +85,12 @@ readonly class IiifFacade extends BaseFacade
                 curl_close($curl);
             }
             if ($result && !$fallback) {  // we used a true backend, so enrich the manifest with additional data
-                //TODO breaking DI
-                $specimenMapper = new SpecimenMapper($this->entityManager->getConnection(), $specimen->getId(), $this->router);
-
                 $result['@id'] = $this->router->generate('services_rest_iiif_manifest', ['specimenID' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL);  // to point at ourselves
-                $result['description'] = $specimenMapper->getDescription();
-                $result['label'] = $specimenMapper->getLabel();
-                $result['attribution'] = $specimenMapper->getAttribution();
-                $result['logo'] = array('@id' => $specimenMapper->getLogoURI());
-                $rdfLink = array('@id' => $specimenMapper->getStableIdentifier(),
+                $result['description'] = $this->specimenService->getSpecimenDescription($specimen);
+                $result['label'] = $this->specimenService->getScientificName($specimen);
+                $result['attribution'] = $specimen->getHerbCollection()->getInstitution()->getLicenseUri();
+                $result['logo'] = array('@id' => $specimen->getHerbCollection()->getInstitution()->getOwnerLogoUri());
+                $rdfLink = array('@id' => $specimen->getMainStableIdentifier(),
                     'label' => 'RDF',
                     'format' => 'application/rdf+xml',
                     'profile' => 'https://cetafidentifiers.biowikifarm.net/wiki/CSPP');
@@ -103,7 +99,7 @@ readonly class IiifFacade extends BaseFacade
                 } else {
                     $result['seeAlso'][] = $rdfLink;
                 }
-                $result['metadata'] = $this->getMetadataWithValues($specimenMapper, (isset($result['metadata'])) ? $result['metadata'] : array());
+                $result['metadata'] = $this->getMetadataWithValues($specimen, (isset($result['metadata'])) ? $result['metadata'] : array());
             }
         }
         return $result;
@@ -412,14 +408,10 @@ readonly class IiifFacade extends BaseFacade
 
     /**
      * get array of metadata for a given specimen, where values are not empty
-     *
-     * @param SpecimenMapper $specimen specimen to get metadata from
-     * @param array $metadata already existing metadata in manifest (optional)
-     * @return array metadata
      */
-    protected function getMetadataWithValues(SpecimenMapper $specimen, array $metadata = array()): array
+    protected function getMetadataWithValues(Specimens $specimenEntity,  array $metadata = array()): array
     {
-        $meta = $this->getMetadata($specimen, $metadata);
+        $meta = $this->getMetadata($specimenEntity, $metadata);
         $result = array();
         foreach ($meta as $row) {
             if (!empty($row['value'])) {
@@ -431,43 +423,38 @@ readonly class IiifFacade extends BaseFacade
 
     /**
      * get array of metadata for a given specimen
-     *
-     * @param SpecimenMapper $specimen specimen to get metadata from
-     * @param array $metadata already existing metadata in manifest (optional)
-     * @return array metadata
      */
-    protected function getMetadata(SpecimenMapper $specimen, array $metadata = array()): array
+    protected function getMetadata(Specimens $specimenEntity, array $metadata = array()): array
     {
         $meta = $metadata;
 
-        $dcData = $specimen->getDC();
+        $dcData = $this->specimenService->getDublinCore($specimenEntity);
         foreach ($dcData as $label => $value) {
             $meta[] = array('label' => $label,
                 'value' => $value);
         }
 
-        $dwcData = $specimen->getDWC();
+        $dwcData = $this->specimenService->getDarwinCore($specimenEntity);
         foreach ($dwcData as $label => $value) {
             $meta[] = array('label' => $label,
                 'value' => $value);
         }
 
-        $specimenProperties = $specimen->getProperties();
-
-        $meta[] = array('label' => 'CETAF_ID', 'value' => $specimenProperties['stableIdentifier']);
-        $meta[] = array('label' => 'dwciri:recordedBy', 'value' => $specimenProperties['WIKIDATA_ID']);
-        if (!empty($specimenProperties['HUH_ID'])) {
-            $meta[] = array('label' => 'owl:sameAs', 'value' => $specimenProperties['HUH_ID']);
+        $collector =$specimenEntity->getCollector();
+        $meta[] = array('label' => 'CETAF_ID', 'value' => $specimenEntity->getMainStableIdentifier());
+        $meta[] = array('label' => 'dwciri:recordedBy', 'value' => $collector->getWikidataId());
+        if (!empty($collector->getHuhId())) {
+            $meta[] = array('label' => 'owl:sameAs', 'value' => $collector->getHuhId());
         }
-        if (!empty($specimenProperties['VIAF_ID'])) {
-            $meta[] = array('label' => 'owl:sameAs', 'value' => $specimenProperties['VIAF_ID']);
+        if (!empty($collector->getViafId())) {
+            $meta[] = array('label' => 'owl:sameAs', 'value' => $collector->getViafId());
         }
-        if (!empty($specimenProperties['ORCID'])) {
-            $meta[] = array('label' => 'owl:sameAs', 'value' => $specimenProperties['ORCID']);
+        if (!empty($collector->getOrcidId())) {
+            $meta[] = array('label' => 'owl:sameAs', 'value' => $collector->getOrcidId());
         }
-        if (!empty($specimenProperties['WIKIDATA_ID'])) {
-            $meta[] = array('label' => 'owl:sameAs', 'value' => $specimenProperties['WIKIDATA_ID']);
-            $meta[] = array('label' => 'owl:sameAs', 'value' => "https://scholia.toolforge.org/author/" . basename($specimenProperties['WIKIDATA_ID']));
+        if (!empty($collector->getWikidataId())) {
+            $meta[] = array('label' => 'owl:sameAs', 'value' => $collector->getWikidataId());
+            $meta[] = array('label' => 'owl:sameAs', 'value' => "https://scholia.toolforge.org/author/" . basename($collector->getWikidataId()));
         }
 
         foreach ($meta as $key => $line) {

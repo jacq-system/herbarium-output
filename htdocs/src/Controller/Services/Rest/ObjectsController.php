@@ -3,6 +3,7 @@
 namespace App\Controller\Services\Rest;
 
 use App\Facade\Rest\ObjectsFacade;
+use App\Service\SpecimenService;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\Items;
@@ -21,7 +22,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ObjectsController extends AbstractFOSRestController
 {
-    public function __construct(protected readonly ObjectsFacade $objectsFacade)
+    public function __construct(protected readonly ObjectsFacade $objectsFacade, protected readonly SpecimenService $specimenService)
     {
     }
 
@@ -99,7 +100,13 @@ class ObjectsController extends AbstractFOSRestController
     #[Route('/services/rest/objects/specimens/{specimenID}.{_format}', name: "services_rest_objects_specimen", defaults: ['_format' => 'json'], methods: ['GET'])]
     public function specimen(int $specimenID): Response
     {
-        $data = $this->objectsFacade->resolveSpecimen($specimenID);
+        try {
+            $specimen = $this->specimenService->findAccessibleForPublic($specimenID);
+        }catch (\Exception $e){
+            $view = $this->view([], 404);
+            return $this->handleView($view);
+        }
+        $data = $this->objectsFacade->resolveSpecimen($specimen);
         $view = $this->view($data, 200);
 
         return $this->handleView($view);

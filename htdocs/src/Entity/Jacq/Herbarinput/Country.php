@@ -23,7 +23,10 @@ class Country
     private string $variants;
 
     #[ORM\Column(name: 'iso_alpha_2_code')]
-    private string $isoCode;
+    private string $isoCode2;
+
+    #[ORM\Column(name: 'iso_alpha_3_code')]
+    private string $isoCode3;
 
 
     public function getId(): ?int
@@ -46,10 +49,16 @@ class Country
         return $this->variants;
     }
 
-    public function getIsoCode(): string
+    public function getIsoCode2(): string
     {
-        return $this->isoCode;
+        return $this->isoCode2;
     }
+
+    public function getIsoCode3(): string
+    {
+        return $this->isoCode3;
+    }
+
 
 
 }
