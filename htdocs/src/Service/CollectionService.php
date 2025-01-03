@@ -21,11 +21,9 @@ readonly class CollectionService extends BaseService
 
     public function getAllFromHerbariumAsPairs(int $herbariumID): array
     {
-        //TODO purpose of the meta table??
         $sql = "SELECT collectionID, collection
-                FROM tbl_management_collections as collections, meta
-                WHERE collections.source_id = meta.source_id
-                 AND collections.source_id = :herbariumID
+                FROM tbl_management_collections as collections
+                WHERE  collections.source_id = :herbariumID
                 ORDER BY collection;";
 
         return $this->query($sql, ['herbariumID' => $herbariumID])->fetchAllKeyValue();

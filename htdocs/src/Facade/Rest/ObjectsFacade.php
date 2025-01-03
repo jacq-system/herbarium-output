@@ -215,7 +215,7 @@ readonly class ObjectsFacade
                         break;
                     case 'm':
                         $sql .= " LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
-                                      LEFT JOIN meta m                        ON m.source_ID     = mc.source_ID ";
+                                      LEFT JOIN metadata m                        ON m.MetadataID     = mc.source_ID ";
                         break;
                     case 'gn':
                         $sql .= " LEFT JOIN tbl_geo_nation n              ON n.nationID      = s.NationID ";

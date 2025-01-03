@@ -231,7 +231,7 @@ readonly class TypusService
                             FROM tbl_specimens s
                              LEFT JOIN tbl_specimens_series ss           ON ss.seriesID = s.seriesID
                              LEFT JOIN tbl_management_collections mc     ON mc.collectionID = s.collectionID
-                             LEFT JOIN meta m                            ON m.source_id = mc.source_id
+                             LEFT JOIN metadata m                        ON m.MetadataID = mc.source_id
                              LEFT JOIN tbl_img_definition tid            ON tid.source_id_fk = mc.source_id
                              LEFT JOIN tbl_geo_nation n                  ON n.NationID = s.NationID
                              LEFT JOIN tbl_geo_province p                ON p.provinceID = s.provinceID

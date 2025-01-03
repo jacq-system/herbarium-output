@@ -466,7 +466,7 @@ class SearchFormFacade
                  LEFT JOIN tbl_specimens_identstatus     si  ON si.identstatusID = s.identstatusID
                  LEFT JOIN tbl_specimens_voucher         sv  ON sv.voucherID = s.voucherID
                  LEFT JOIN tbl_management_collections    mc  ON mc.collectionID = s.collectionID
-                 LEFT JOIN meta                          m   ON m.source_id = mc.source_id
+                 LEFT JOIN metadata                      m   ON m.MetadataID = mc.source_id
                  LEFT JOIN tbl_geo_nation                n   ON n.NationID = s.NationID
                  LEFT JOIN tbl_geo_province              p   ON p.provinceID = s.provinceID
                  LEFT JOIN tbl_collector                 c   ON c.SammlerID = s.SammlerID

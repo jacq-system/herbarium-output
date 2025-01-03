@@ -4,17 +4,14 @@ namespace App\Service;
 
 use App\Entity\Jacq\Herbarinput\Institution;
 
-/**
- * I call it "Institution" as the Meta is enigmatic - but overall in the code the table/service is used as an institution-like object
- */
 readonly class InstitutionService extends BaseService
 {
 
     public function getAllAsPairs(): array
     {
-        $sql = "SELECT source_id, CONCAT(`source_code`,' - ',`source_name`) herbname
-                FROM `meta`
-                WHERE `source_id`
+        $sql = "SELECT MetadataID, CONCAT(SourceInstitutionID,' - ',SourceID) herbname
+                FROM metadata
+                WHERE MetadataID
                 IN (
                   SELECT `source_id`
                   FROM `tbl_management_collections`

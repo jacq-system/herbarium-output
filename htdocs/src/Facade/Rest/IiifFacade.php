@@ -409,11 +409,11 @@ readonly class IiifFacade extends BaseFacade
     /**
      * get array of metadata for a given specimen, where values are not empty
      */
-    protected function getMetadataWithValues(Specimens $specimenEntity,  array $metadata = array()): array
+    protected function getMetadataWithValues(Specimens $specimenEntity,  array $originalMetadata = array()): array
     {
-        $meta = $this->getMetadata($specimenEntity, $metadata);
+        $data = $this->getMetadata($specimenEntity, $originalMetadata);
         $result = array();
-        foreach ($meta as $row) {
+        foreach ($data as $row) {
             if (!empty($row['value'])) {
                 $result[] = $row;
             }
@@ -426,43 +426,42 @@ readonly class IiifFacade extends BaseFacade
      */
     protected function getMetadata(Specimens $specimenEntity, array $metadata = array()): array
     {
-        $meta = $metadata;
 
         $dcData = $this->specimenService->getDublinCore($specimenEntity);
         foreach ($dcData as $label => $value) {
-            $meta[] = array('label' => $label,
+            $metadata[] = array('label' => $label,
                 'value' => $value);
         }
 
         $dwcData = $this->specimenService->getDarwinCore($specimenEntity);
         foreach ($dwcData as $label => $value) {
-            $meta[] = array('label' => $label,
+            $metadata[] = array('label' => $label,
                 'value' => $value);
         }
 
         $collector =$specimenEntity->getCollector();
-        $meta[] = array('label' => 'CETAF_ID', 'value' => $specimenEntity->getMainStableIdentifier());
-        $meta[] = array('label' => 'dwciri:recordedBy', 'value' => $collector->getWikidataId());
+        $metadata[] = array('label' => 'CETAF_ID', 'value' => $specimenEntity->getMainStableIdentifier());
+        $metadata[] = array('label' => 'dwciri:recordedBy', 'value' => $collector->getWikidataId());
         if (!empty($collector->getHuhId())) {
-            $meta[] = array('label' => 'owl:sameAs', 'value' => $collector->getHuhId());
+            $metadata[] = array('label' => 'owl:sameAs', 'value' => $collector->getHuhId());
         }
         if (!empty($collector->getViafId())) {
-            $meta[] = array('label' => 'owl:sameAs', 'value' => $collector->getViafId());
+            $metadata[] = array('label' => 'owl:sameAs', 'value' => $collector->getViafId());
         }
         if (!empty($collector->getOrcidId())) {
-            $meta[] = array('label' => 'owl:sameAs', 'value' => $collector->getOrcidId());
+            $metadata[] = array('label' => 'owl:sameAs', 'value' => $collector->getOrcidId());
         }
         if (!empty($collector->getWikidataId())) {
-            $meta[] = array('label' => 'owl:sameAs', 'value' => $collector->getWikidataId());
-            $meta[] = array('label' => 'owl:sameAs', 'value' => "https://scholia.toolforge.org/author/" . basename($collector->getWikidataId()));
+            $metadata[] = array('label' => 'owl:sameAs', 'value' => $collector->getWikidataId());
+            $metadata[] = array('label' => 'owl:sameAs', 'value' => "https://scholia.toolforge.org/author/" . basename($collector->getWikidataId()));
         }
 
-        foreach ($meta as $key => $line) {
+        foreach ($metadata as $key => $line) {
             if ($line['value'] !== null && (str_starts_with((string)$line['value'], 'http://') || str_starts_with((string)$line['value'], 'https://'))) {
-                $meta[$key]['value'] = "<a href='" . $line['value'] . "'>" . $line['value'] . "</a>";
+                $metadata[$key]['value'] = "<a href='" . $line['value'] . "'>" . $line['value'] . "</a>";
             }
         }
 
-        return $meta;
+        return $metadata;
     }
 }

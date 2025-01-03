@@ -15,7 +15,7 @@ readonly class StatisticsService
 
     protected function getInstitutionsOrdered(): array
     {
-        $sql  = "SELECT source_id, source_code FROM meta ORDER BY source_code";
+        $sql  = "SELECT MetadataID as source_id, SourceInstitutionID as source_code FROM metadata ORDER BY source_code";
 
         return $this->entityManager->getConnection()->executeQuery($sql)->fetchAllAssociative();
     }
@@ -23,9 +23,8 @@ readonly class StatisticsService
     protected function getNames(TimeIntervalEnum $interval, string $periodStart, string $periodEnd, int $updated): array
     {
         $sql = "SELECT ".$this->getPeriodColumn($interval).", count(l.taxonID) AS cnt, u.source_id
-                                        FROM herbarinput_log.log_tax_species l, herbarinput_log.tbl_herbardb_users u, meta m
+                                        FROM herbarinput_log.log_tax_species l, herbarinput_log.tbl_herbardb_users u
                                         WHERE l.userID = u.userID
-                                         AND u.source_id = m.source_id
                                          AND l.updated = :updated
                                          AND l.timestamp >= :periodStar
                                          AND l.timestamp <= :periodEnd
@@ -52,9 +51,8 @@ readonly class StatisticsService
     protected function getCitations(TimeIntervalEnum $interval, string $periodStart, string $periodEnd, int $updated): array
     {
         $sql = "SELECT ".$this->getPeriodColumn($interval).", count(l.citationID) AS cnt, u.source_id
-                                        FROM herbarinput_log.log_lit l, herbarinput_log.tbl_herbardb_users u, meta m
+                                        FROM herbarinput_log.log_lit l, herbarinput_log.tbl_herbardb_users u
                                         WHERE l.userID = u.userID
-                                         AND u.source_id = m.source_id
                                          AND l.updated = :updated
                                          AND l.timestamp >= :periodStart
                                          AND l.timestamp <= :periodEnd
@@ -67,9 +65,8 @@ readonly class StatisticsService
     protected function getNamesCitations(TimeIntervalEnum $interval, string $periodStart, string $periodEnd, int $updated): array
     {
         $sql = "SELECT ".$this->getPeriodColumn($interval).", count(l.taxindID) AS cnt, u.source_id
-                                        FROM herbarinput_log.log_tax_index l, herbarinput_log.tbl_herbardb_users u, meta m
+                                        FROM herbarinput_log.log_tax_index l, herbarinput_log.tbl_herbardb_users u
                                         WHERE l.userID = u.userID
-                                         AND u.source_id = m.source_id
                                          AND l.updated = :updated
                                          AND l.timestamp >= :periodStart
                                          AND l.timestamp <= :periodEnd
@@ -82,10 +79,9 @@ readonly class StatisticsService
     protected function getSpecimens(TimeIntervalEnum $interval, string $periodStart, string $periodEnd, int $updated): array
     {
         $sql = "SELECT ".$this->getPeriodColumn($interval).", count(l.specimenID) AS cnt, mc.source_id
-                                        FROM herbarinput_log.log_specimens l, tbl_specimens s, tbl_management_collections mc, meta m
+                                        FROM herbarinput_log.log_specimens l, tbl_specimens s, tbl_management_collections mc
                                         WHERE l.specimenID = s.specimen_ID
                                          AND s.collectionID = mc.collectionID
-                                         AND mc.source_id = m.source_id
                                          AND l.updated = :updated
                                          AND l.timestamp >= :periodStart
                                          AND l.timestamp <= :periodEnd
@@ -98,10 +94,9 @@ readonly class StatisticsService
     protected function getTypeSpecimens(TimeIntervalEnum $interval, string $periodStart, string $periodEnd, int $updated): array
     {
         $sql = "SELECT ".$this->getPeriodColumn($interval).", count(l.specimenID) AS cnt, mc.source_id
-                                        FROM herbarinput_log.log_specimens l, tbl_specimens s, tbl_management_collections mc, meta m
+                                        FROM herbarinput_log.log_specimens l, tbl_specimens s, tbl_management_collections mc
                                         WHERE l.specimenID = s.specimen_ID
                                          AND s.collectionID = mc.collectionID
-                                         AND mc.source_id = m.source_id
                                          AND s.typusID IS NOT NULL
                                          AND l.updated = :updated
                                          AND l.timestamp >= :periodStart
@@ -115,10 +110,9 @@ readonly class StatisticsService
     protected function getNamesTypeSpecimens(TimeIntervalEnum $interval, string $periodStart, string $periodEnd, int $updated): array
     {
         $sql = "SELECT ".$this->getPeriodColumn($interval).", count(l.specimens_types_ID) AS cnt, mc.source_id
-                                        FROM herbarinput_log.log_specimens_types l, tbl_specimens s, tbl_management_collections mc, meta m
+                                        FROM herbarinput_log.log_specimens_types l, tbl_specimens s, tbl_management_collections mc
                                         WHERE l.specimenID = s.specimen_ID
                                          AND s.collectionID = mc.collectionID
-                                         AND mc.source_id = m.source_id
                                          AND l.updated = :updated
                                          AND l.timestamp >= :periodStart
                                          AND l.timestamp <= :periodEnd
@@ -131,9 +125,8 @@ readonly class StatisticsService
     protected function getTypesName(TimeIntervalEnum $interval, string $periodStart, string $periodEnd, int $updated): array
     {
         $sql = "SELECT ".$this->getPeriodColumn($interval).", count(l.typecollID) AS cnt, u.source_id
-                                        FROM herbarinput_log.log_tax_typecollections l, herbarinput_log.tbl_herbardb_users u, meta m
+                                        FROM herbarinput_log.log_tax_typecollections l, herbarinput_log.tbl_herbardb_users u
                                         WHERE l.userID = u.userID
-                                         AND u.source_id = m.source_id
                                          AND l.updated = :updated
                                          AND l.timestamp >= :periodStart
                                          AND l.timestamp <= :periodEnd
@@ -145,9 +138,8 @@ readonly class StatisticsService
     protected function getSynonyms(TimeIntervalEnum $interval, string $periodStart, string $periodEnd, int $updated): array
     {
         $sql = "SELECT ".$this->getPeriodColumn($interval).", count(l.tax_syn_ID) AS cnt, u.source_id
-                                        FROM herbarinput_log.log_tbl_tax_synonymy l, herbarinput_log.tbl_herbardb_users u, meta m
+                                        FROM herbarinput_log.log_tbl_tax_synonymy l, herbarinput_log.tbl_herbardb_users u
                                         WHERE l.userID = u.userID
-                                         AND u.source_id = m.source_id
                                          AND l.updated = :updated
                                          AND l.timestamp >= :periodStart
                                          AND l.timestamp <= :periodEnd
