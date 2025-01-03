@@ -34,7 +34,7 @@ class ImageDefinition
     private string $apiKey;
 
     #[ORM\OneToOne(targetEntity: Institution::class, inversedBy: 'imageDefinition')]
-    #[ORM\JoinColumn(name: 'source_id_fk', referencedColumnName: 'source_id')]
+    #[ORM\JoinColumn(name: 'source_id_fk', referencedColumnName: 'MetadataID')]
     private Institution|null $institution = null;
 
     public function getId(): ?int

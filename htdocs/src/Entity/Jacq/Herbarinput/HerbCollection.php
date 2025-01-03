@@ -25,7 +25,7 @@ class HerbCollection
 
 
     #[ORM\ManyToOne(targetEntity: Institution::class)]
-    #[ORM\JoinColumn(name: 'source_id', referencedColumnName: 'source_id')]
+    #[ORM\JoinColumn(name: 'source_id', referencedColumnName: 'MetadataID')]
     private Institution $institution;
 
     #[ORM\OneToOne(targetEntity: IiifDefinition::class, mappedBy: 'herbCollection')]
