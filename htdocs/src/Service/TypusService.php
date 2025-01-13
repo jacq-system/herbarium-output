@@ -223,7 +223,7 @@ readonly class TypusService
                              s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec, s.habitat, s.habitus, s.altitude_min, s.altitude_max,
                              n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description, s.taxonID taxid,
                              mc.collection, mc.collectionID, mc.source_id, mc.coll_short, mc.coll_gbif_pilot,
-                             m.source_code, m.source_name,
+                             m.SourceInstitutionID as source_code, m.OwnerOrganizationName as source_name,
                              tid.imgserver_type, tid.imgserver_IP, tid.iiif_capable, tid.iiif_url, tid.HerbNummerNrDigits,
                              ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ta4.author author4, ta5.author author5,
                              te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, te4.epithet epithet4, te5.epithet epithet5,

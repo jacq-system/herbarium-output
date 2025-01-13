@@ -287,7 +287,7 @@ class SpecimenExtension extends AbstractExtension
         if ($sourceId == '35') {
             return (preg_replace("#<a .*a>#", "", $specimen->getAnnotation()));
         }
-        return $specimen->getAnnotation();
+        return $specimen->getAnnotation() ?? '';
 
     }
 
