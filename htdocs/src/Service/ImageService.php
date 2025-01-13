@@ -545,7 +545,7 @@ readonly class ImageService
     }
 
     //TODO completely enigmatic. Kept the hard redirect out of Symfony as unable understand all consequences
-    public function doRedirectDownloadPic(array $picdetails, string $format, int $thumb = 0)
+    public function doRedirectDownloadPic(array $picdetails, $format, int $thumb = 0)
     {
         // Setup default mime-type & file-extension
         $mime = 'image/jpeg';

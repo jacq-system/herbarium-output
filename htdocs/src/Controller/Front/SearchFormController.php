@@ -53,7 +53,7 @@ class SearchFormController extends AbstractController
             $this->sessionService->setFilters($getData);
         }
 
-        $institutions = $this->herbariumService->getAllAsPairs();
+        $institutions = $this->herbariumService->getAllPairsCodeName();
         $collections = $this->collectionService->getAllAsPairs();
         return $this->render('front/home/database.html.twig', ["institutions" => $institutions, 'collections' => $collections, 'sessionService' => $this->sessionService]);
     }
@@ -103,8 +103,8 @@ class SearchFormController extends AbstractController
     }
 
     #[Route('/image', name: 'app_front_image_endpoint', methods: ['GET'])]
-    public function showImage(#[MapQueryParameter] string $filename,#[MapQueryParameter] string $sid,#[MapQueryParameter] string $method,#[MapQueryParameter] string $format): Response
-    {//todo split in more endpoints, redirect is done inside the function called!!
+    public function showImage(#[MapQueryParameter] string $filename,#[MapQueryParameter] ?string $sid,#[MapQueryParameter] string $method,#[MapQueryParameter] ?string $format): Response
+    {
         if ($_SERVER['REMOTE_ADDR'] == '94.177.9.139' && !empty($sid) && $method == 'download' && strrpos($filename, '_') == strpos($filename, '_')) {
             // kulturpool is calling...
             // Redirect to new location
@@ -113,55 +113,60 @@ class SearchFormController extends AbstractController
 
         $picDetails = $this->imageService->getPicDetails($filename, $sid);
 
-        if (!empty($picdetails['url'])) {
-            switch ($method) {
-                default:
-                    $this->imageService->doRedirectDownloadPic($picdetails, $method, 0);
-                    exit;
-                case 'download':    // detail
+//        return new JsonResponse($picDetails, 200);
 
-                    return new StreamedResponse(function () use ($picdetails, $format) {
-                        $this->imageService->doRedirectDownloadPic($picdetails, $format, 0);
+        if (!empty($picDetails['url'])) {
+            switch ($method) {
+
+                case 'download':    // detail
+                    return new StreamedResponse(function () use ($picDetails, $format) {
+                        $this->imageService->doRedirectDownloadPic($picDetails, $format, 0);
                     });
                 case 'thumb':       // detail
-                    $this->imageService->doRedirectDownloadPic($picdetails, $format, 1);
-                    exit;
+                    return new StreamedResponse(function () use ($picDetails, $format) {
+                        $this->imageService->doRedirectDownloadPic($picDetails, $format, 1);
+                    }, 200);
                 case 'resized':     // create_xml.php
-                    $this->imageService->doRedirectDownloadPic($picdetails, $format, 2);
-                    exit;
+                    return new StreamedResponse(function () use ($picDetails, $format) {
+                        $this->imageService->doRedirectDownloadPic($picDetails, $format, 2);
+                    });
                 case 'europeana':   // NOTE: not supported on non-djatoka servers (yet)
-                    if (strtolower(substr($picdetails['requestFileName'], 0, 3)) == 'wu_' && $this->imageService->checkPhaidra((int)$picdetails['specimenID'])) {
+                    if (strtolower(substr($picDetails['requestFileName'], 0, 3)) == 'wu_' && $this->imageService->checkPhaidra((int)$picDetails['specimenID'])) {
                         // Phaidra (only WU)
-                        $picdetails['imgserver_type'] = 'phaidra';
+                        $picDetails['imgserver_type'] = 'phaidra';
                     } else {
                         // Djatoka
-                        $picinfo = $this->imageService->getPicInfo($picdetails);
-                        if (!empty($picinfo['pics'][0]) && !in_array($picdetails['originalFilename'], $picinfo['pics']))  {
-                            $picdetails['originalFilename'] = $picinfo['pics'][0];
+                        $picinfo = $this->imageService->getPicInfo($picDetails);
+                        if (!empty($picinfo['pics'][0]) && !in_array($picDetails['originalFilename'], $picinfo['pics']))  {
+                            $picDetails['originalFilename'] = $picinfo['pics'][0];
                         }
                     }
-                    $this->imageService->doRedirectDownloadPic($picdetails, $format, 3);
+                    $this->imageService->doRedirectDownloadPic($picDetails, $format, 3);
                     exit;
                 case 'nhmwthumb':   // NOTE: not supported on legacy image server scripts
-                    $this->imageService->doRedirectDownloadPic($picdetails, $format, 4);
+                    $this->imageService->doRedirectDownloadPic($picDetails, $format, 4);
                     exit;
                 case 'thumbs':      // unused
-                    return $this->json($this->imageService->getPicInfo($picdetails));
+                    return $this->json($this->imageService->getPicInfo($picDetails));
                 case 'show':        // detail, ajax/results.php
                     return $this->redirect($this->imageService->doRedirectShowPic($picDetails));
+                default:
+                    return new StreamedResponse(function () use ($picDetails, $format) {
+                        $this->imageService->doRedirectDownloadPic($picDetails, $format, 0);
+                    });
             }
 
         } else {
             switch ($method) {
                 case 'download':
                 case 'thumb':
-                $imagePath = $this->getParameter('kernel.project_dir') . '/public/recordIcons/404.png';
-                $response = new BinaryFileResponse($imagePath, 404, ['Content-Type'=> 'image/png']);
-                $response->setContentDisposition(
-                    ResponseHeaderBag::DISPOSITION_ATTACHMENT, // INLINE pro zobrazení, ATTACHMENT pro stažení
-                    basename($imagePath)
-                );
-                return $response;
+                    $imagePath = $this->getParameter('kernel.project_dir') . '/public/recordIcons/404.png';
+                    $response = new BinaryFileResponse($imagePath, 200, ['Content-Type'=> 'image/png']);
+                    $response->setContentDisposition(
+                        ResponseHeaderBag::DISPOSITION_INLINE, // INLINE pro zobrazení, ATTACHMENT pro stažení
+                        basename($imagePath)
+                    );
+                    return $response;
                 case 'thumbs':
                     return new JsonResponse(['error' => 'not found'], 404);
                 default:
