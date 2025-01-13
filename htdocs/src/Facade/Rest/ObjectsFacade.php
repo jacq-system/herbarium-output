@@ -150,7 +150,7 @@ readonly class ObjectsFacade
         if (!empty($sc)) {
             $joins['m'] = true;
             //TODO why LIKE?
-            $constraint .= " AND m.source_code LIKE :sc ";
+            $constraint .= " AND m.SourceInstitutionID LIKE :sc ";
         }
         if (!empty($cltr)) {
             $joins['c'] = true;

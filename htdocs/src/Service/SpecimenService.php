@@ -62,7 +62,7 @@ readonly class SpecimenService extends BaseService
         $specimens = $this->specimensWithErrors($sourceID);
         $data['total'] = count($specimens);
         foreach ($specimens as $line => $specimen) {
-            $data['result'][$line] = ['specimenID' => $specimen->getId(), 'link' => $this->router->generate('app_front_specimenDetail', ['specimenID' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL)];
+            $data['result'][$line] = ['specimenID' => $specimen->getId(), 'link' => $this->router->generate('app_front_specimenDetail', ['specimenId' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL)];
             $data['result'][$line]['errorList'] = $this->sids2array($specimen);
         }
 
@@ -93,7 +93,7 @@ readonly class SpecimenService extends BaseService
 
                 preg_match("/already exists \((?P<number>\d+)\)$/", $stableIdentifier->getError(), $parts);
 
-                $ret[$key]['link'] = (!empty($parts['number'])) ? $this->router->generate('app_front_specimenDetail', ['specimenID' => $parts['number']], UrlGeneratorInterface::ABSOLUTE_URL) : '';
+                $ret[$key]['link'] = (!empty($parts['number'])) ? $this->router->generate('app_front_specimenDetail', ['specimenId' => $parts['number']], UrlGeneratorInterface::ABSOLUTE_URL) : '';
 
             }
         }
@@ -143,7 +143,7 @@ readonly class SpecimenService extends BaseService
 
     public function sid2array(Specimens $specimen): array
     {
-        return ['stableIdentifier' => $specimen->getMainStableIdentifier()->getIdentifier(), 'timestamp' => $specimen->getMainStableIdentifier()->getTimestamp()->format('Y-m-d H:i:s'), 'link' => $this->router->generate('app_front_specimenDetail', ['specimenID' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL)
+        return ['stableIdentifier' => $specimen->getMainStableIdentifier()->getIdentifier(), 'timestamp' => $specimen->getMainStableIdentifier()->getTimestamp()->format('Y-m-d H:i:s'), 'link' => $this->router->generate('app_front_specimenDetail', ['specimenId' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL)
 
         ];
     }
@@ -326,7 +326,7 @@ readonly class SpecimenService extends BaseService
     {
 
         return [
-            'dwc:materialSampleID' => $specimen->getMainStableIdentifier(),
+            'dwc:materialSampleID' => $specimen->getMainStableIdentifier()->getIdentifier(),
             'dwc:basisOfRecord' => $specimen->getBasisOfRecordField(),
             'dwc:collectionCode' => $specimen->getHerbCollection()->getInstitution()->getAbbreviation(),
             'dwc:catalogNumber' => ($specimen->getHerbNumber()) ?: ('JACQ-ID ' . $specimen->getId()),
@@ -334,9 +334,9 @@ readonly class SpecimenService extends BaseService
             'dwc:previousIdentifications' => $specimen->getTaxonAlternative(),
             'dwc:family' => $specimen->getSpecies()->getGenus()->getFamily()->getName(),
             'dwc:genus' => $specimen->getSpecies()->getGenus()->getName(),
-            'dwc:specificEpithet' => $specimen->getSpecies()->getEpithet(),
-            'dwc:country' => $specimen->getCountry()->getNameEng(),
-            'dwc:countryCode' => $specimen->getCountry()->getIsoCode3(),
+            'dwc:specificEpithet' => $specimen->getSpecies()->getEpithet()->getName(),
+            'dwc:country' => $specimen->getCountry()?->getNameEng(),
+            'dwc:countryCode' => $specimen->getCountry()?->getIsoCode3(),
             'dwc:locality' => $specimen->getLocality(),
             'dwc:decimalLatitude' => $specimen->getLatitude(),
             'dwc:decimalLongitude' => $specimen->getLongitude(),
@@ -383,7 +383,7 @@ readonly class SpecimenService extends BaseService
             'jacq:collectorTeam' => $specimen->getCollectorsTeam(),
             'jacq:created' => $specimen->getDatesAsString(),
             'jacq:Nummer' => $specimen->getNumber(),
-            'jacq:series' => $specimen->getSeries()->getName(),
+            'jacq:series' => $specimen->getSeries()?->getName(),
             'jacq:alt_number' => $specimen->getAltNumber(),
             'jacq:WIKIDATA_ID' => $specimen->getCollector()->getWikidataId(),
             'jacq:HUH_ID' => $specimen->getCollector()->getHuhId(),
@@ -392,8 +392,8 @@ readonly class SpecimenService extends BaseService
             'jacq:OwnerOrganizationAbbrev' => $specimen->getHerbCollection()->getInstitution()->getAbbreviation(),
             'jacq:OwnerLogoURI' => $specimen->getHerbCollection()->getInstitution()->getOwnerLogoUri(),
             'jacq:LicenseURI' => $specimen->getHerbCollection()->getInstitution()->getLicenseUri(),
-            'jacq:nation_engl' => $specimen->getCountry()->getNameEng(),
-            'jacq:iso_alpha_3_code' => $specimen->getCountry()->getIsoCode3(),
+            'jacq:nation_engl' => $specimen->getCountry()?->getNameEng(),
+            'jacq:iso_alpha_3_code' => $specimen->getCountry()?->getIsoCode3(),
             'jacq:image' => $firstImageLink,
             'jacq:downloadImage' => $firstImageDownloadLink
 

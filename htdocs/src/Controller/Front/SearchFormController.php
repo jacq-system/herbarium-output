@@ -113,60 +113,55 @@ class SearchFormController extends AbstractController
 
         $picDetails = $this->imageService->getPicDetails($filename, $sid);
 
-//        return new JsonResponse($picDetails, 200);
-
-        if (!empty($picDetails['url'])) {
+        if (!empty($picdetails['url'])) {
             switch ($method) {
-
+                default:
+                    $this->imageService->doRedirectDownloadPic($picdetails, $method, 0);
+                    exit;
                 case 'download':    // detail
-                    return new StreamedResponse(function () use ($picDetails, $format) {
-                        $this->imageService->doRedirectDownloadPic($picDetails, $format, 0);
+
+                    return new StreamedResponse(function () use ($picdetails, $format) {
+                        $this->imageService->doRedirectDownloadPic($picdetails, $format, 0);
                     });
                 case 'thumb':       // detail
-                    return new StreamedResponse(function () use ($picDetails, $format) {
-                        $this->imageService->doRedirectDownloadPic($picDetails, $format, 1);
-                    }, 200);
+                    $this->imageService->doRedirectDownloadPic($picdetails, $format, 1);
+                    exit;
                 case 'resized':     // create_xml.php
-                    return new StreamedResponse(function () use ($picDetails, $format) {
-                        $this->imageService->doRedirectDownloadPic($picDetails, $format, 2);
-                    });
+                    $this->imageService->doRedirectDownloadPic($picdetails, $format, 2);
+                    exit;
                 case 'europeana':   // NOTE: not supported on non-djatoka servers (yet)
-                    if (strtolower(substr($picDetails['requestFileName'], 0, 3)) == 'wu_' && $this->imageService->checkPhaidra((int)$picDetails['specimenID'])) {
+                    if (strtolower(substr($picdetails['requestFileName'], 0, 3)) == 'wu_' && $this->imageService->checkPhaidra((int)$picdetails['specimenID'])) {
                         // Phaidra (only WU)
-                        $picDetails['imgserver_type'] = 'phaidra';
+                        $picdetails['imgserver_type'] = 'phaidra';
                     } else {
                         // Djatoka
-                        $picinfo = $this->imageService->getPicInfo($picDetails);
-                        if (!empty($picinfo['pics'][0]) && !in_array($picDetails['originalFilename'], $picinfo['pics']))  {
-                            $picDetails['originalFilename'] = $picinfo['pics'][0];
+                        $picinfo = $this->imageService->getPicInfo($picdetails);
+                        if (!empty($picinfo['pics'][0]) && !in_array($picdetails['originalFilename'], $picinfo['pics']))  {
+                            $picdetails['originalFilename'] = $picinfo['pics'][0];
                         }
                     }
-                    $this->imageService->doRedirectDownloadPic($picDetails, $format, 3);
+                    $this->imageService->doRedirectDownloadPic($picdetails, $format, 3);
                     exit;
                 case 'nhmwthumb':   // NOTE: not supported on legacy image server scripts
-                    $this->imageService->doRedirectDownloadPic($picDetails, $format, 4);
+                    $this->imageService->doRedirectDownloadPic($picdetails, $format, 4);
                     exit;
                 case 'thumbs':      // unused
-                    return $this->json($this->imageService->getPicInfo($picDetails));
+                    return $this->json($this->imageService->getPicInfo($picdetails));
                 case 'show':        // detail, ajax/results.php
                     return $this->redirect($this->imageService->doRedirectShowPic($picDetails));
-                default:
-                    return new StreamedResponse(function () use ($picDetails, $format) {
-                        $this->imageService->doRedirectDownloadPic($picDetails, $format, 0);
-                    });
             }
 
         } else {
             switch ($method) {
                 case 'download':
                 case 'thumb':
-                    $imagePath = $this->getParameter('kernel.project_dir') . '/public/recordIcons/404.png';
-                    $response = new BinaryFileResponse($imagePath, 200, ['Content-Type'=> 'image/png']);
-                    $response->setContentDisposition(
-                        ResponseHeaderBag::DISPOSITION_INLINE, // INLINE pro zobrazení, ATTACHMENT pro stažení
-                        basename($imagePath)
-                    );
-                    return $response;
+                $imagePath = $this->getParameter('kernel.project_dir') . '/public/recordIcons/404.png';
+                $response = new BinaryFileResponse($imagePath, 404, ['Content-Type'=> 'image/png']);
+                $response->setContentDisposition(
+                    ResponseHeaderBag::DISPOSITION_ATTACHMENT, // INLINE pro zobrazení, ATTACHMENT pro stažení
+                    basename($imagePath)
+                );
+                return $response;
                 case 'thumbs':
                     return new JsonResponse(['error' => 'not found'], 404);
                 default:

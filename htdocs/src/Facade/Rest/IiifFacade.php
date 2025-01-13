@@ -440,7 +440,7 @@ readonly class IiifFacade extends BaseFacade
         }
 
         $collector =$specimenEntity->getCollector();
-        $metadata[] = array('label' => 'CETAF_ID', 'value' => $specimenEntity->getMainStableIdentifier());
+        $metadata[] = array('label' => 'CETAF_ID', 'value' => $specimenEntity->getMainStableIdentifier()->getIdentifier());
         $metadata[] = array('label' => 'dwciri:recordedBy', 'value' => $collector->getWikidataId());
         if (!empty($collector->getHuhId())) {
             $metadata[] = array('label' => 'owl:sameAs', 'value' => $collector->getHuhId());

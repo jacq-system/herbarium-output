@@ -57,7 +57,7 @@ class SearchFormFacade
             ->addOrderBy('author.name', Order::Ascending->value);
 
         if (!empty($this->searchFormSessionService->getFilter('institution'))) {
-            $this->queryInstitution((int)$this->searchFormSessionService->getFilter('institution'));
+            $this->queryInstitution($this->searchFormSessionService->getFilter('institution'));
         }
 
         if (!empty($this->searchFormSessionService->getFilter('herbNr'))) {
@@ -141,12 +141,12 @@ class SearchFormFacade
 
     }
 
-    protected function queryInstitution(int $id): void
+    protected function queryInstitution(string $code): void
     {
         $this->queryBuilder
             ->join('c.institution', 'i')
-            ->andWhere('i.id = :institution')
-            ->setParameter('institution', $id);
+            ->andWhere('i.code = :institution')
+            ->setParameter('institution', $code);
     }
 
 // TODO table ts2 ommited from original query,  why rejoin the same table for (?probably) same query
@@ -160,8 +160,7 @@ class SearchFormFacade
         $this->queryBuilder->andWhere('s.herbNumber LIKE :herbNr');
         if (preg_match($pattern, $value, $matches) && empty($this->searchFormSessionService->getFilter('institution'))) {
             try {
-                $institution = $this->institutionService->findByCode($matches['code']);
-                $this->queryInstitution($institution->getId());
+                $this->queryInstitution($matches['code']);
             } catch (Exception $exception) {
             }
             $this->queryBuilder->setParameter('herbNr', '%' . $matches['rest']);
@@ -453,7 +452,7 @@ class SearchFormFacade
                  ss.series,
                  si.identification_status,
                  sv.voucher,
-                 mc.collection, mc.collectionID, mc.coll_short, m.source_code,
+                 mc.collection, mc.collectionID, mc.coll_short, m.SourceInstitutionID as source_code,
                  n.nation_engl, p.provinz,
                  c.Sammler, c2.Sammler_2,
                  tr.rank_abbr,
@@ -720,7 +719,7 @@ class SearchFormFacade
     protected function getStableIdentifier(int $specimenID): string
     {
         $specimen = $this->specimenService->findAccessibleForPublic($specimenID);
-        if (!empty($specimen->getMainStableIdentifier())) {
+        if (!empty($specimen->getMainStableIdentifier()->getIdentifier())) {
             return $specimen->getMainStableIdentifier()->getIdentifier();
         } else {
             return $this->specimenService->constructStableIdentifier($specimen);
