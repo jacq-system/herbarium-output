@@ -53,7 +53,7 @@ class SearchFormController extends AbstractController
             $this->sessionService->setFilters($getData);
         }
 
-        $institutions = $this->herbariumService->getAllAsPairs();
+        $institutions = $this->herbariumService->getAllPairsCodeName();
         $collections = $this->collectionService->getAllAsPairs();
         return $this->render('front/home/database.html.twig', ["institutions" => $institutions, 'collections' => $collections, 'sessionService' => $this->sessionService]);
     }
