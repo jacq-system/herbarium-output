@@ -453,7 +453,7 @@ class SearchFormFacade
                  ss.series,
                  si.identification_status,
                  sv.voucher,
-                 mc.collection, mc.collectionID, mc.coll_short, m.source_code,
+                 mc.collection, mc.collectionID, mc.coll_short, m.SourceInstitutionID as source_code,
                  n.nation_engl, p.provinz,
                  c.Sammler, c2.Sammler_2,
                  tr.rank_abbr,
@@ -720,7 +720,7 @@ class SearchFormFacade
     protected function getStableIdentifier(int $specimenID): string
     {
         $specimen = $this->specimenService->findAccessibleForPublic($specimenID);
-        if (!empty($specimen->getMainStableIdentifier())) {
+        if (!empty($specimen->getMainStableIdentifier()->getIdentifier())) {
             return $specimen->getMainStableIdentifier()->getIdentifier();
         } else {
             return $this->specimenService->constructStableIdentifier($specimen);
