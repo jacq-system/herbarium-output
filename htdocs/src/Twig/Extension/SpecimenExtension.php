@@ -72,21 +72,21 @@ class SpecimenExtension extends AbstractExtension
         if ($collector !== null) {
 
             if (!empty($collector->getWikidataId())) {
-                $text .= "<a href=\"" . $collector->getWikidataId() . '" title="wikidata" target="_blank" class="leftnavi"><img src="logo/institutions/wikidata.png" alt="wikidata" width="20px"></a>&nbsp;';
+                $text .= "<a href=\"" . $collector->getWikidataId() . '" title="wikidata" target="_blank" class="leftnavi"><img src="/logo/institutions/wikidata.png" alt="wikidata" width="20px"></a>&nbsp;';
             }
             if (!empty($collector->getHuhId())) {
-                $text .= "<a href=\"" . $collector->getHuhId() . '" title="Index of Botanists (HUH)" target="_blank" class="leftnavi"><img src="logo/institutions/huh.png" alt="Index of Botanists (HUH)" height="20px"></a>&nbsp;';
+                $text .= "<a href=\"" . $collector->getHuhId() . '" title="Index of Botanists (HUH)" target="_blank" class="leftnavi"><img src="/logo/institutions/huh.png" alt="Index of Botanists (HUH)" height="20px"></a>&nbsp;';
             }
             if (!empty($collector->getViafId())) {
-                $text .= "<a href=\"" . $collector->getViafId() . '" title="VIAF" target="_blank" class="leftnavi"><img src="logo/institutions/viaf.png" alt="VIAF" width="20px"></a>&nbsp;';
+                $text .= "<a href=\"" . $collector->getViafId() . '" title="VIAF" target="_blank" class="leftnavi"><img src="/logo/institutions/viaf.png" alt="VIAF" width="20px"></a>&nbsp;';
             }
             if (!empty($collector->getOrcidId())) {
-                $text .= "<a href=\"" . $collector->getOrcidId() . '" title="ORCID" target="_blank" class="leftnavi"><img src="logo/institutions/orcid.logo.icon.svg" alt="ORCID" width="20px"></a>&nbsp;';
+                $text .= "<a href=\"" . $collector->getOrcidId() . '" title="ORCID" target="_blank" class="leftnavi"><img src="/logo/institutions/orcid.logo.icon.svg" alt="ORCID" width="20px"></a>&nbsp;';
             }
 
             $sql = "SELECT Bloodhound_ID FROM herbarinput.tbl_collector WHERE Bloodhound_ID like 'h%' AND SammlerID = :collector";
             $bloodhound = $this->entityManager->getConnection()->executeQuery($sql, ['collector' => $collector->getId()])->fetchOne();
-            $text .= "<a href='" . $bloodhound . "' target='_blank' title='Bionomia'><img src='logo/institutions/bionomia_logo.png' alt='Bionomia' width='20px'></a>&nbsp;";
+            $text .= "<a href='" . $bloodhound . "' target='_blank' title='Bionomia'><img src='/logo/institutions/bionomia_logo.png' alt='Bionomia' width='20px'></a>&nbsp;";
 
             $text .= $collector->getName();
 
@@ -126,7 +126,7 @@ class SpecimenExtension extends AbstractExtension
         if(!empty($specimen->getNcbiAccession())) {
            $text.= " &mdash; " . $specimen->getNcbiAccession()
             . " <a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term=" . $specimen->getNcbiAccession() . "' target='_blank'>"
-            . "<img   height='16' src='logo/institutions/ncbi.gif' width='14'></a>";
+            . "<img   height='16' src='/logo/institutions/ncbi.gif' width='14'></a>";
         }
         return trim($text);
     }
@@ -161,7 +161,7 @@ class SpecimenExtension extends AbstractExtension
         $text = '';
         $switch = false;
         if ($specimen?->getCountry()?->getNameEng() !== null) {
-            $text .= "<img src='flags/" . strtolower($specimen->getCountry()->getIsoCode2()) . ".png'> " . $specimen->getCountry()->getNameEng();
+            $text .= "<img src='/flags/" . strtolower($specimen->getCountry()->getIsoCode2()) . ".png'> " . $specimen->getCountry()->getNameEng();
             $switch = true;
         }
         if ($specimen->getProvince() !== null) {
@@ -189,7 +189,7 @@ class SpecimenExtension extends AbstractExtension
         $text = '';
         $switch = false;
         if ($specimen?->getCountry()?->getNameEng() !== null) {
-            $text .= "<img src='flags/" . strtolower($specimen->getCountry()->getIsoCode2()) . ".png'> " . $specimen->getCountry()->getNameEng();
+            $text .= "<img src='/flags/" . strtolower($specimen->getCountry()->getIsoCode2()) . ".png'> " . $specimen->getCountry()->getNameEng();
             $switch = true;
         }
         if ($specimen->getProvince() !== null) {
@@ -244,7 +244,7 @@ class SpecimenExtension extends AbstractExtension
     {
         $text = '';
         if ($specimen->getLongitude() != null || $specimen->getLatitude() != null) {
-            $text .= "<img class='gps' width='15' height='15' src='logo/institutions/OpenStreetMap.png'  data-gps='" . $specimen->getCoords() . "'>";
+            $text .= "<img class='gps' width='15' height='15' src='/logo/institutions/OpenStreetMap.png'  data-gps='" . $specimen->getCoords() . "'>";
         }
 
         return $text;
