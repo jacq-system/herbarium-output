@@ -46,7 +46,7 @@ class SearchFormController extends AbstractController
     {
         if ($reset) {
             $this->sessionService->reset();
-//            return $this->redirectToRoute($request->get('_route'));
+            return $this->redirectToRoute('app_front_database');
         }
         $getData = $request->query->all();
         if (!empty($getData)) {
