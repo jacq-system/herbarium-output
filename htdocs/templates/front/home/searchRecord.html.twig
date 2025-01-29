@@ -27,7 +27,7 @@
     </td>
     <td>
         <a href='{{ path('app_front_specimenDetail', {'specimenId': specimen.getId() }) }}'>{{ specimen | scientificName }}</a>
-        {{ specimen.getSpecies().getId() | taxonAuthority | raw }}
+        {{ specimen.getSpecies() | taxonAuthority | raw }}
     </td>
     <td>{{ specimen | collector | raw }}</td>
     <td>{{ specimen.getDate() }}</td>

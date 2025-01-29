@@ -46,7 +46,7 @@ class SearchFormController extends AbstractController
     {
         if ($reset) {
             $this->sessionService->reset();
-            return $this->redirectToRoute($request->get('_route'));
+//            return $this->redirectToRoute($request->get('_route'));
         }
         $getData = $request->query->all();
         if (!empty($getData)) {
@@ -95,9 +95,9 @@ class SearchFormController extends AbstractController
     }
 
     #[Route('/collectionsSelectOptions', name: 'app_front_collectionsSelectOptions', methods: ['GET'])]
-    public function collectionsSelectOptions(#[MapQueryParameter] int $herbariumID): Response
+    public function collectionsSelectOptions(#[MapQueryParameter] string $herbariumID): Response
     {
-        $result = $this->collectionService->getAllFromHerbariumAsPairs($herbariumID);
+        $result = $this->collectionService->getAllFromHerbariumAsPairsByAbbrev($herbariumID);
 
         return new JsonResponse($result);
     }

@@ -29,4 +29,15 @@ readonly class CollectionService extends BaseService
         return $this->query($sql, ['herbariumID' => $herbariumID])->fetchAllKeyValue();
     }
 
+    public function getAllFromHerbariumAsPairsByAbbrev(string $herbariumAbbreviation): array
+    {
+        $sql = "SELECT col.collectionID, col.collection
+                FROM tbl_management_collections as col
+                JOIN metadata AS institution ON col.source_id = institution.MetadataID
+                WHERE  institution.OwnerOrganizationAbbrev = :herbarium
+                ORDER BY col.collection";
+
+        return $this->query($sql, ['herbarium' => $herbariumAbbreviation])->fetchAllKeyValue();
+    }
+
 }
