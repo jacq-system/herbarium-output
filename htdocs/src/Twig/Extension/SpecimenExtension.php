@@ -2,6 +2,7 @@
 
 namespace App\Twig\Extension;
 
+use App\Entity\Jacq\Herbarinput\Species;
 use App\Entity\Jacq\Herbarinput\Specimens;
 use App\Facade\Rest\IiifFacade;
 use App\Service\SpecimenService;
@@ -44,12 +45,12 @@ class SpecimenExtension extends AbstractExtension
         return $this->iiifFacade->resolveManifestUri($specimen);
     }
 
-    public function getTaxonAuthority(int $taxonId): string
+    public function getTaxonAuthority(Species $taxon): string
     {
         $text = '';
         $sql = "SELECT serviceID, hyper FROM herbar_view.view_taxon_link_service WHERE taxonID = :taxon";
-        $result = $this->entityManager->getConnection()->executeQuery($sql, ['taxon' => $taxonId])->fetchAllAssociative();
-        if ($result) {
+        $result = $this->entityManager->getConnection()->executeQuery($sql, ['taxon' => $taxon->getId()])->fetchAllAssociative();
+
             foreach ($result as $rowtax) {
                 $text .= '<br/>';
                 if ($rowtax['serviceID'] == 1) {
@@ -61,7 +62,7 @@ class SpecimenExtension extends AbstractExtension
             }
             //TODO do not keep in database whole HTML including path to assets..
             $text = str_replace('assets/images', '/logo/services', $text);
-        }
+
         return $text;
     }
 

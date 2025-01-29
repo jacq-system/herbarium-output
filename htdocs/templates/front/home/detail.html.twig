@@ -53,7 +53,7 @@
                                 <img alt="tropicos" src="{{ asset('recordIcons/tropicos.png') }}" width="16"
                                      height="16">
                             </a>
-                            {{ specimen.getId() | taxonAuthority | raw | nl2br }}
+                            {{ specimen.getSpecies() | taxonAuthority | raw | nl2br }}
                         </div>
                     </div>
                     <div class="row">
