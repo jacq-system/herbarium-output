@@ -86,7 +86,9 @@ class SpecimenExtension extends AbstractExtension
 
             $sql = "SELECT Bloodhound_ID FROM herbarinput.tbl_collector WHERE Bloodhound_ID like 'h%' AND SammlerID = :collector";
             $bloodhound = $this->entityManager->getConnection()->executeQuery($sql, ['collector' => $collector->getId()])->fetchOne();
-            $text .= "<a href='" . $bloodhound . "' target='_blank' title='Bionomia'><img src='/logo/institutions/bionomia_logo.png' alt='Bionomia' width='20px'></a>&nbsp;";
+            if($bloodhound) {
+                $text .= "<a href='" . $bloodhound . "' target='_blank' title='Bionomia'><img src='/logo/institutions/bionomia_logo.png' alt='Bionomia' width='20px'></a>&nbsp;";
+            }
 
             $text .= $collector->getName();
 
