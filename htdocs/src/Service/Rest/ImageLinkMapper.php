@@ -80,7 +80,7 @@ class ImageLinkMapper
         $iifUrl = $this->specimen->getHerbCollection()->getInstitution()->getImageDefinition()->getIiifUrl();
         $this->imageLinks[0] = $iifUrl . "?manifest=" . $this->iiifFacade->resolveManifestUri($this->specimen);
         $manifest = $this->iiifFacade->getManifest($this->specimen);
-        if ($manifest) {
+        if (!empty($manifest)) {
             foreach ($manifest['sequences'] as $sequence) {
                 foreach ($sequence['canvases'] as $canvas) {
                     foreach ($canvas['images'] as $image) {
@@ -221,7 +221,7 @@ class ImageLinkMapper
 
             if (($this->specimen->getEuropeanaImages()?->getFilesize() ?? null) > 1500) {  // use europeana-cache only for images without errors
                 $sourceCode = $this->specimen->getHerbCollection()->getInstitution()->getCode();
-                return "https://object.jacq.org/europeana/$sourceCode/$this->specimen->getId().jpg";
+                return "https://object.jacq.org/europeana/".$sourceCode."/".$this->specimen->getId().".jpg";
             }
         }
         return $this->fileLinks['europeana'][$nr] ?? $this->fileLinks['europeana'][0] ?? '';

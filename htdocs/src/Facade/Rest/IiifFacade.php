@@ -58,6 +58,7 @@ readonly class IiifFacade extends BaseFacade
     {
         $manifest_backend = $specimen->getHerbCollection()?->getIiifDefinition()?->getManifestBackend();
 
+
         if ($manifest_backend === null) {
             return array();  // nothing found
         } elseif (empty($manifest_backend)) {  // no backend is defined, so fall back to manifest server
@@ -227,6 +228,7 @@ readonly class IiifFacade extends BaseFacade
     protected function getManifestIiifServer(Specimens $specimen): array
     {
         $serverId = $specimen->getHerbCollection()->getInstitution()->getImageDefinition()->getId();
+
         $urlmanifestpre = $this->makeURI($specimen, $specimen->getHerbCollection()?->getIiifDefinition()?->getManifestUri());
         $identifier = $this->getFilename($specimen);
 
@@ -236,17 +238,15 @@ readonly class IiifFacade extends BaseFacade
     /**
      * get a clean filename for a given specimen-ID
      */
-    protected function getFilename(Specimens $specimen)
+    protected function getFilename(Specimens $specimen): string
     {
-        // Fetch information for this image
-        if ($specimen->getHerbCollection()->getPictureFilename()!==null) {
-            // Remove hyphens
-            $HerbNummer = str_replace('-', '', $specimen->getHerbNumber());
+        $filename = '';
+        $HerbNummer = str_replace('-', '', $specimen->getHerbNumber());
 
             // Construct clean filename
             if (!empty($specimen->getHerbCollection()->getPictureFilename())) {   // special treatment for this collection is necessary
                 $parts = $this->parser($specimen->getHerbCollection()->getPictureFilename());
-                $filename = '';
+
                 foreach ($parts as $part) {
                     if ($part['token']) {
                         $tokenParts = explode(':', $part['text']);
@@ -280,10 +280,7 @@ readonly class IiifFacade extends BaseFacade
                 $filename = sprintf("%s_%0" . $specimen->getHerbCollection()->getInstitution()->getImageDefinition()->getHerbNummerNrDigits() . ".0f", $specimen->getHerbCollection()->getCollShortPrj(), $HerbNummer);
             }
 
-            return $filename;
-        } else {
-            return "";
-        }
+        return $filename;
     }
 
     /**
@@ -325,6 +322,9 @@ readonly class IiifFacade extends BaseFacade
 
         $data_string = json_encode($data);
         $curl = curl_init();
+        // TODO example for curl request debugging
+        curl_setopt($curl, CURLOPT_PROXY, 'http://mitmproxy:8080');
+
         curl_setopt($curl, CURLOPT_URL, substr($imgServer['manifest_backend'], 5));
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
@@ -405,6 +405,7 @@ readonly class IiifFacade extends BaseFacade
 
         return $result;
     }
+
 
     /**
      * get array of metadata for a given specimen, where values are not empty
