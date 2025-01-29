@@ -109,7 +109,7 @@
                         <div class="col s12 m9"><p><b>{{ specimen.getLocality() | nl2br }}
                                     {% if specimen.getAltitudeMin() is not empty %}
                                         Alt. {{ specimen.getAltitudeMin() }}
-                                        {% if specimen.getAltitudeMax() is not empty %} - {{ specimen.getAltitudeMax() }}
+                                        {% if specimen.getAltitudeMax() is not empty %} m - {{ specimen.getAltitudeMax() }} m
                                         {% endif %}
                                     {% endif %}
                                 </b></p></div>
