@@ -259,7 +259,7 @@ class SpecimenExtension extends AbstractExtension
         if (count($specimen->getStableIdentifiers()) > 1) {
             foreach ($specimen->getStableIdentifiers() as $pid) {
                 $text .= "<b><a href=" . $pid->getIdentifier() . " target='_blank'>" . $pid->getIdentifier() . "</a></b>";
-                $text .= $pid->getTimestamp()->format('d-m-Y') . "<br>";
+                $text .= " (".$pid->getTimestamp()->format('d-m-Y') . ")<br>";
             }
         } elseif (count($specimen->getStableIdentifiers()) == 1) {
             foreach ($specimen->getStableIdentifiers() as $pid) {

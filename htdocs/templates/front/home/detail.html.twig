@@ -20,33 +20,33 @@
     {% else %}
         <div class="container-fluid">
             <div class="row">
-                <div class="col s12 l5 offset-l1 condensed">
+                <div class="col s12 m10 l8 offset-l1 condensed">
                     <div class="row">
                         <div class="col s12 m3">
-                            <h7>Stable identifiers</h7>
+                            <h6>Stable identifiers</h6>
                         </div>
-                        <div class="col s12 m9"><p><b>{{ specimen | pid | raw }}</b></p></div>
+                        <div class="col s12 m9"><h6>{{ specimen | pid | raw }}</h6></div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
-                            <h7>Herbarium #</h7>
+                            <h6>Herbarium #</h6>
                         </div>
-                        <div class="col s12 m9"><p><b>{{ specimen | herbariumNr | raw }}</b></p></div>
+                        <div class="col s12 m9"><h6>{{ specimen | herbariumNr | raw }}</h6></div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
-                            <h7>Collection #</h7>
+                            <h6>Collection #</h6>
                         </div>
                         <div class="col s12 m9">
-                            <p><b>{{ specimen.getHerbCollection().getName() }} {{ specimen.getCollectionNumber() }}</b></p>
+                            <h6>{{ specimen.getHerbCollection().getName() }} {{ specimen.getCollectionNumber() }}</h6>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
-                            <h7>Stored under taxonname</h7>
+                            <h6>Stored under taxonname</h6>
                         </div>
                         <div class="col s12 m9"><p><b></b></p>
-                            <b>{{ specimen | taxonName | raw }}</b>
+                            <h6><b>{{ specimen | taxonName | raw }}</b></h6>
 
                             <a href="http://www.tropicos.org/NameSearch.aspx?name={{ specimen | tropicos }}&exact=true"
                                title="Search in tropicos" target="_blank">
@@ -58,85 +58,83 @@
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
-                            <h7>Family</h7>
+                            <h6>Family</h6>
                         </div>
-                        <div class="col s12 m9"><p><b>{{ specimen.getSpecies().getGenus().getFamily().getName() }}</b>
-                            </p></div>
+                        <div class="col s12 m9"><h6>{{ specimen.getSpecies().getGenus().getFamily().getName() }}</h6></div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
-                            <h7>Det./rev./conf./assigned</h7>
+                            <h6>Det./rev./conf./assigned</h6>
                         </div>
-                        <div class="col s12 m9"><p><b>{{ specimen.getDetermination() }}</b></p></div>
+                        <div class="col s12 m9"><h6>{{ specimen.getDetermination() }}</h6></div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
-                            <h7>Ident. history</h7>
+                            <h6>Ident. history</h6>
                         </div>
-                        <div class="col s12 m9"><p><b>{{ specimen.getTaxonAlternative() }}</b></p>
+                        <div class="col s12 m9"><h6>{{ specimen.getTaxonAlternative() }}</h6>
                             {{ specimen | typusText | raw }}
                         </div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
-                            <h7>Collector</h7>
+                            <h6>Collector</h6>
                         </div>
-                        <div class="col s12 m9"><p>
-                                <b>{{ specimen | collector | raw }} {{ specimen | collectorBotanyPilot | raw }}</b></p>
+                        <div class="col s12 m9"><h6>{{ specimen | collector | raw }} {{ specimen | collectorBotanyPilot | raw }}</h6>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
-                            <h7>Date</h7>
+                            <h6>Date</h6>
                         </div>
-                        <div class="col s12 m9"><p><b>{{ specimen.getDate() }}</b></p></div>
+                        <div class="col s12 m9"><h6>{{ specimen.getDate() }}</h6></div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
-                            <h7>Location</h7>
+                            <h6>Location</h6>
                         </div>
                         <div class="col s12 m9">
                             {% if specimen.hasCoords() %}
                                 <div id="map" style="height: 200px; width: 80%;"
                                      data-gps="{{ specimen.getCoords() }}"></div>
                             {% endif %}
-                            <p><b>{{ specimen | localityLong | raw }}</b></p></div>
+                            <h6>{{ specimen | localityLong | raw }}</h6></div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
-                            <h7>Label</h7>
+                            <h6>Label</h6>
                         </div>
-                        <div class="col s12 m9"><p><b>{{ specimen.getLocality() | nl2br }}
+                        <div class="col s12 m9"><h6>{{ specimen.getLocality() | nl2br }}
                                     {% if specimen.getAltitudeMin() is not empty %}
                                         Alt. {{ specimen.getAltitudeMin() }}
                                         {% if specimen.getAltitudeMax() is not empty %} m - {{ specimen.getAltitudeMax() }} m
                                         {% endif %}
                                     {% endif %}
-                                </b></p></div>
+                                </h6></div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
-                            <h7>Habitat</h7>
+                            <h6>Habitat</h6>
                         </div>
-                        <div class="col s12 m9"><p><b>{{ specimen.getHabitat() | nl2br }}</b></p></div>
+                        <div class="col s12 m9"><h6>{{ specimen.getHabitat() | nl2br }}</h6></div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
-                            <h7>Habitus</h7>
+                            <h6>Habitus</h6>
                         </div>
-                        <div class="col s12 m9"><p><b>{{ specimen.getHabitus() }}</b></p></div>
+                        <div class="col s12 m9"><h6>{{ specimen.getHabitus() }}</h6></div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
-                            <h7>Annotations</h7>
+                            <h6>Annotations</h6>
                         </div>
-                        <div class="col s12 m9"><p><b>{{ specimen | annotation }}</b></p></div>
+                        <div class="col s12 m9"><h6>{{ specimen | annotation }}</h6></div>
                     </div>
 
                     {#                    TODO not implemented #}
                     {#                    <div class="row"> #}
                     {#                        <div class="col s12 m3"> #}
-                    {#                            <h7>Annosys annotations </h7> #}
+                    {#                            <h6>Annosys annotations </h6> #}
                     {#                        </div> #}
                     {#                        <div class="col s12 m9"><p><b> #}
                     {#                                     not implemented #}
