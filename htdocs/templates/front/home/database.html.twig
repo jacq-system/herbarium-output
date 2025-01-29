@@ -54,11 +54,6 @@
                         </select>
                         <label for="institution">Search in</label>
                     </div>
-                    <!-- Collector -->
-                    <div class="input-field ">
-                        <input value="{{ sessionService.getFilter('collector')}}" name="collector" type="text">
-                        <label for="collector">Collector</label>
-                    </div>
 
                 </div>
                 <div class="col s12 m6">
@@ -72,7 +67,18 @@
                         <input value="{{ sessionService.getFilter('herbNr')}}" name="herbNr" id="herbNr" type="text">
                         <label for="herbNr">Herbar Nr#</label>
                     </div>
+                </div>
+            </div>
+            <div class="row" style="margin-top: -1rem">
+                <div class="col s12 m6">
+                    <!-- Collector -->
+                    <div class="input-field ">
+                        <input value="{{ sessionService.getFilter('collector')}}" name="collector" type="text">
+                        <label for="collector">Collector</label>
+                    </div>
 
+                </div>
+                <div class="col s12 m6">
                     <!-- Collector Number -->
                     <div class="input-field  ">
                         <input value="{{ sessionService.getFilter('collectorNr')}}" name="collectorNr" id="collectorNr" type="text">
