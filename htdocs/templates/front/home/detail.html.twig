@@ -25,20 +25,20 @@
                         <div class="col s12 m3">
                             <h7>Stable identifiers</h7>
                         </div>
-                        <div class="col s12 m9"><p>{{ specimen | pid | raw }}</p></div>
+                        <div class="col s12 m9"><p><b>{{ specimen | pid | raw }}</b></p></div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
                             <h7>Herbarium #</h7>
                         </div>
-                        <div class="col s12 m9"><p>{{ specimen | herbariumNr | raw }}</p></div>
+                        <div class="col s12 m9"><p><b>{{ specimen | herbariumNr | raw }}</b></p></div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
                             <h7>Collection #</h7>
                         </div>
                         <div class="col s12 m9">
-                            <p>{{ specimen.getHerbCollection().getName() }} {{ specimen.getCollectionNumber() }}</p>
+                            <p><b>{{ specimen.getHerbCollection().getName() }} {{ specimen.getCollectionNumber() }}</b></p>
                         </div>
                     </div>
                     <div class="row">

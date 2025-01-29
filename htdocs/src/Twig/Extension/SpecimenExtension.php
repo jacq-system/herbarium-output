@@ -271,9 +271,10 @@ class SpecimenExtension extends AbstractExtension
 
     public function getHerbariumNumber(Specimens $specimen): string
     {
-        $sourceId = $specimen->getHerbCollection()->getId();
+
+        $sourceId = $specimen->getHerbCollection()->getInstitution()->getId();
         if ($sourceId === 29) {
-            return ($specimen->getHerbNumber()) ?: ('B (JACQ-ID ' . $specimen->getId() . ')');
+            return ($specimen->getHerbNumber()) ?: ('B (JACQ-ID' . $specimen->getId() . ')');
         } elseif ($sourceId === 50) {
             return ($specimen->getHerbNumber()) ?: ('Willing (JACQ-ID ' . $specimen->getId() . ')');
         } else {

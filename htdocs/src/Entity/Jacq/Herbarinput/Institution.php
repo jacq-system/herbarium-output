@@ -45,7 +45,7 @@ class Institution
 
     public function getCode(): string
     {
-        return $this->licenseUri;
+        return $this->code;
     }
 
     public function getLicenseUri(): ?string
