@@ -323,7 +323,7 @@ readonly class IiifFacade extends BaseFacade
         $data_string = json_encode($data);
         $curl = curl_init();
         // TODO example for curl request debugging
-        curl_setopt($curl, CURLOPT_PROXY, 'http://mitmproxy:8080');
+//        curl_setopt($curl, CURLOPT_PROXY, 'http://mitmproxy:8080');
 
         curl_setopt($curl, CURLOPT_URL, substr($imgServer['manifest_backend'], 5));
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
