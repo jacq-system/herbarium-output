@@ -334,8 +334,11 @@ class Specimens
         return $this->habitat;
     }
 
-    public function getAnnotation(): ?string
+    public function getAnnotation(bool $replaceNL2BR = false): ?string
     {
+        if ($replaceNL2BR){
+            return nl2br($this->annotation);
+        }
         return $this->annotation;
     }
 
