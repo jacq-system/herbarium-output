@@ -98,16 +98,16 @@
                                 <div id="map" style="height: 200px; width: 80%;"
                                      data-gps="{{ specimen.getCoords() }}"></div>
                             {% endif %}
-                            <h6>{{ specimen | localityLong | raw }}</h6></div>
+                            <h6>{{ specimen | localityLong | nl2br | raw }}</h6></div>
                     </div>
                     <div class="row">
                         <div class="col s12 m3">
                             <h6>Label</h6>
                         </div>
-                        <div class="col s12 m9"><h6>{{ specimen.getLocality() | nl2br }}
+                        <div class="col s12 m9"><h6>{{ specimen.getLocality() | nl2br | raw }}
                                     {% if specimen.getAltitudeMin() is not empty %}
-                                        Alt. {{ specimen.getAltitudeMin() }}
-                                        {% if specimen.getAltitudeMax() is not empty %} m - {{ specimen.getAltitudeMax() }} m
+                                        Alt. {{ specimen.getAltitudeMin() }} m
+                                        {% if specimen.getAltitudeMax() is not empty %} - {{ specimen.getAltitudeMax() }} m
                                         {% endif %}
                                     {% endif %}
                                 </h6></div>
@@ -128,7 +128,7 @@
                         <div class="col s12 m3">
                             <h6>Annotations</h6>
                         </div>
-                        <div class="col s12 m9"><h6>{{ specimen | annotation }}</h6></div>
+                        <div class="col s12 m9"><h6>{{ specimen | annotation | nl2br| raw }}</h6></div>
                     </div>
 
                     {#                    TODO not implemented #}
