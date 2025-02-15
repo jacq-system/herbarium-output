@@ -19,4 +19,4 @@ when@test:
 when@prod:
     framework:
         trusted_proxies: '0.0.0.0/0'
-        trusted_headers: [ 'X-Forwarded-For', 'X-Forwarded-Proto' ]
+        trusted_headers: [ 'x-forwarded-for', 'x-forwarded-proto' ]
