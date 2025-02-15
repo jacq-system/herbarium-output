@@ -103,7 +103,7 @@ class GeoController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/geo/convert.{_format}', name: "services_rest_geo_convert", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/geo/convert', name: "services_rest_geo_convert", methods: ['GET'])]
     public function convert(#[MapQueryParameter] ?float $lat, #[MapQueryParameter] ?float $lon, #[MapQueryParameter] ?string $utm, #[MapQueryParameter] ?string $mgrs): Response
     {
         if (isset($lat) && isset($lon)) {   // from lat/lon
@@ -210,7 +210,7 @@ class GeoController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/geo/checkBoundaries.{_format}', name: "services_rest_geo_checkBoundaries", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/geo/checkBoundaries', name: "services_rest_geo_checkBoundaries", methods: ['GET'])]
     public function checkBoundaries(#[MapQueryParameter] float $lat, #[MapQueryParameter] float $lon, #[MapQueryParameter] int $nationID, #[MapQueryParameter] ?int $province): Response
     {
         $data = array();

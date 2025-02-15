@@ -83,7 +83,7 @@ class ClassificationController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/classification/references/{referenceType}/{referenceID}.{_format}', name: "services_rest_classification_references", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/classification/references/{referenceType}/{referenceID}', name: "services_rest_classification_references", methods: ['GET'])]
     public function references(string $referenceType, ?int $referenceID = null): Response
     {
         $data = $this->classificationFacade->resolveByType($referenceType, $referenceID);
@@ -173,7 +173,7 @@ class ClassificationController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/classification/nameReferences/{taxonID}.{_format}', name: "services_rest_classification_nameReferences", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/classification/nameReferences/{taxonID}', name: "services_rest_classification_nameReferences", methods: ['GET'])]
     public function nameReferences(int $taxonID, #[MapQueryParameter] ?int $excludeReferenceId = 0, #[MapQueryParameter] ?int $insertSeries = 0): Response
     {
         $data = $this->classificationFacade->resolveNameReferences($taxonID, $excludeReferenceId, $insertSeries);
@@ -272,7 +272,7 @@ class ClassificationController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/classification/children/{referenceType}/{referenceID}.{_format}', name: "services_rest_classification_children", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/classification/children/{referenceType}/{referenceID}', name: "services_rest_classification_children", methods: ['GET'])]
     public function children(string $referenceType, int $referenceID, #[MapQueryParameter] ?int $taxonID = 0, #[MapQueryParameter] ?int $insertSeries = 0): Response
     {
         $data = $this->classificationFacade->resolveChildren($referenceType, $referenceID, $taxonID, $insertSeries);
@@ -369,7 +369,7 @@ class ClassificationController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/classification/synonyms/{referenceType}/{referenceID}/{taxonID}.{_format}', name: "services_rest_classification_synonyms", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/classification/synonyms/{referenceType}/{referenceID}/{taxonID}', name: "services_rest_classification_synonyms", methods: ['GET'])]
     public function synonyms(string $referenceType, int $referenceID, int $taxonID, #[MapQueryParameter] ?int $insertSeries = 0): Response
     {
         $data = $this->classificationFacade->resolveSynonyms($referenceType, $referenceID, $taxonID, $insertSeries);
@@ -458,7 +458,7 @@ class ClassificationController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/classification/parent/{referenceType}/{referenceID}/{taxonID}.{_format}', name: "services_rest_classification_parent", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/classification/parent/{referenceType}/{referenceID}/{taxonID}', name: "services_rest_classification_parent", methods: ['GET'])]
     public function parent(string $referenceType, int $referenceID, int $taxonID): Response
     {
         $data = $this->classificationFacade->resolveParent($referenceType, $referenceID, $taxonID);
@@ -515,7 +515,7 @@ class ClassificationController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/classification/numberOfChildrenWithChildrenCitation/{referenceID}.{_format}', name: "services_rest_classification_numberOfChildrenWithChildrenCitation", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/classification/numberOfChildrenWithChildrenCitation/{referenceID}', name: "services_rest_classification_numberOfChildrenWithChildrenCitation", methods: ['GET'])]
     public function numberOfChildrenWithChildrenCitation(int $referenceID, #[MapQueryParameter] ?int $taxonID = 0): Response
     {
         $data = $this->classificationFacade->resolveNumberOfChildrenWithChildrenCitation($referenceID, $taxonID);
@@ -592,7 +592,7 @@ class ClassificationController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/classification/periodicalStatistics/{referenceID}.{_format}', name: "services_rest_classification_periodicalStatistics", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/classification/periodicalStatistics/{referenceID}', name: "services_rest_classification_periodicalStatistics", methods: ['GET'])]
     public function periodicalStatistics(int $referenceID): Response
     {
         $data = $this->classificationFacade->resolvePeriodicalStatistics($referenceID);
@@ -657,7 +657,7 @@ class ClassificationController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/classification/download/{referenceType}/{referenceID}.{_format}', name: "services_rest_classification_download", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/classification/download/{referenceType}/{referenceID}', name: "services_rest_classification_download", methods: ['GET'])]
     public function download(string $referenceType, int $referenceID,#[MapQueryParameter] ?int $scientificNameId, #[MapQueryParameter] ?int $hideScientificNameAuthors ): Response
     {
         $data = $this->classificationDownloadFacade->getDownload($referenceType, $referenceID,$scientificNameId,$hideScientificNameAuthors);

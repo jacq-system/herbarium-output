@@ -97,7 +97,7 @@ class LivingPlantsController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/livingplants/derivatives.{_format}', name: "services_rest_livingplants_derivatives", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/livingplants/derivatives', name: "services_rest_livingplants_derivatives", methods: ['GET'])]
     public function derivatives(#[MapQueryParameter] ?int $org, #[MapQueryParameter] ?int $separated = 0, #[MapQueryParameter] ?int $derivativeID = null): Response
     {
         //TODO probably deprecated route

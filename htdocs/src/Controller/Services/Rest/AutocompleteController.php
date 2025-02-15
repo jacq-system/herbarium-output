@@ -76,7 +76,7 @@ class AutocompleteController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/autocomplete/scientificNames/{term}.{_format}', defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/autocomplete/scientificNames/{term}', methods: ['GET'])]
     public function scientificNames(string $term): Response
     {
         $results = [];

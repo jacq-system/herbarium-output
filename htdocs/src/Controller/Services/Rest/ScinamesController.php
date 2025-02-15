@@ -77,7 +77,7 @@ class ScinamesController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/JACQscinames/uuid/{taxonID}.{_format}', name: "services_rest_scinames_uuid", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/JACQscinames/uuid/{taxonID}', name: "services_rest_scinames_uuid", methods: ['GET'])]
     public function uuid(int $taxonID): Response
     {
         $results = [];
@@ -145,7 +145,7 @@ class ScinamesController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/JACQscinames/name/{taxonID}.{_format}', name: "services_rest_scinames_name", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/JACQscinames/name/{taxonID}', name: "services_rest_scinames_name", methods: ['GET'])]
     public function name(int $taxonID): Response
     {
         //TODO this service is just a synonym to $this->uuid()
@@ -207,7 +207,7 @@ class ScinamesController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/JACQscinames/find/{term}.{_format}', name: "services_rest_scinames_find", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/JACQscinames/find/{term}', name: "services_rest_scinames_find", methods: ['GET'])]
     public function find(string $term): Response
     {
         $data =  $this->taxaNamesService->fulltextSearch($term);
@@ -274,7 +274,7 @@ class ScinamesController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/JACQscinames/resolve/{uuid}.{_format}', name: "services_rest_scinames_resolve", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/JACQscinames/resolve/{uuid}', name: "services_rest_scinames_resolve", methods: ['GET'])]
     public function resolve(string $uuid): Response
     {
         $data =  $this->taxaNamesService->findByUuid($uuid);

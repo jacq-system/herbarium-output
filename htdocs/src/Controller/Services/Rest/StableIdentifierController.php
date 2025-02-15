@@ -107,7 +107,7 @@ class StableIdentifierController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/stableIdentifier/sid/{specimenID}.{_format}', defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/stableIdentifier/sid/{specimenID}', methods: ['GET'])]
     public function sid(int $specimenID): Response
     {
         $results = [];
@@ -363,7 +363,7 @@ class StableIdentifierController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/stableIdentifier/errors.{_format}', defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/stableIdentifier/errors', methods: ['GET'])]
     public function errors(#[MapQueryParameter] ?int $sourceID = null): Response
     {
         $results = $this->specimenService->getEntriesWithErrors($sourceID);
@@ -485,7 +485,7 @@ class StableIdentifierController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/stableIdentifier/multi.{_format}', name: "services_rest_sid_multi", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/stableIdentifier/multi', name: "services_rest_sid_multi", methods: ['GET'])]
     public function multi(#[MapQueryParameter] int $page = 1, #[MapQueryParameter] int $entriesPerPage = 6, #[MapQueryParameter]  ?int $sourceID = null): Response
     {
         if ($sourceID !== null) {

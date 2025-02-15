@@ -52,15 +52,7 @@ class ImagesController extends AbstractFOSRestController
                             new Property(property: 'imagelink')
                         ]
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            properties: [
-                                new Property(property: 'imagelink')
-                            ]
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -69,7 +61,7 @@ class ImagesController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/images/show/{specimenID}/{imageNr}.{_format}', name: "services_rest_images_show", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/images/show/{specimenID}/{imageNr}', name: "services_rest_images_show", methods: ['GET'])]
     public function show(int $specimenID, int $imageNr = 0): Response
     {
         //todo ignoring "withredirect" param
@@ -114,15 +106,7 @@ class ImagesController extends AbstractFOSRestController
                             new Property(property: 'imagelink')
                         ]
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            properties: [
-                                new Property(property: 'imagelink')
-                            ]
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -131,7 +115,7 @@ class ImagesController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/images/download/{specimenID}/{imageNr}.{_format}', name: "services_rest_images_download", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/images/download/{specimenID}/{imageNr}', name: "services_rest_images_download", methods: ['GET'])]
     public function download(int $specimenID, int $imageNr = 0): Response
     {
         $this->imageLinkMapper->setSpecimen($specimenID);
@@ -175,15 +159,7 @@ class ImagesController extends AbstractFOSRestController
                             new Property(property: 'imagelink')
                         ]
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            properties: [
-                                new Property(property: 'imagelink')
-                            ]
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -192,7 +168,7 @@ class ImagesController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/images/europeana/{specimenID}/{imageNr}.{_format}', name: "services_rest_images_europeana", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/images/europeana/{specimenID}/{imageNr}', name: "services_rest_images_europeana", methods: ['GET'])]
     public function europeana(int $specimenID, int $imageNr = 0): Response
     {
         $this->imageLinkMapper->setSpecimen($specimenID);
@@ -236,15 +212,7 @@ class ImagesController extends AbstractFOSRestController
                             new Property(property: 'imagelink')
                         ]
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            properties: [
-                                new Property(property: 'imagelink')
-                            ]
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -253,7 +221,7 @@ class ImagesController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/images/thumb/{specimenID}/{imageNr}.{_format}', name: "services_rest_images_thumb", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/images/thumb/{specimenID}/{imageNr}', name: "services_rest_images_thumb", methods: ['GET'])]
     public function thumb(int $specimenID, int $imageNr = 0): Response
     {
         $this->imageLinkMapper->setSpecimen($specimenID);
@@ -289,15 +257,7 @@ class ImagesController extends AbstractFOSRestController
                             new Property(property: 'imagelink')
                         ]
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            properties: [
-                                new Property(property: 'imagelink')
-                            ]
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -306,7 +266,7 @@ class ImagesController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/images/list/{specimenID}.{_format}', name: "services_rest_images_list", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/images/list/{specimenID}', name: "services_rest_images_list", methods: ['GET'])]
     public function list(int $specimenID, int $imageNr = 0): Response
     {
         $this->imageLinkMapper->setSpecimen($specimenID);

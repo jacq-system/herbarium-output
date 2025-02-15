@@ -41,7 +41,7 @@ class ObjectsController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/objects/specimens/search.{_format}', defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/objects/specimens/search', methods: ['GET'])]
     public function results(Request $request): Response
     {
         return $this->redirectToRoute('services_rest_objects_specimens', $request->query->all(), 307);
@@ -97,7 +97,7 @@ class ObjectsController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/objects/specimens/{specimenID}.{_format}', name: "services_rest_objects_specimen", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/objects/specimens/{specimenID}', name: "services_rest_objects_specimen", methods: ['GET'])]
     public function specimen(int $specimenID): Response
     {
         try {
@@ -246,7 +246,7 @@ class ObjectsController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/objects/specimens.{_format}', name: "services_rest_objects_specimens", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/objects/specimens', name: "services_rest_objects_specimens", methods: ['GET'])]
     public function specimens(#[MapQueryParameter] ?int $p = 0,#[MapQueryParameter] ?int $rpp = 50,#[MapQueryParameter] ?int $list = 1,#[MapQueryParameter] ?string $term = '',#[MapQueryParameter] ?string $sc = '',#[MapQueryParameter] ?string $coll = '',#[MapQueryParameter] ?int $type = 0,#[MapQueryParameter] ?string $sort = 'sciname,herbnr',#[MapQueryParameter] ?string $herbnr = '', #[MapQueryParameter] ?string $nation = '', #[MapQueryParameter] ?int $withImages = 0, #[MapQueryParameter] ?string $cltr = ''): Response
     {
         ($rpp > 100) ? $rpp = 100 : null;
@@ -304,7 +304,7 @@ class ObjectsController extends AbstractFOSRestController
                 description: 'Bad Request'
             )
         ])]
-    #[Route('/services/rest/objects/specimens/fromList.{_format}', name: "services_rest_objects_fromList", defaults: ['_format' => 'json'], methods: ['POST'])]
+    #[Route('/services/rest/objects/specimens/fromList', name: "services_rest_objects_fromList", methods: ['POST'])]
     public function fromList(Request $request, #[MapQueryParameter] ?string $fieldgroups = ''): Response
     {
          $rawBody = $request->getContent();
@@ -368,7 +368,7 @@ class ObjectsController extends AbstractFOSRestController
                 description: 'Bad Request'
             )
         ])]
-    #[Route('/services/rest/objects/specimens/fromFile.{_format}', name: "services_rest_objects_fromFile", defaults: ['_format' => 'json'], methods: ['POST'])]
+    #[Route('/services/rest/objects/specimens/fromFile', name: "services_rest_objects_fromFile", methods: ['POST'])]
     public function fromFile(Request $request, #[MapQueryParameter] ?string $fieldgroups = ''): Response
     {
         $file = $request->files->get('file');

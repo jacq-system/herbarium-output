@@ -103,7 +103,7 @@ class StatisticsController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/statistics/results/{periodStart}/{periodEnd}/{updated}/{type}/{interval}.{_format}', name: "services_rest_statistics_results", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/statistics/results/{periodStart}/{periodEnd}/{updated}/{type}/{interval}', name: "services_rest_statistics_results", methods: ['GET'])]
     public function results(string $periodStart, string $periodEnd, int $updated, CoreObjectsEnum $type, TimeIntervalEnum $interval): Response
     {
         $data = $this->statisticsService->getResults($periodStart, $periodEnd, $updated, $type, $interval);
