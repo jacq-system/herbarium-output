@@ -18,6 +18,7 @@
     "jms/serializer-bundle": "^5.5",
     "league/oauth2-server-bundle": "^0.9",
     "nelmio/api-doc-bundle": "^4.33",
+    "nelmio/cors-bundle": "^2.5",
     "php-coord/php-coord": "^v5",
     "phpoffice/phpspreadsheet": "^3.6",
     "symfony/asset": "^7.1",
