@@ -46,15 +46,7 @@ class IiifController extends AbstractFOSRestController
                             new Property(property: 'uri', description: 'uri of specimen', type: 'string', example: 'https://services.jacq.org/jacq-services/rest/iiif/manifest/1739342')
                         ]
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            properties: [
-                                new Property(property: 'uri', description: 'uri of specimen', type: 'string', example: 'https://services.jacq.org/jacq-services/rest/iiif/manifest/1739342')
-                            ]
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -63,7 +55,7 @@ class IiifController extends AbstractFOSRestController
             )
         ]
     )]
-    #[Route('/services/rest/iiif/manifestUri/{specimenID}.{_format}', name: "services_rest_iiif_manifest_uri", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/iiif/manifestUri/{specimenID}', name: "services_rest_iiif_manifest_uri", methods: ['GET'])]
     public function manifestUri(int $specimenID): Response
     {
         try {
@@ -106,15 +98,7 @@ If no backend is configured, the webservice tries to get the manifest from the a
                             new Property(property: 'manifest')
                         ]
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            properties: [
-                                new Property(property: 'manifest')
-                            ]
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -123,7 +107,7 @@ If no backend is configured, the webservice tries to get the manifest from the a
             )
         ]
     )]
-    #[Route('/services/rest/iiif/manifest/{specimenID}.{_format}', name: "services_rest_iiif_manifest", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/iiif/manifest/{specimenID}', name: "services_rest_iiif_manifest", methods: ['GET'])]
     public function manifest(int $specimenID): Response
     {
         try {
@@ -172,15 +156,7 @@ If no backend is configured, the webservice tries to get the manifest from the a
                             new Property(property: 'manifest')
                         ]
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            properties: [
-                                new Property(property: 'manifest')
-                            ]
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -189,7 +165,7 @@ If no backend is configured, the webservice tries to get the manifest from the a
             )
         ]
     )]
-    #[Route('/services/rest/iiif/createManifest/{serverID}/{imageIdentifier}.{_format}', name: "services_rest_iiif_createManifest", defaults: ['_format' => 'json'], methods: ['GET'])]
+    #[Route('/services/rest/iiif/createManifest/{serverID}/{imageIdentifier}', name: "services_rest_iiif_createManifest", methods: ['GET'])]
     public function createManifest(int $serverID, string $imageIdentifier): Response
     {
         $manifest = $this->iiifFacade->createManifestFromExtendedCantaloupeImage($serverID, $imageIdentifier);

@@ -7,8 +7,8 @@ fos_rest:
         view_response_listener:  true
         formats:
             json: true
-            yaml: true
-            xml: true
+            yaml: false
+            xml: false
         mime_types:
             json: [ 'application/json', 'application/x-json' ]
             yaml: [ 'text/yaml', 'application/x-yaml' ]
@@ -21,6 +21,6 @@ fos_rest:
     format_listener:
         enabled: true
         rules:
-            - { path: ^/services/,  methods: [GET], prefer_extension: true, fallback_format: json, priorities: [xml, json] }
+            - { path: ^/services/,  methods: [GET], prefer_extension: true, fallback_format: json, priorities: [json] }
 #            - { path: ^/api/, priorities: [ html, json, xml ], fallback_format: ~, prefer_extension: true }
             - { path: '^/', priorities: [ 'html', '*/*' ], fallback_format: html, prefer_extension: true } #https://github.com/FriendsOfSymfony/FOSRestBundle/issues/650#issuecomment-31449035
