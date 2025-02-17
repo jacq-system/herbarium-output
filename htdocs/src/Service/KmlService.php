@@ -69,15 +69,18 @@ class KmlService
         return '';
     }
 
-     protected function addLine($value)
+     protected function addLine(?string $value)
     {
+        if(empty($value)) {
+            return "";
+        }
         return htmlspecialchars($value, ENT_NOQUOTES) . "<br>\n";
     }
 
     protected function getStableIdentifier(int $specimenID): string
     {
         $specimen = $this->specimenService->findAccessibleForPublic($specimenID);
-        if (!empty($specimen->getMainStableIdentifier())) {
+        if (!empty($specimen->getMainStableIdentifier()?->getIdentifier())) {
             return $specimen->getMainStableIdentifier()->getIdentifier();
         } else {
             return $this->specimenService->constructStableIdentifier($specimen);

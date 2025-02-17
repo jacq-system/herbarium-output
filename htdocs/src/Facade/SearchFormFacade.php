@@ -53,6 +53,7 @@ class SearchFormFacade
             ->leftJoin('species.epithet', 'epithet')
             ->join('s.herbCollection', 'c')
             ->orderBy('genus.name', Order::Ascending->value)
+            ->andWhere('s.accessibleForPublic = 1')
             ->addOrderBy('epithet.name', Order::Ascending->value)
             ->addOrderBy('author.name', Order::Ascending->value);
 
@@ -486,7 +487,7 @@ class SearchFormFacade
                  LEFT JOIN tbl_tax_rank                  tr  ON tr.tax_rankID = ts.tax_rankID
                  LEFT JOIN tbl_tax_genera                tg  ON tg.genID = ts.genID
                  LEFT JOIN tbl_tax_families              tf  ON tf.familyID = tg.familyID
-                WHERE specimen_ID IN (:specimenIDs)";
+                WHERE specimen_ID IN (:specimenIDs) AND s.accessible = 1";
         $parameterTypes = [
             "specimenIDs" => ArrayParameterType::INTEGER
         ];
@@ -719,7 +720,7 @@ class SearchFormFacade
     protected function getStableIdentifier(int $specimenID): string
     {
         $specimen = $this->specimenService->findAccessibleForPublic($specimenID);
-        if (!empty($specimen->getMainStableIdentifier()->getIdentifier())) {
+        if (!empty($specimen->getMainStableIdentifier()?->getIdentifier())) {
             return $specimen->getMainStableIdentifier()->getIdentifier();
         } else {
             return $this->specimenService->constructStableIdentifier($specimen);
@@ -766,7 +767,7 @@ class SearchFormFacade
              LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
              LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID
              LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID=tsc.categoryID
-            WHERE specimen_ID IN (:specimenIDs)";
+            WHERE specimen_ID IN (:specimenIDs) and s.accessible = 1";
         $parameterTypes = [
             "specimenIDs" => ArrayParameterType::INTEGER
         ];
