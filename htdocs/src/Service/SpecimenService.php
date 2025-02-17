@@ -334,7 +334,7 @@ readonly class SpecimenService extends BaseService
             'dwc:previousIdentifications' => $specimen->getTaxonAlternative(),
             'dwc:family' => $specimen->getSpecies()->getGenus()->getFamily()->getName(),
             'dwc:genus' => $specimen->getSpecies()->getGenus()->getName(),
-            'dwc:specificEpithet' => $specimen->getSpecies()->getEpithet()->getName(),
+            'dwc:specificEpithet' => $specimen->getSpecies()->getEpithet()?->getName(),
             'dwc:country' => $specimen->getCountry()?->getNameEng(),
             'dwc:countryCode' => $specimen->getCountry()?->getIsoCode3(),
             'dwc:locality' => $specimen->getLocality(),

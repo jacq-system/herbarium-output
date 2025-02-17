@@ -23,7 +23,7 @@ class Species
 
     #[ORM\ManyToOne(targetEntity: EpithetSpecies::class)]
     #[ORM\JoinColumn(name: 'speciesID', referencedColumnName: 'epithetID')]
-    private EpithetSpecies $epithet;
+    private ?EpithetSpecies $epithet;
 
     #[ORM\Column(name: 'basID')]
     private int $basID;
@@ -46,7 +46,7 @@ class Species
         return $this->author;
     }
 
-    public function getEpithet(): EpithetSpecies
+    public function getEpithet(): ?EpithetSpecies
     {
         return $this->epithet;
     }
