@@ -87,7 +87,7 @@ jobs:
                     password: ${{ secrets.GITHUB_TOKEN }}
             -   name: Extract metadata (tags, labels) for Docker
                 id: meta
-                uses: docker/metadata-action@v5.6.1
+                uses: docker/metadata-action@v5.7.0
                 with:
                     images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
             -   name: Get git tag
@@ -95,7 +95,7 @@ jobs:
                 run: echo "TAG=${GITHUB_REF##*/}" >> $GITHUB_ENV
             -   name: Build and push Docker image
                 id: push
-                uses: docker/build-push-action@v6.13.0
+                uses: docker/build-push-action@v6.15.0
                 with:
                     context: .
                     push: true
