@@ -326,7 +326,7 @@ readonly class SpecimenService extends BaseService
     {
 
         return [
-            'dwc:materialSampleID' => $specimen->getMainStableIdentifier()->getIdentifier(),
+            'dwc:materialSampleID' => $specimen->getMainStableIdentifier()?->getIdentifier(),
             'dwc:basisOfRecord' => $specimen->getBasisOfRecordField(),
             'dwc:collectionCode' => $specimen->getHerbCollection()->getInstitution()->getAbbreviation(),
             'dwc:catalogNumber' => ($specimen->getHerbNumber()) ?: ('JACQ-ID ' . $specimen->getId()),

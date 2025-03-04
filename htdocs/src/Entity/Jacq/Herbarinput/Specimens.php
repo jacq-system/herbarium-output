@@ -129,10 +129,9 @@ class Specimens
     #[ORM\ManyToOne(targetEntity: Collector::class)]
     #[ORM\JoinColumn(name: 'SammlerID', referencedColumnName: 'SammlerID')]
     private ?Collector $collector = null;
-//TODO temporaly disjoined Sammler2
-//    #[ORM\ManyToOne(targetEntity: Collector2::class)]
-//    #[ORM\JoinColumn(name: 'Sammler_2ID', referencedColumnName: 'Sammler_2ID')]
-//    private ?Collector2 $collector2 = null;
+    #[ORM\ManyToOne(targetEntity: Collector2::class)]
+    #[ORM\JoinColumn(name: 'Sammler_2ID', referencedColumnName: 'Sammler_2ID')]
+    private ?Collector2 $collector2 = null;
 
     #[ORM\OneToMany(targetEntity: Typus::class, mappedBy: 'specimen')]
     private Collection $typus;
@@ -336,7 +335,7 @@ class Specimens
 
     public function getAnnotation(bool $replaceNL2BR = false): ?string
     {
-        if ($replaceNL2BR){
+        if ($replaceNL2BR && $this->annotation !== null) {
             return nl2br($this->annotation);
         }
         return $this->annotation;
@@ -429,8 +428,6 @@ class Specimens
 
     public function getCollector2(): ?Collector2
     {
-        //TODO temporaly disjoined Sammler2
-        return null;
         return $this->collector2;
     }
 
