@@ -346,7 +346,7 @@ readonly class ImageService
         return $result;
     }
 
-    function doRedirectShowPic($picdetails): string
+    function getExternalImageViewerUrl($picdetails): string
     {
         if ($picdetails['imgserver_type'] == 'iiif') {
             $url = "https://services.jacq.org/jacq-services/rest/images/show/{$picdetails['specimenID']}?withredirect=1";

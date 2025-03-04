@@ -14,6 +14,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Ods;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -150,8 +151,8 @@ class SearchFormController extends AbstractController
                 case 'thumbs':      // unused
                     return $this->json($this->imageService->getPicInfo($picDetails));
                 case 'show':        // detail, ajax/results.php
-                    $url = $this->imageService->doRedirectShowPic($picDetails);
-                    break;
+                    $url = $this->imageService->getExternalImageViewerUrl($picDetails);
+                    return new RedirectResponse($url, 303, ['X-Content-Type-Options' => 'nosniff']);
             }
 
             $streamContext = stream_context_create([
