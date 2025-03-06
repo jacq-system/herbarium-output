@@ -39,3 +39,31 @@ export default function specimenMap() {
     }, 100);
 
 }
+export async function dynamicRecords(){
+    let container = document.getElementById('dynamic-references');
+    if (!container) {
+        return;
+    }
+
+    //GGBN
+    try {
+        const response = await fetch("https://www.ggbn.org/ggbn_portal/api/search?getCounts&guid=https://w.jacq.org/W19920010523");
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.nbSamples === 0 || data.ggbnId == null) {
+            return;
+        }else {
+            let ggbnElement = document.getElementById('dynamic-ggbn');
+            ggbnElement.innerHTML = data.ggbnId;
+            container.classList.remove("hidden");
+        }
+
+
+
+    } catch (error) {
+    }
+}
