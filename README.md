@@ -1,21 +1,62 @@
 # Symfony based JACQ
+A short description of the app structure is provided here, following the alphabetically sorted subfolders of the repository.
 
-## First run
-Docker installed as a prerequisity for described steps, for traditional installation please consult Symfony docs.
+**.github**
+setup GitHub Continues integrations, that is build&push of the image or obsolete dependency checks.
+**Dockerfile**
+this dockerfile is used for production image build
 
-Create file /htdocs/.env.local with content to provide a replica connection
-```DATABASE_RO_URL="mysql://user:password@replica:3306/herbarinput?serverVersion=10.11.9-MariaDB-ubu2204&charset=utf8mb4"```
+## htdocs
+**assets**
+JS and CSS(SASS) files are stored outside and compiled by Webpack. The app.js is central point of the build, so do not forget import new code there. When you work on UI use ```./npm.sh run watch``` - on files change the assets are recompiled nearly immediately. Do you need a new external library? - add it to package.json, run ```./npm.sh update && ./npm.sh run build```.
 
-Install and build assets:
-```shell
-cd htdocs && ./npm.sh && ./npm.sh run build
-```
+**bin**
+An elegant way how to run shell-like scripts using the whole application code base.
 
-Install dependencies:
-* ```docker exec -it app-sjacq bash``` - that mean we are working inside the container
-    * install dependencies ```composer install```
-    * copy thirdparty bundle assets ``` php bin/console assets:install public```
+**config**
+Configuration, the only thing that is really framework-specific
 
+**database**
+Temporal storage used by Petr
+
+**public**
+This folder is publicly visible in production - logos, assets build etc.
+
+**src**
+PHP code of the application
+
+**templates**
+TWIG templates of individual pages. The file structure is optional, but a link to specific template is always hardcoded in the related route
+
+The remaining is clear, let's look deeper in *src*.
+
+## src folder
+**Command**
+For console commands, not used at this moment, but in future the regular cron proceeded tasks will live here.
+
+**Controller**
+Definition of routes, what should be done and what should be returned
+
+**Entity**
+Doctrine ORM entities, that is mapping of database tables to data.
+
+**Enum**
+PHP enums
+
+**EventSubscriber**
+Powerful but not relevant at this moment
+
+**Facade**
+some are preliminary proposed and used, but many opportunities for refactoring
+
+**Repository**
+Doctrine ORM repositories - that is "lookup and filter" operations. Not used as much one would like to see.
+
+**Service**
+Application logic, but a lot of the code should be migrated into Repositories
+
+**Twig**
+Extensions for templates, used for hacking the frontend - parts of legacy code that is used for displaying some values is stored here in to keep the templates clean.
 
 ### OAuth2 server
 Requires DATABASE_URL to be directed to writable database (like the one from docker-compose) with structure from /htdocs/database/demo.sql. (or use Migrations&Console, but the sql dump is easier).
