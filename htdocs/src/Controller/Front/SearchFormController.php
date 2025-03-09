@@ -54,7 +54,8 @@ class SearchFormController extends AbstractController
     public function databaseSearch(Request $request): Response
     {
         $postData = $request->request->all();
-        $this->sessionService->setFilters($postData);
+        $this->sessionService->setFilters($postData)->
+            setSetting('page', 1);
 
         $pagination = $this->searchFormFacade->providePaginationInfo();
 
