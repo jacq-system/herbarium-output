@@ -144,7 +144,7 @@ class SpecimenExtension extends AbstractExtension
                 } elseif (!empty($collector->getHuhId())) {
                     $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/h/" . basename($collector->getHuhId()) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
                 } elseif (!empty($collector->getViafId())) {
-                    $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/v/" . basename($collector->getHuhId()) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
+                    $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/v/" . basename($collector->getViafId()) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
                 } elseif (!empty($collector->getOrcidId())) {
                     $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/o/" . basename($collector->getOrcidId()) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
                 }
