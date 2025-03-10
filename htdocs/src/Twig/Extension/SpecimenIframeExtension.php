@@ -97,7 +97,7 @@ class SpecimenIframeExtension extends AbstractExtension
             <tr>
                 <td>
                     <a href='" . $imageDefinition->getIiifUrl() . "?manifest=" . $manifestUrl . "' target='_blank'>
-                        <img height='15' width='15' src='images/logo-iiif.png'>
+                        <img height='15' width='15' src='/recordIcons/logo-iiif.png'>
                     </a>
                 </td>
                 <td>
