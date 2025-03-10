@@ -146,7 +146,7 @@ class SearchFormFacade
     {
         $this->queryBuilder
             ->join('c.institution', 'i')
-            ->andWhere('i.code = :institution')
+            ->andWhere('i.code = :institution OR i.name = :institution')
             ->setParameter('institution', $code);
     }
 
