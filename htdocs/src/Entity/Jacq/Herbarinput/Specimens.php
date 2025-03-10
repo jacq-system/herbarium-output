@@ -75,8 +75,7 @@ class Specimens
     private ?bool $imageObservation;
 
     #[ORM\Column(name: 'taxon_alt')]
-    private string $taxonAlternative;
-
+    private ?string $taxonAlternative;
 
     #[ORM\Column(name: 'Coord_S')]
     private ?int $degreeS;
@@ -341,7 +340,7 @@ class Specimens
         return $this->annotation;
     }
 
-    public function getTaxonAlternative(): string
+    public function getTaxonAlternative(): ?string
     {
         return $this->taxonAlternative;
     }
