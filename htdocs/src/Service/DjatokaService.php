@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityNotFoundException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 readonly class DjatokaService
@@ -16,7 +17,7 @@ readonly class DjatokaService
         $constraint = ' AND source_id_fk != 1 AND iiif_capable != 1';   // wu need special treatment, iiif-servers are not checked
         if ($source!==null) {
             if (is_numeric($source)) {
-                $constraint = " AND source_ID_fk = " . intval($source);
+                $constraint .= " AND source_ID_fk = " . intval($source);
             } else {
                 $sql = "SELECT source_id
                                   FROM meta
@@ -60,6 +61,7 @@ readonly class DjatokaService
         ];
 
         $rows = $this->getAllDjatokaServers($source);
+        if(empty($rows)) {throw new EntityNotFoundException('No eligible server available.');}
         foreach ($rows as $row) {
 
             $ok = true;

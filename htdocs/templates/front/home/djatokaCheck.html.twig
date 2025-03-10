@@ -6,7 +6,7 @@
 
         <h3>check all Djatoka installations at {{ "now"|date('r') }}</h3>
 
-        {% if fail is not empty %}
+        {% if fail is defined and fail is not empty %}
         <h4>Servers with errors</h4>
         <table class="compact">
             <thead>
@@ -37,7 +37,7 @@
             </tbody>
         </table>
         {% endif %}
-        {% if warn is not empty %}
+        {% if warn is defined and warn is not empty %}
             <hr>
 
             <h4>Servers with warnings</h4>
@@ -71,7 +71,7 @@
             </table>
         {% endif %}
 
-        {% if ok is not empty %}
+        {% if ok is defined and ok is not empty %}
             <hr>
             <h4>Servers without errors</h4>
             <table class="compact">
@@ -96,8 +96,7 @@
             </table>
         {% endif %}
 
-
-        {% if noPicture is not empty %}
+        {% if noPicture is defined and noPicture is not empty %}
             <hr>
             <h4>Servers with no available pictures</h4>
             <table class="compact">
@@ -117,6 +116,9 @@
         {% endif %}
         <p>To scan just a single source, add either the parameter "?source=&lt;id&gt;" or "?source=&lt;source&gt;" to
             the URL.</p>
+        {% if noRowError is defined and noRowError is not empty %}
+             {{ noRowError }}
+        {% endif %}
     </div>
 
 {% endblock %}

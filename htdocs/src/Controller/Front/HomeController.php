@@ -8,6 +8,7 @@ use App\Enum\TimeIntervalEnum;
 use App\Service\DjatokaService;
 use App\Service\Rest\DevelopersService;
 use App\Service\Rest\StatisticsService;
+use Doctrine\ORM\EntityNotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
@@ -70,9 +71,14 @@ class HomeController extends AbstractController
     }
 
     #[Route('/checkDjatokaServers', name: 'app_front_checkDjatokaServers', defaults: ['source' => null])]
-    public function checkDjatokaServers(?string $source): Response
+    public function checkDjatokaServers(#[MapQueryParameter] ?string $source): Response
     {
-        $data = $this->djatokaService->getData($source);
+        try {
+            $data = $this->djatokaService->getData($source);
+        } catch (EntityNotFoundException $exception){
+            $noRowError = $exception->getMessage();
+            return $this->render('front/home/djatokaCheck.html.twig', ["noRowError" => $noRowError]);
+        }
         $warn = $data['warn'] ?? null;
         $ok = $data['ok'] ?? null;
         $fail = $data['fail'] ?? null;
