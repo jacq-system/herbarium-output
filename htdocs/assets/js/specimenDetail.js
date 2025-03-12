@@ -39,31 +39,44 @@ export default function specimenMap() {
     }, 100);
 
 }
-export async function dynamicRecords(){
+
+export async function dynamicReferences() {
     let container = document.getElementById('dynamic-references');
-    if (!container) {
-        return;
+    if (container && container.dataset.pid) {
+        await checkGGBN(container);
     }
 
-    //GGBN
-    try {
-        const response = await fetch("https://www.ggbn.org/ggbn_portal/api/search?getCounts&guid=https://w.jacq.org/W19920010523");
-        if (!response.ok) {
-            throw new Error(`Error: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.nbSamples === 0 || data.ggbnId == null) {
-            return;
-        }else {
-            let ggbnElement = document.getElementById('dynamic-ggbn');
-            ggbnElement.innerHTML = data.ggbnId;
-            container.classList.remove("hidden");
-        }
-
-
-
-    } catch (error) {
+}
+async function checkGGBN(containerElement){
+    const response = await fetch("https://www.ggbn.org/ggbn_portal/api/search?getCounts&guid=" + containerElement.dataset.pid);
+    if (!response.ok) {
+        // throw new Error(`Error: ${response.status}`);
+        console.log(`Error: ${response.status}`);
     }
+    const data = await response.json();
+
+    if (data.nbSamples === 0 || data.ggbnId == null) {
+    } else {
+        buildGGBNLinkElement(Object.keys(data.ggbnId)[0]);
+        containerElement.classList.remove("hide");
+    }
+}
+function buildGGBNLinkElement(id) {
+    let ggbnElement = document.getElementById('dynamic-ggbn');
+
+    let link = document.createElement('a');
+    link.href = "https://www.ggbn.org/ggbn_portal/search/record?ggbnId=" + id;
+    link.target = "_blank";
+
+    let img = document.createElement('img');
+    img.src = "/logo/services/GGBN.png";
+    img.alt = "GGBN";
+    img.title = "GGBN";
+    img.style.width = "20px";
+    img.style.height = "auto";
+
+    link.appendChild(img);
+
+    ggbnElement.innerHTML = "";
+    ggbnElement.appendChild(link);
 }
