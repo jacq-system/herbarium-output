@@ -125,7 +125,7 @@ class SearchFormController extends AbstractController
                     $url = $this->imageService->getSourceUrl($picDetails, $contentType, 0);
                     break;
                 case 'download':    // detail
-                       $url = $this->imageService->getSourceUrl($picDetails, $contentType, 0);
+                    $url = $this->imageService->getSourceUrl($picDetails, $contentType, 0);
                     break;
                 case 'thumb':       // detail
                     $url = $this->imageService->getSourceUrl($picDetails, $contentType, 1);
@@ -206,7 +206,12 @@ class SearchFormController extends AbstractController
     #[Route('/detail/{specimenId}', name: 'app_front_specimenDetail', methods: ['GET'])]
     public function detail(int $specimenId): Response
     {
-        return $this->render('front/home/detail.html.twig', ['specimen' => $this->specimenService->findAccessibleForPublic($specimenId)]);
+        $specimen = $this->specimenService->findAccessibleForPublic($specimenId);
+
+        return $this->render('front/home/detail.html.twig', [
+            'specimen' => $specimen,
+            'pid' => $specimen->getMainStableIdentifier()?->getIdentifier()
+        ]);
     }
 
     #[Route('/exportKml', name: 'app_front_exportKml', methods: ['GET'])]
