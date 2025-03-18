@@ -1,5 +1,7 @@
 # Symfony based JACQ
-A short description of the app structure is provided here, following the alphabetically sorted subfolders of the repository.
+A short description of the app structure is provided here, following the alphabetically sorted subfolders of the repository. All code was transferred with effort minimalized, most refactoring is connected only to necessary changes (like db calls or Dependency Injection). I had a wish to split methods according to entities/domains, but struggle mostly on it - the priority is to get working copy now, refactor when deployed. E.g. Statistics or search of specimens represents a little bit more elaborated remake.
+
+when walking through the code, I had sometimes comments - all are kept inline with //TODO notation; but they do not need any immediate action, just kept for evidence and future use.
 
 **.github**
 setup GitHub Continues integrations, that is build&push of the image or obsolete dependency checks.
@@ -38,7 +40,7 @@ For console commands, not used at this moment, but in future the regular cron pr
 Definition of routes, what should be done and what should be returned
 
 **Entity**
-Doctrine ORM entities, that is mapping of database tables to data.
+Doctrine ORM entities, that is mapping of database tables to data. Many database calls are kept in raw SQL approach. Benefits of Doctrine [ORM](https://symfony.com/doc/current/doctrine.html) are not fully utilized. The RW and RO database automatic switch is covered by Doctrine. If interested, read more [here](https://symfony.com/doc/current/doctrine.html), in general executeQuery() runs on replica(s) and executeStatement() on writable.
 
 **Enum**
 PHP enums
@@ -69,4 +71,16 @@ openssl rsa -in private.pem -passin pass:jacq -pubout -out public.pem
 ```
 and facultative "encryption key" via ```php -r 'echo base64_encode(random_bytes(32)), PHP_EOL;'``` + update al this info in .env file.
 
+### TODO services
+in jacq-services repository are more folders than "rest:"
 
+https://github.com/jacq-system/jacq-services/tree/develop/commonNames/references/scientificName - is it used (and should be implemented in Symfony also), where can I find it online?
+https://github.com/jacq-system/jacq-services/tree/develop/monitor - dtto?
+https://github.com/jacq-system/jacq-services/tree/develop/oai - as Johannes is working on it, I skipped it for now
+To agree the Symfony version as equivalent to jacq-services (beside routing, see above), there are some things I please for a help (prefixed with the route, links and results see bellow, line specific comments provided by TODOs in code):
+
+/services/rest/classification/download/{referenceType}/{referenceID} this service requires two configuration keys I do not know (and do not satisfy with my vision of the architecture) - $this->settings['apikey'] and $this->settings['classifications_license']
+/services/rest/iiif/createManifest/{serverID}/{imageIdentifier} - can anybode please provide parameters those provide 200 response at JACQ.org?
+/services/rest/livingplants/derivatives - "Table 'herbarinput.tbl_organisation' doesn't exist" - should this route be implemented or deleted?
+/services/rest/objects/specimens/search - similar - delete or implement?
+/services/rest/JACQscinames/uuid/{taxonID} + /services/rest/JACQscinames/name/{taxonID} + /services/rest/JACQscinames/resolve/{uuid} - UUID topic - need the API key

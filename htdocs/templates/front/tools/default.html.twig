@@ -1,0 +1,12 @@
+{% extends 'front/main.html.twig' %}
+{% block title %}Develop Symfony overview{% endblock %}
+
+{% block main %}
+    <div class="container">
+           <ul class="collection"> 
+        <li class="collection-item"><div><b>Statistics</b> about data flow in JACQ system <a href="{{ path('app_tools_statistics') }}" class="secondary-content">link</a></div></li>
+        <li class="collection-item"><div><b>Djatoka monitoring</b> (devoted mostly for administrators)<a href="{{ path('app_tools_checkDjatokaServers') }}" class="secondary-content">link</a></div></li>
+      </ul>
+
+    </div>
+{% endblock %}
