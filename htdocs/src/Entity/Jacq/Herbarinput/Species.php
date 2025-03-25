@@ -64,9 +64,9 @@ class Species
     private int $status;
 
     #[ORM\Column(name: 'synID')]
-    #[ORM\ManyToOne(targetEntity: self::class)]
+    #[ORM\ManyToOne(targetEntity: Species::class)]
     #[ORM\JoinColumn(name: "synID", referencedColumnName: "taxonID", nullable: true)]
-    private ?self $validName = null;
+    private ?Species $validName = null;
 
     public function getId(): ?int
     {
