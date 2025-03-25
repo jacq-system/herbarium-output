@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity()]
 #[ORM\Table(name: 'tbl_tax_epithets', schema: 'herbarinput')]
-class EpithetSpecies
+class Epithet
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]

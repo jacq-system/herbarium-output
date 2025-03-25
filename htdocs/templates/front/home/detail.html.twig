@@ -52,7 +52,7 @@
                             <h6>Stored under taxonname</h6>
                         </div>
                         <div class="col s12 m9"><p><b></b></p>
-                            <h6><b>{{ specimen | taxonName | raw }}</b></h6>
+                            <h6><b>{{ specimen.getSpecies() | taxonName | raw }}</b></h6>
 
                             <a href="http://www.tropicos.org/NameSearch.aspx?name={{ specimen | tropicos }}&exact=true"
                                title="Search in tropicos" target="_blank">
@@ -79,9 +79,33 @@
                             <h6>Ident. history</h6>
                         </div>
                         <div class="col s12 m9"><h6>{{ specimen.getTaxonAlternative() }}</h6>
-                            {{ specimen | typusText | raw }}
                         </div>
                     </div>
+                    {% for typus in specimen.getTypus() %}
+                                <div class="row">
+                                    <div class="col s12 m3">
+                                        <h6>{{ typus.getRank().getLatinName() }} of </h6>
+                                    </div>
+                                    <div class="col s12 m9"><h6>{{ typus.getSpecies() | taxonName | raw }}</h6>
+                                        <p>
+                                            {% for proto in typus.getSpecies() | protolog %}
+                                            {{ proto }}<br>
+                                            {% endfor %}
+                                        </p>
+                                        <p>
+                                        Typified by: {{ typus.getPerson() }} {{ typus.getDate() }}
+                                        </p>
+                                    </div>
+                                </div>
+                    {% endfor %}
+                    {% if specimen.getSpecies().isSynonym() %}
+                        <div class="row">
+                            <div class="col s12 m3">
+                                <h6>Current Name</h6>
+                            </div>
+                            <div class="col s12 m9"><h6>{{ specimen.getSpecies().getValidName() | taxonName | raw }}</h6></div>
+                        </div>
+                    {% endif %}
                     <div class="row">
                         <div class="col s12 m3">
                             <h6>Collector</h6>

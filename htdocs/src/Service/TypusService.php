@@ -3,104 +3,35 @@
 namespace App\Service;
 
 
+use App\Entity\Jacq\Herbarinput\Species;
 use App\Entity\Jacq\Herbarinput\Specimens;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class TypusService
 {
-    //TODO I had no power to fight with this any more, kept as is
     public function __construct(protected EntityManagerInterface $entityManager)
     {
     }
 
-
-    public function makeTypus(int $specimenId): string
+    public function protolog($row): string
     {
-        $text = '';
-
-        $sql = "SELECT typus_lat, tg.genus,
-             ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-             ta4.author author4, ta5.author author5,
-             te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-             te4.epithet epithet4, te5.epithet epithet5,
-             ts.synID, ts.taxonID, ts.statusID, tst.typified_by_Person, tst.typified_Date
-            FROM (tbl_specimens_types tst, tbl_typi tt, tbl_tax_species ts)
-             LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID
-             LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
-             LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID
-             LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID
-             LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID
-             LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID
-             LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID
-             LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID
-             LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID
-             LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID
-             LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
-             LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
-             LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
-            WHERE tst.typusID=tt.typusID
-             AND tst.taxonID=ts.taxonID
-             AND specimenID=:specimen ORDER by tst.typified_Date DESC";
-        $result = $this->entityManager->getConnection()->executeQuery($sql, ['specimen' => $specimenId]);
-
-        while ($row = $result->fetchAssociative()) {
-            if ($row['synID']) {
-                $sql3 = "SELECT ts.statusID, ts.taxonID, tg.genus,
-                      ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                      ta4.author author4, ta5.author author5,
-                      te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                      te4.epithet epithet4, te5.epithet epithet5
-                     FROM tbl_tax_species ts
-                      LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID
-                      LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
-                      LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID
-                      LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID
-                      LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID
-                      LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID
-                      LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID
-                      LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID
-                      LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID
-                      LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID
-                      LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
-                      LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
-                      LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
-                     WHERE taxonID= :synonym";
-                $result3 = $this->entityManager->getConnection()->executeQuery($sql3, ['synonym' => $row['synID']]);
-                $row3 = $result3->fetchAssociative();
-                $accName = $this->taxonWithHybrids($row3);
-            } else {
-                $accName = "";
-            }
-
-            $sql2 = "SELECT l.suptitel, la.autor, l.periodicalID, lp.periodical, l.vol, l.part, ti.paginae, ti.figures, l.jahr
-                 FROM tbl_tax_index ti
-                  INNER JOIN tbl_lit l ON l.citationID=ti.citationID
-                  LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID=l.periodicalID
-                  LEFT JOIN tbl_lit_authors la ON la.autorID=l.editorsID
-                 WHERE ti.taxonID=:taxon";
-            $result2 = $this->entityManager->getConnection()->executeQuery($sql2, ['taxon' => $row['taxonID']]);
-
-            $text .= "<tr>"
-                . "<td nowrap align=\"right\">" . $row['typus_lat'] . " of&nbsp;</td>"
-                . "<td><b>" . $this->taxonWithHybrids($row) . "</b></td>"
-                . "</tr>";
-            while ($row2 = $result2->fetchAssociative()) {
-                $text .= "<tr>"
-                    . "<td></td>"
-                    . "<td><b>" . $this->protolog($row2) . "</b></td>"
-                    . "</tr>";
-            }
-            $text .= "<tr>"
-                . "<td nowrap align=\"right\"></td>"
-                . "<td>Typified by:&nbsp;<b>" . $row['typified_by_Person'] . "&nbsp;" . $row['typified_Date'] . "</b></td>"
-                . "</tr>";
-            if (strlen($accName) > 0) {
-                $text .= "<tr>"
-                    . "<td></td>"
-                    . "<td><b>Current Name: <i>$accName</i></b></td>"
-                    . "</tr>";
-            }
+        $text = "";
+        if ($row['suptitel']) {
+            $text .= "in " . $row['autor'] . ": " . $row['suptitel'] . " ";
         }
+        if ($row['periodicalID']) {
+            $text .= $row['periodical'];
+        }
+        $text .= " " . $row['vol'];
+        if ($row['part']) {
+            $text .= " (" . $row['part'] . ")";
+        }
+        $text .= ": " . $row['paginae'];
+        if ($row['figures']) {
+            $text .= "; " . $row['figures'];
+        }
+        $text .= " (" . $row['jahr'] . ")";
+
         return $text;
     }
 
@@ -187,80 +118,40 @@ readonly class TypusService
         return $text;
     }
 
-    public function protolog($row): string
+    public function getProtolog(Species $species): array
     {
-        $text = "";
-        if ($row['suptitel']) {
-            $text .= "in " . $row['autor'] . ": " . $row['suptitel'] . " ";
+        $text = [];
+        $sql = "SELECT l.suptitel, la.autor, l.periodicalID, lp.periodical, l.vol, l.part, ti.paginae, ti.figures, l.jahr
+                 FROM tbl_tax_index ti
+                  INNER JOIN tbl_lit l ON l.citationID=ti.citationID
+                  LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID=l.periodicalID
+                  LEFT JOIN tbl_lit_authors la ON la.autorID=l.editorsID
+                 WHERE ti.taxonID=:taxon";
+        $result = $this->entityManager->getConnection()->executeQuery($sql, ['taxon' => $species->getId()]);
+        while ($row = $result->fetchAssociative()) {
+            $text[] = $this->protolog($row);
         }
-        if ($row['periodicalID']) {
-            $text .= $row['periodical'];
-        }
-        $text .= " " . $row['vol'];
-        if ($row['part']) {
-            $text .= " (" . $row['part'] . ")";
-        }
-        $text .= ": " . $row['paginae'];
-        if ($row['figures']) {
-            $text .= "; " . $row['figures'];
-        }
-        $text .= " (" . $row['jahr'] . ")";
-
         return $text;
     }
 
-    public function taxonName(Specimens $specimen): string
+    public function taxonNameWithHybrids(Species $species, bool $html = false): string
     {
-        return $this->taxonWithHybrids($this->giantQueryForEveryone($specimen->getId()));
-    }
+        if ($species->isHybrid()) {
+            $sql = "SELECT parent_1_ID as parent1, parent_2_ID as parent2
+                        FROM tbl_tax_hybrids
+                        WHERE taxon_ID_fk = :taxon";
+            $rowHybrids = $this->entityManager->getConnection()->executeQuery($sql, ['taxon' => $species->getId()])->fetchAssociative();
+            $parent1 = $this->entityManager->getRepository(Species::class)->find($rowHybrids['parent1']);
+            $parent2 = $this->entityManager->getRepository(Species::class)->find($rowHybrids['parent2']);
+            return $parent1->getFullName($html) . " x " . $parent2->getFullName($html);
+        }
 
-    protected function giantQueryForEveryone(int $specimenId): array
-    {
-        $sql = "SELECT s.specimen_ID, tg.genus, c.Sammler, c.SammlerID, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number,
-                             s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen, s.typified, s.typusID,
-                             s.digital_image, s.digital_image_obs, s.HerbNummer, s.CollNummer, s.ncbi_accession, s.observation,
-                             s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
-                             s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec, s.habitat, s.habitus, s.altitude_min, s.altitude_max,
-                             n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description, s.taxonID taxid,
-                             mc.collection, mc.collectionID, mc.source_id, mc.coll_short, mc.coll_gbif_pilot,
-                             m.SourceInstitutionID as source_code, m.OwnerOrganizationName as source_name,
-                             tid.imgserver_type, tid.imgserver_IP, tid.iiif_capable, tid.iiif_url, tid.HerbNummerNrDigits,
-                             ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ta4.author author4, ta5.author author5,
-                             te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, te4.epithet epithet4, te5.epithet epithet5,
-                             ts.synID, ts.taxonID, ts.statusID
-                            FROM tbl_specimens s
-                             LEFT JOIN tbl_specimens_series ss           ON ss.seriesID = s.seriesID
-                             LEFT JOIN tbl_management_collections mc     ON mc.collectionID = s.collectionID
-                             LEFT JOIN metadata m                        ON m.MetadataID = mc.source_id
-                             LEFT JOIN tbl_img_definition tid            ON tid.source_id_fk = mc.source_id
-                             LEFT JOIN tbl_geo_nation n                  ON n.NationID = s.NationID
-                             LEFT JOIN tbl_geo_province p                ON p.provinceID = s.provinceID
-                             LEFT JOIN tbl_collector c                   ON c.SammlerID = s.SammlerID
-                             LEFT JOIN tbl_collector_2 c2                ON c2.Sammler_2ID = s.Sammler_2ID
-                             LEFT JOIN tbl_tax_species ts                ON ts.taxonID = s.taxonID
-                             LEFT JOIN tbl_tax_authors ta                ON ta.authorID = ts.authorID
-                             LEFT JOIN tbl_tax_authors ta1               ON ta1.authorID = ts.subspecies_authorID
-                             LEFT JOIN tbl_tax_authors ta2               ON ta2.authorID = ts.variety_authorID
-                             LEFT JOIN tbl_tax_authors ta3               ON ta3.authorID = ts.subvariety_authorID
-                             LEFT JOIN tbl_tax_authors ta4               ON ta4.authorID = ts.forma_authorID
-                             LEFT JOIN tbl_tax_authors ta5               ON ta5.authorID = ts.subforma_authorID
-                             LEFT JOIN tbl_tax_epithets te               ON te.epithetID = ts.speciesID
-                             LEFT JOIN tbl_tax_epithets te1              ON te1.epithetID = ts.subspeciesID
-                             LEFT JOIN tbl_tax_epithets te2              ON te2.epithetID = ts.varietyID
-                             LEFT JOIN tbl_tax_epithets te3              ON te3.epithetID = ts.subvarietyID
-                             LEFT JOIN tbl_tax_epithets te4              ON te4.epithetID = ts.formaID
-                             LEFT JOIN tbl_tax_epithets te5              ON te5.epithetID = ts.subformaID
-                             LEFT JOIN tbl_tax_genera tg                 ON tg.genID = ts.genID
-                             LEFT JOIN tbl_tax_families tf               ON tf.familyID = tg.familyID
-                             LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
-                            WHERE s.accessible != '0'
-                    AND s.specimen_ID = :specimen ";
-        return $this->entityManager->getConnection()->executeQuery($sql, ['specimen' => $specimenId])->fetchAssociative();
+        return $species->getFullName($html);
+
     }
 
     public function taxonAuth(Specimens $specimen): string
     {
-        $row = $this->giantQueryForEveryone($specimen->getId());
         if (!empty($specimen['digital_image']) || !empty($specimen['digital_image_obs'])) {
             $phaidra = false;
             if ($specimen['source_id'] == '1') {

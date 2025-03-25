@@ -133,6 +133,7 @@ class Specimens
     private ?Collector2 $collector2 = null;
 
     #[ORM\OneToMany(targetEntity: Typus::class, mappedBy: 'specimen')]
+    #[ORM\OrderBy(["date" => "DESC"])]
     private Collection $typus;
 
     #[ORM\OneToMany(targetEntity: StableIdentifier::class, mappedBy: 'specimen')]
