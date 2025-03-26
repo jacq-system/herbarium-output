@@ -63,7 +63,6 @@ class Species
     #[ORM\Column(name: 'statusID')]
     private int $status;
 
-    #[ORM\Column(name: 'synID')]
     #[ORM\ManyToOne(targetEntity: Species::class)]
     #[ORM\JoinColumn(name: "synID", referencedColumnName: "taxonID", nullable: true)]
     private ?Species $validName = null;
