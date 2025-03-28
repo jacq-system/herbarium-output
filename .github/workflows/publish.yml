@@ -70,6 +70,10 @@ jobs:
                 working-directory: ./htdocs
                 run: php bin/console assets:install public --symlink --relative
 
+            -   name: Warm-up cache
+                working-directory: ./htdocs
+                run: php bin/console cache:warmup --env=prod
+
             -   name: Upload built assets
                 uses: actions/upload-artifact@v4
                 with:
