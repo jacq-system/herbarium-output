@@ -6,6 +6,7 @@ use App\Entity\Jacq\Herbarinput\Species;
 use App\Entity\Jacq\Herbarinput\Specimens;
 use App\Facade\Rest\IiifFacade;
 use App\Service\SpecimenService;
+use App\Service\TaxonService;
 use App\Service\TypusService;
 use Doctrine\ORM\EntityManagerInterface;
 use Twig\Extension\AbstractExtension;
@@ -13,7 +14,7 @@ use Twig\TwigFilter;
 
 class SpecimenExtension extends AbstractExtension
 {
-    public function __construct(protected readonly IiifFacade $iiifFacade, protected readonly EntityManagerInterface $entityManager, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService)
+    public function __construct(protected readonly IiifFacade $iiifFacade, protected readonly EntityManagerInterface $entityManager, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService, protected readonly TaxonService $taxonService)
     {
     }
 
@@ -296,7 +297,7 @@ class SpecimenExtension extends AbstractExtension
 
     public function getTaxonName(Species $species): string
     {
-        return $this->typusService->taxonNameWithHybrids($species, true);
+        return $this->taxonService->taxonNameWithHybrids($species, true);
     }
 
     public function getProtolog(Species $species): array

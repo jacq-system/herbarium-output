@@ -497,7 +497,7 @@ class SearchFormFacade
             $specimen->getSeriesNumber(),
             $specimen->getDate(),
             $specimen->getDate2(),
-            $specimen->getCountry()->getNameEng(),
+            $specimen->getCountry()?->getNameEng(),
             $specimen->getProvince()?->getName(),
             $specimen->getRegion(),
             $specimen->getLatitude() ? number_format(round($specimen->getLatitude(), 9), 9) . '°' : '',

@@ -3,6 +3,7 @@
 namespace App\Service;
 
 
+use App\Entity\Jacq\Herbarinput\Species;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class TaxonService
@@ -148,4 +149,19 @@ readonly class TaxonService
         return $this->entityManager->getConnection()->executeQuery($sql, ['taxonID' => $taxonID, 'referenceID' => $referenceID])->fetchAllAssociative();
     }
 
+    public function taxonNameWithHybrids(Species $species, bool $html = false): string
+    {
+        if ($species->isHybrid()) {
+            $sql = "SELECT parent_1_ID as parent1, parent_2_ID as parent2
+                        FROM tbl_tax_hybrids
+                        WHERE taxon_ID_fk = :taxon";
+            $rowHybrids = $this->entityManager->getConnection()->executeQuery($sql, ['taxon' => $species->getId()])->fetchAssociative();
+            $parent1 = $this->entityManager->getRepository(Species::class)->find($rowHybrids['parent1']);
+            $parent2 = $this->entityManager->getRepository(Species::class)->find($rowHybrids['parent2']);
+            return $parent1->getFullName($html) . " x " . $parent2->getFullName($html);
+        }
+
+        return $species->getFullName($html);
+
+    }
 }

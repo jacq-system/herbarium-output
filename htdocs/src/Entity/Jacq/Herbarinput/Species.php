@@ -94,19 +94,19 @@ class Species
         }
 
         if ($this->getEpithetSubspecies() !== null) {
-            $text .= " subsp. <i>" . $this->getEpithetSubspecies()->getName() . "</i> " . $this->getAuthorSubspecies()->getName();
+            $text .= " subsp. <i>" . $this->getEpithetSubspecies()?->getName() . "</i> " . $this->getAuthorSubspecies()?->getName();
         }
         if ($this->getEpithetVariety() !== null) {
-            $text .= " var. <i>" . $this->getEpithetVariety()->getName() . "</i> " . $this->getAuthorVariety()->getName();
+            $text .= " var. <i>" . $this->getEpithetVariety()?->getName() . "</i> " . $this->getAuthorVariety()?->getName();
         }
         if ($this->getEpithetSubvariety() !== null) {
-            $text .= " subvar. <i>" . $this->getEpithetSubvariety()->getName() . "</i> " . $this->getAuthorSubvariety()->getName();
+            $text .= " subvar. <i>" . $this->getEpithetSubvariety()?->getName() . "</i> " . $this->getAuthorSubvariety()?->getName();
         }
         if ($this->getEpithetForma() !== null) {
-            $text .= " forma <i>" . $this->getEpithetForma()->getName() . "</i> " . $this->getAuthorForma()->getName();
+            $text .= " forma <i>" . $this->getEpithetForma()?->getName() . "</i> " . $this->getAuthorForma()?->getName();
         }
         if ($this->getEpithetSubforma() !== null) {
-            $text .= " subforma <i>" . $this->getEpithetSubforma()->getName() . "</i> " . $this->getAuthorSubforma()->getName();
+            $text .= " subforma <i>" . $this->getEpithetSubforma()?->getName() . "</i> " . $this->getAuthorSubforma()?->getName();
         }
 
         if (!$html){
@@ -119,24 +119,24 @@ class Species
     {
 
         if ($this->getEpithetSubforma() !== null) {
-            $author =  $this->getAuthorSubforma()->getName();
-            $epithet = $this->getEpithetSubforma()->getName();
+            $author =  $this->getAuthorSubforma()?->getName();
+            $epithet = $this->getEpithetSubforma()?->getName();
         }
         elseif ($this->getEpithetForma() !== null) {
-            $author =  $this->getAuthorForma()->getName();
-            $epithet = $this->getEpithetForma()->getName();
+            $author =  $this->getAuthorForma()?->getName();
+            $epithet = $this->getEpithetForma()?->getName();
         }
         elseif ($this->getEpithetSubvariety() !== null) {
-            $author =  $this->getAuthorSubvariety()->getName();
-            $epithet = $this->getEpithetSubvariety()->getName();
+            $author =  $this->getAuthorSubvariety()?->getName();
+            $epithet = $this->getEpithetSubvariety()?->getName();
         }
         elseif ($this->getEpithetVariety() !== null) {
-            $author =  $this->getAuthorVariety()->getName();
-            $epithet = $this->getEpithetVariety()->getName();
+            $author =  $this->getAuthorVariety()?->getName();
+            $epithet = $this->getEpithetVariety()?->getName();
         }
         elseif ($this->getEpithetSubspecies() !== null) {
-            $author =  $this->getAuthorSubspecies()->getName();
-            $epithet = $this->getEpithetSubspecies()->getName();
+            $author =  $this->getAuthorSubspecies()?->getName();
+            $epithet = $this->getEpithetSubspecies()?->getName();
         }else{
             $author='';
             $epithet = '';

@@ -11,7 +11,7 @@ class KmlService
     protected string $head = '<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><description>search results Virtual Herbaria</description>';
     protected string $foot = '</Document></kml>';
 
-    public function __construct(protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService)
+    public function __construct(protected readonly SpecimenService $specimenService, protected readonly TaxonService $taxonService)
     {
     }
 
@@ -34,7 +34,7 @@ class KmlService
 
         if ($specimen->getLatitude() !== null && $specimen->getLongitude() !== null) {
            return "<Placemark>\n"
-                . "  <name>" . htmlspecialchars($this->typusService->taxonNameWithHybrids($specimen->getSpecies(), true), ENT_NOQUOTES) . "</name>\n"
+                . "  <name>" . htmlspecialchars($this->taxonService->taxonNameWithHybrids($specimen->getSpecies(), true), ENT_NOQUOTES) . "</name>\n"
                 . "  <description>\n"
                 . "    <![CDATA[\n"
                 . "      " . $this->addLine($specimen->getHerbCollection()->getName() . " " . $specimen->getHerbNumber() . " [dbID " . $specimen->getId() . "]")
