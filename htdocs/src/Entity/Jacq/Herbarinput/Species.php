@@ -67,6 +67,10 @@ class Species
     #[ORM\JoinColumn(name: "synID", referencedColumnName: "taxonID", nullable: true)]
     private ?Species $validName = null;
 
+    #[ORM\ManyToOne(targetEntity: TaxonRank::class)]
+    #[ORM\JoinColumn(name: "tax_rankID", referencedColumnName: "tax_rankID", nullable: true)]
+    private TaxonRank $rank;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -109,6 +113,36 @@ class Species
             return strip_tags($text);
         }
         return $text;
+    }
+
+    public function getInfraEpithet(): array
+    {
+
+        if ($this->getEpithetSubforma() !== null) {
+            $author =  $this->getAuthorSubforma()->getName();
+            $epithet = $this->getEpithetSubforma()->getName();
+        }
+        elseif ($this->getEpithetForma() !== null) {
+            $author =  $this->getAuthorForma()->getName();
+            $epithet = $this->getEpithetForma()->getName();
+        }
+        elseif ($this->getEpithetSubvariety() !== null) {
+            $author =  $this->getAuthorSubvariety()->getName();
+            $epithet = $this->getEpithetSubvariety()->getName();
+        }
+        elseif ($this->getEpithetVariety() !== null) {
+            $author =  $this->getAuthorVariety()->getName();
+            $epithet = $this->getEpithetVariety()->getName();
+        }
+        elseif ($this->getEpithetSubspecies() !== null) {
+            $author =  $this->getAuthorSubspecies()->getName();
+            $epithet = $this->getEpithetSubspecies()->getName();
+        }else{
+            $author='';
+            $epithet = '';
+        }
+
+        return ['author'=> $author, 'epithet'=>$epithet];
     }
 
     public function getGenus(): Genus
@@ -185,5 +219,11 @@ class Species
     {
         return $this->status;
     }
+
+    public function getRank(): TaxonRank
+    {
+        return $this->rank;
+    }
+
 
 }

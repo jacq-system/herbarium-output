@@ -118,7 +118,7 @@ readonly class TypusService
         return $text;
     }
 
-    public function getProtolog(Species $species): array
+    public function getProtologs(Species $species): array
     {
         $text = [];
         $sql = "SELECT l.suptitel, la.autor, l.periodicalID, lp.periodical, l.vol, l.part, ti.paginae, ti.figures, l.jahr
@@ -150,99 +150,21 @@ readonly class TypusService
 
     }
 
-    public function taxonAuth(Specimens $specimen): string
+    public function getTypusText(Specimens $specimen): string
     {
-        if (!empty($specimen['digital_image']) || !empty($specimen['digital_image_obs'])) {
-            $phaidra = false;
-            if ($specimen['source_id'] == '1') {
-                // for now, special treatment for phaidra is needed when wu has images
-                $output['phaidraUrl'] = "";
-
-                // ask phaidra server if it has the desired picture. If not, use old method
-                $picname = sprintf("WU%0" . $specimen['HerbNummerNrDigits'] . ".0f", str_replace('-', '', $specimen['HerbNummer']));
-                $ch = curl_init("https://app05a.phaidra.org/viewer/" . $picname);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                $curl_response = curl_exec($ch);
-                if ($curl_response) {
-                    $info = curl_getinfo($ch);
-                    if ($info['http_code'] == 200) {
-                        $phaidra = true;
-                        $output['phaidraUrl'] = $specimen['iiif_url'] . '?manifest=' . $config->get('JACQ_SERVICES') . 'iiif/manifest/' . $specimen['specimen_ID'];
-                        $ch2 = curl_init($config->get('JACQ_SERVICES') . "iiif/manifest/" . $specimen['specimen_ID']);
-                        curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
-                        $curl_response2 = curl_exec($ch2);
-                        curl_close($ch2);
-                        $decoded = json_decode($curl_response2, true);
-                        $output['phaidraThumbs'] = array();
-                        foreach ($decoded['sequences'] as $sequence) {
-                            foreach ($sequence['canvases'] as $canvas) {
-                                foreach ($canvas['images'] as $image) {
-                                    $output['phaidraThumbs'][] = array('img' => $image['resource']['service']['@id'],
-                                        'viewer' => $output['phaidraUrl'],
-                                        'file' => $picname);
-                                }
-                            }
-                        }
-                    }
-                }
-                curl_close($ch);
-            }
-            if ($phaidra) {  // phaidra picture found
-                $output['picture_include'] = 'templates/detail_inc_phaidra.php';
-//        include 'templates/detail_base.php';
-//        include 'templates/detail_phaidra.php';  // just needed for testing
-            } elseif ($specimen['iiif_capable']) {
-                $ch = curl_init($config->get('JACQ_SERVICES') . "iiif/manifestUri/" . $specimen['specimen_ID']);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                $curl_response = curl_exec($ch);
-                if ($curl_response !== false) {
-                    $curl_result = json_decode($curl_response, true);
-                    $output['manifest'] = $curl_result['uri'];
-                } else {
-                    $output['manifest'] = "";
-                }
-                curl_close($ch);
-                $output['picture_include'] = 'templates/detail_inc_iiif.php';
-            } elseif ($specimen['imgserver_type'] == 'bgbm') {  // but not iiif_capable
-                $output['bgbm_options'] = '?filename=' . rawurlencode(basename($specimen['specimen_ID'])) . '&sid=' . $specimen['specimen_ID'];
-                $output['picture_include'] = 'templates/detail_inc_bgbm.php';
-                //    'baku' is depricated and no loner used
-                //    } elseif ($specimen['imgserver_type'] == 'baku') {
-                //        $options = 'filename=' . rawurlencode(basename($specimen['specimen_ID'])) . '&sid=' . $specimen['specimen_ID'];
-                //        echo "<td valign='top' align='center'>"
-                //           . "<a href='image.php?{$options}&method=show' target='imgBrowser'><img src='image.php?{$options}&method=thumb border='2'></a><br>"
-                //           . "(<a href='image.php?{$options}&method=show' target='imgBrowser'>Open viewer</a>)"
-                //           . "</td>";
-            } elseif ($specimen['imgserver_type'] == 'djatoka') {   // but not iiif_capable, so the original one
-                $picdetails = getPicDetails($specimen['specimen_ID']);
-                $transfer = getPicInfo($picdetails);
-                $output['djatoka_options'] = array();
-                if ($transfer) {
-                    if (!empty($transfer['error'])) {
-                        $output['djatoka']['error'] = "Picture server list error. Falling back to original image name";
-                        $output['djatoka_options'][] = 'filename=' . rawurlencode(basename($picdetails['filename'])) . '&sid=' . $specimen['specimen_ID'];
-                        error_log($transfer['error']);
-                    } else {
-                        if (count($transfer['pics'] ?? array()) > 0) {
-                            foreach ($transfer['pics'] as $v) {
-                                $output['djatoka_options'][] = 'filename=' . rawurlencode(basename($v)) . '&sid=' . $specimen['specimen_ID'];
-                            }
-                            $output['djatoka']['error'] = "";
-                        } else {
-                            $output['djatoka']['error'] = "no pictures found";
-                        }
-                        if (trim($transfer['output'])) {
-                            $output['djatoka_transfer_output'] = "\n" . $transfer['output'] . "\n";
-                        }
-                    }
-                } else {
-                    $output['djatoka']['error'] = "transmission error";
-                }
-                return 'templates/detail_inc_djatoka.php';
-            } else {
-                return 'templates/detail_inc_noPictures.php';
+        $text = '';
+        foreach ($specimen->getTypus() as $typus) {
+            $text .= $typus->getRank()->getLatinName() . ' for ' . $this->taxonNameWithHybrids($specimen->getSpecies());
+            $text .= '';
+            foreach ($this->getProtologs($typus->getSpecies()) as $protolog) {
+                $text .= $protolog . ' ';
             }
         }
-        return '';
+        if ($specimen->getSpecies()->isSynonym()) {
+            $text .= "Current Name: " . $this->taxonNameWithHybrids($specimen->getSpecies());
+        }
+        return $text;
+
     }
+
 }

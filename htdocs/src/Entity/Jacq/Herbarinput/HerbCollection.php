@@ -20,6 +20,9 @@ class HerbCollection
     #[ORM\Column(name: 'coll_short_prj')]
     private string $collShortPrj;
 
+    #[ORM\Column(name: 'coll_short')]
+    private string $collShort;
+
     #[ORM\Column(name: 'picture_filename')]
     private ?string $pictureFilename = null;
 
@@ -61,6 +64,11 @@ class HerbCollection
     public function getIiifDefinition(): ?IiifDefinition
     {
         return $this->iiifDefinition;
+    }
+
+    public function getCollShort(): string
+    {
+        return $this->collShort;
     }
 
 

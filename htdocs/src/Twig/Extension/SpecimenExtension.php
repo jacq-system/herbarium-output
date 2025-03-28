@@ -35,7 +35,6 @@ class SpecimenExtension extends AbstractExtension
             new TwigFilter('annotation', [$this, 'getAnnotation']),
             new TwigFilter('tropicos', [$this, 'getTropicos']),
             new TwigFilter('taxonName', [$this, 'getTaxonName']),
-            new TwigFilter('imageIframe', [$this, 'getImageIframe']),
             new TwigFilter('protolog', [$this, 'getProtolog']),
         ];
     }
@@ -300,14 +299,9 @@ class SpecimenExtension extends AbstractExtension
         return $this->typusService->taxonNameWithHybrids($species, true);
     }
 
-    public function getImageIframe(Specimens $specimen): string
-    {
-        return $this->typusService->taxonAuth($specimen);
-    }
-
     public function getProtolog(Species $species): array
     {
-        return $this->typusService->getProtolog($species);
+        return $this->typusService->getProtologs($species);
     }
 
 

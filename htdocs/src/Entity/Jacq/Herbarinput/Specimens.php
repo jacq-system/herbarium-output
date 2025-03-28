@@ -78,44 +78,61 @@ class Specimens
     private ?string $taxonAlternative;
 
     #[ORM\Column(name: 'Coord_S')]
-    private ?int $degreeS;
+    private(set) ?int $degreeS;
 
     #[ORM\Column(name: 'S_Min')]
-    private ?int $minuteS;
+    private(set) ?int $minuteS;
 
     #[ORM\Column(name: 'S_Sec')]
-    private ?float $secondS;
+    private(set) ?float $secondS;
 
     #[ORM\Column(name: 'Coord_N')]
-    private ?int $degreeN;
+    private(set) ?int $degreeN;
 
     #[ORM\Column(name: 'N_Min')]
-    private ?int $minuteN;
+    private(set) ?int $minuteN;
 
     #[ORM\Column(name: 'N_Sec')]
-    private ?float $secondN;
+    private(set) ?float $secondN;
 
     #[ORM\Column(name: 'Coord_W')]
-    private ?int $degreeW;
+    private(set) ?int $degreeW;
 
     #[ORM\Column(name: 'W_Min')]
-    private ?int $minuteW;
+    private(set) ?int $minuteW;
 
     #[ORM\Column(name: 'W_Sec')]
-    private ?float $secondW;
+    private(set) ?float $secondW;
 
     #[ORM\Column(name: 'Coord_E')]
-    private ?int $degreeE;
+    private(set) ?int $degreeE;
 
     #[ORM\Column(name: 'E_Min')]
-    private ?int $minuteE;
+    private(set) ?int $minuteE;
 
     #[ORM\Column(name: 'E_Sec')]
-    private ?float $secondE;
+    private(set) ?float $secondE;
 
     #[ORM\Column(name: 'ncbi_accession')]
     private ?string $ncbiAccession;
 
+    #[ORM\Column(name: 'typified')]
+    private ?string $typified;
+
+    #[ORM\Column(name: 'garten')]
+    private ?string $garden;
+
+    #[ORM\Column(name: 'Bezirk')]
+    private ?string $region;
+
+    #[ORM\Column(name: 'quadrant')]
+    private(set) ?int $quadrant;
+
+    #[ORM\Column(name: 'quadrant_sub')]
+    private(set) ?int $quadrantSub;
+
+    #[ORM\Column(name: 'exactness')]
+    private(set) ?float $exactness;
 
     #[ORM\ManyToOne(targetEntity: HerbCollection::class)]
     #[ORM\JoinColumn(name: 'collectionID', referencedColumnName: 'collectionID')]
@@ -157,6 +174,15 @@ class Specimens
     #[ORM\ManyToOne(targetEntity: Country::class)]
     #[ORM\JoinColumn(name: 'NationID', referencedColumnName: 'NationID')]
     private ?Country $country = null;
+
+    #[ORM\ManyToOne(targetEntity: IdentificationStatus::class)]
+    #[ORM\JoinColumn(name: 'identstatusID', referencedColumnName: 'identstatusID')]
+    private ?IdentificationStatus $identificationStatus;
+
+    #[ORM\ManyToOne(targetEntity: SpecimenVoucherType::class)]
+    #[ORM\JoinColumn(name: 'voucherID', referencedColumnName: 'voucherID')]
+    private ?SpecimenVoucherType $voucher;
+
 
     public function __construct()
     {
@@ -231,17 +257,6 @@ class Specimens
         return null;
     }
 
-    public function getVerbatimLatitude(): string
-    {
-        if ($this->degreeS > 0 || $this->minuteS > 0 || $this->secondS > 0) {
-            return $this->degreeS . "d " . (($this->minuteS) ?: '?') . "m " . (($this->secondS) ?: '?') . 's S';
-        } else if ($this->degreeN > 0 || $this->minuteN > 0 || $this->secondN > 0) {
-            return $this->degreeN . "d " . (($this->minuteN) ?: '?') . "m " . (($this->secondN) ?: '?') . 's N';
-        } else {
-           return '';
-        }
-    }
-
     public function getLongitude(): ?float
     {
         if ($this->degreeW > 0 || $this->minuteW > 0 || $this->secondW > 0) {
@@ -252,14 +267,47 @@ class Specimens
         return null;
     }
 
+    public function getVerbatimLatitude(): string
+    {
+        if ($this->degreeS > 0 || $this->minuteS > 0 || $this->secondS > 0) {
+            return $this->degreeS . "d " . (($this->minuteS) ?: '?') . "m " . (($this->secondS) ?: '?') . 's S';
+        } else if ($this->degreeN > 0 || $this->minuteN > 0 || $this->secondN > 0) {
+            return $this->degreeN . "d " . (($this->minuteN) ?: '?') . "m " . (($this->secondN) ?: '?') . 's N';
+        } else {
+            return '';
+        }
+    }
+
     public function getVerbatimLongitude(): string
     {
         if ($this->degreeW > 0 || $this->minuteW > 0 || $this->secondW > 0) {
             return $this->degreeW . "d " . (($this->minuteW) ?: '?') . "m " . (($this->secondW) ?: '?') . 's W';
         } else if ($this->degreeE > 0 || $this->minuteE > 0 || $this->secondE > 0) {
-           return $this->degreeE . "d " . (($this->minuteE) ?: '?') . "m " . (($this->secondE) ?: '?') . 's E';
+            return $this->degreeE . "d " . (($this->minuteE) ?: '?') . "m " . (($this->secondE) ?: '?') . 's E';
         } else {
             return '';
+        }
+    }
+
+    public function getHemisphereLatitude(): ?string
+    {
+        if (!empty($this->degreeS) || !empty($this->minuteS) || !empty($this->secondS)) {
+            return 'S';
+        } elseif (!empty($this->degreeN) || !empty($this->minuteN) || !empty($this->secondN)) {
+            return 'N';
+        } else {
+            return null;
+        }
+    }
+
+    public function getHemisphereLongitude(): ?string
+    {
+        if (!empty($this->degreeW) || !empty($this->minuteW) || !empty($this->secondW)) {
+            return 'W';
+        } elseif (!empty($this->degreeE) || !empty($this->minuteE) || !empty($this->secondE)) {
+            return 'E';
+        } else {
+            return null;
         }
     }
 
@@ -366,6 +414,7 @@ class Specimens
         return $this->stableIdentifiers;
     }
 
+    //TODO should be raplace by \App\Service\SpecimenService::constructStableIdentifier everywhere?
     public function getMainStableIdentifier(): ?StableIdentifier
     {
         if (count($this->stableIdentifiers) > 0) {
@@ -458,8 +507,35 @@ class Specimens
         return $this->date2 !== null ? trim($this->date2) : null;
     }
 
-    public function getBasisOfRecordField():string
+    public function getBasisOfRecordField(): string
     {
         return $this->isObservation() ? "HumanObservation" : "PreservedSpecimen";
     }
+
+    public function getTypified(): ?string
+    {
+        return $this->typified;
+    }
+
+    public function getIdentificationStatus(): ?IdentificationStatus
+    {
+        return $this->identificationStatus;
+    }
+
+    public function getGarden(): ?string
+    {
+        return $this->garden;
+    }
+
+    public function getVoucher(): ?SpecimenVoucherType
+    {
+        return $this->voucher;
+    }
+
+    public function getRegion(): ?string
+    {
+        return $this->region;
+    }
+
+
 }

@@ -254,40 +254,36 @@ readonly class SpecimenService extends BaseService
         return '';
     }
 
-
-    public function collection(array $row): string
+    public function getCollectionText(Specimens $specimen): string
     {
-        $text = $row['Sammler'];
-        if (strstr((string)$row['Sammler_2'], "&") || strstr((string)$row['Sammler_2'], "et al.")) {
+        $text = $specimen->getCollector()?->getName();
+        if (strstr((string)$specimen->getCollector2()?->getName(), "&") || strstr((string)$specimen->getCollector2()?->getName(), "et al.")) {
             $text .= " et al.";
-        } else if ($row['Sammler_2']) {
-            $text .= " & " . $row['Sammler_2'];
+        } else if (!empty($specimen->getCollector2()?->getName())) {
+            $text .= " & " . $specimen->getCollector2()?->getName();
         }
 
-        if ($row['series_number']) {
-            if ($row['Nummer']) {
-                $text .= " " . $row['Nummer'];
+        if (!empty($specimen->getSeriesNumber())) {
+            if (!empty($specimen->getNumber())) {
+                $text .= " " . $specimen->getNumber();
             }
-            if ($row['alt_number'] && $row['alt_number'] != "s.n.") {
-                $text .= " " . $row['alt_number'];
+            if (!empty($specimen->getAltNumber()) && $specimen->getAltNumber() != "s.n.") {
+                $text .= " " . $specimen->getAltNumber();
             }
-            if ($row['series']) {
-                $text .= " " . $row['series'];
+            if (!empty($specimen->getSeries()?->getName())) {
+                $text .= " " . $specimen->getSeries()?->getName();
             }
-            $text .= " " . $row['series_number'];
+            $text .= " " . $specimen->getSeriesNumber();
         } else {
-            if ($row['series']) {
-                $text .= " " . $row['series'];
+            if (!empty($specimen->getSeries()?->getName())) {
+                $text .= " " . $specimen->getSeries()?->getName();
             }
-            if ($row['Nummer']) {
-                $text .= " " . $row['Nummer'];
+            if (!empty($specimen->getNumber())) {
+                $text .= " " . $specimen->getNumber();
             }
-            if ($row['alt_number']) {
-                $text .= " " . $row['alt_number'];
+            if (!empty($specimen->getAltNumber()) && $specimen->getAltNumber() != "s.n.") {
+                $text .= " " . $specimen->getAltNumber();
             }
-//        if (strstr($row['alt_number'], "s.n.")) {
-//            $text .= " [" . $row['Datum'] . "]";
-//        }
         }
 
         return trim($text);
@@ -398,5 +394,15 @@ readonly class SpecimenService extends BaseService
             'jacq:downloadImage' => $firstImageDownloadLink
 
         ];
+    }
+
+    public function getStableIdentifier(Specimens $specimen): string
+    {
+        if (!empty($specimen->getMainStableIdentifier()?->getIdentifier())) {
+            return $specimen->getMainStableIdentifier()->getIdentifier();
+        } else {
+            return $this->specimenService->constructStableIdentifier($specimen);
+        }
+
     }
 }

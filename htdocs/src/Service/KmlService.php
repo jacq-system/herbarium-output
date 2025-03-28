@@ -23,7 +23,8 @@ class KmlService
 
     public function prepareRow(array $rowSpecimen)
     {
-        $sammler = $this->specimenService->collection($rowSpecimen);
+        $specimen = $this->specimenService->find($rowSpecimen['specimen_ID']);
+        $sammler = $this->specimenService->getCollectionText($specimen);
 
         $location = $rowSpecimen['nation_engl'];
         if (strlen(trim((string)$rowSpecimen['provinz']))>0) {
@@ -57,7 +58,7 @@ class KmlService
                 . "      " . $this->addLine($rowSpecimen['Datum'])
                 . "      " . $this->addLine($location)
                 . "      " . $this->addLine($rowSpecimen['Fundort'])
-                . "      " . $this->addLine($this->getStableIdentifier($rowSpecimen['specimen_ID']))
+                . "      " . $this->addLine($this->specimenService->getStableIdentifier($rowSpecimen['specimen_ID']))
                 . "      <a href=\"http://herbarium.univie.ac.at/database/detail.php?ID=" . $rowSpecimen['specimen_ID'] . "\">link</a>\n"
                 . "    ]]>\n"
                 . "  </description>\n"
@@ -77,15 +78,5 @@ class KmlService
         return htmlspecialchars($value, ENT_NOQUOTES) . "<br>\n";
     }
 
-    protected function getStableIdentifier(int $specimenID): string
-    {
-        $specimen = $this->specimenService->findAccessibleForPublic($specimenID);
-        if (!empty($specimen->getMainStableIdentifier()?->getIdentifier())) {
-            return $specimen->getMainStableIdentifier()->getIdentifier();
-        } else {
-            return $this->specimenService->constructStableIdentifier($specimen);
-        }
-
-    }
 
 }
