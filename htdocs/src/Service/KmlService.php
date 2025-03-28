@@ -2,8 +2,7 @@
 
 namespace App\Service;
 
-use PhpOffice\PhpSpreadsheet\Exception;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use App\Entity\Jacq\Herbarinput\Specimens;
 
 class KmlService
 {
@@ -21,49 +20,34 @@ class KmlService
         return $this->head . $text. $this->foot;
     }
 
-    public function prepareRow(array $rowSpecimen)
+    public function prepareRow(Specimens $specimen)
     {
-        $specimen = $this->specimenService->find($rowSpecimen['specimen_ID']);
-        $sammler = $this->specimenService->getCollectionText($specimen);
+        $collectorText = $this->specimenService->getCollectionText($specimen);
 
-        $location = $rowSpecimen['nation_engl'];
-        if (strlen(trim((string)$rowSpecimen['provinz']))>0) {
-            $location .= " / " . trim((string)$rowSpecimen['provinz']);
+        $location = $specimen->getCountry()->getNameEng();
+        if (!empty($specimen->getProvince()?->getName())) {
+            $location .= " / " . trim($specimen->getProvince()->getName());
         }
-        if ($rowSpecimen['Coord_S'] > 0 || $rowSpecimen['S_Min'] > 0 || $rowSpecimen['S_Sec'] > 0) {
-            $lat = -($rowSpecimen['Coord_S'] + $rowSpecimen['S_Min'] / 60 + $rowSpecimen['S_Sec'] / 3600);
-        } else if ($rowSpecimen['Coord_N'] > 0 || $rowSpecimen['N_Min'] > 0 || $rowSpecimen['N_Sec'] > 0) {
-            $lat = $rowSpecimen['Coord_N'] + $rowSpecimen['N_Min'] / 60 + $rowSpecimen['N_Sec'] / 3600;
-        } else {
-            $lat = 0;
-        }
-        if ($rowSpecimen['Coord_W'] > 0 || $rowSpecimen['W_Min'] > 0 || $rowSpecimen['W_Sec'] > 0) {
-            $lon = -($rowSpecimen['Coord_W'] + $rowSpecimen['W_Min'] / 60 + $rowSpecimen['W_Sec'] / 3600);
-        } else if ($rowSpecimen['Coord_E'] > 0 || $rowSpecimen['E_Min'] > 0 || $rowSpecimen['E_Sec'] > 0) {
-            $lon = $rowSpecimen['Coord_E'] + $rowSpecimen['E_Min'] / 60 + $rowSpecimen['E_Sec'] / 3600;
-        } else {
-            $lon = 0;
-        }
-        if ($lat!=0 || $lon!=0) {
-            $location .= " / " . round($lat, 2) . "° / " . round($lon, 2) . "°";
+        if ($specimen->getLatitude() !== null && $specimen->getLongitude() !== null) {
+            $location .= " / " . round($specimen->getLatitude(), 2) . "° / " . round($specimen->getLongitude(), 2) . "°";
         }
 
-        if ($lat || $lon) {
+        if ($specimen->getLatitude() !== null && $specimen->getLongitude() !== null) {
            return "<Placemark>\n"
-                . "  <name>" . htmlspecialchars($this->typusService->taxonWithHybrids($rowSpecimen), ENT_NOQUOTES) . "</name>\n"
+                . "  <name>" . htmlspecialchars($this->typusService->taxonNameWithHybrids($specimen->getSpecies(), true), ENT_NOQUOTES) . "</name>\n"
                 . "  <description>\n"
                 . "    <![CDATA[\n"
-                . "      " . $this->addLine($rowSpecimen['collection'] . " " . $rowSpecimen['HerbNummer'] . " [dbID " . $rowSpecimen['specimen_ID'] . "]")
-                . "      " . $this->addLine($sammler)
-                . "      " . $this->addLine($rowSpecimen['Datum'])
+                . "      " . $this->addLine($specimen->getHerbCollection()->getName() . " " . $specimen->getHerbNumber() . " [dbID " . $specimen->getId() . "]")
+                . "      " . $this->addLine($collectorText)
+                . "      " . $this->addLine($specimen->getDate())
                 . "      " . $this->addLine($location)
-                . "      " . $this->addLine($rowSpecimen['Fundort'])
-                . "      " . $this->addLine($this->specimenService->getStableIdentifier($rowSpecimen['specimen_ID']))
-                . "      <a href=\"http://herbarium.univie.ac.at/database/detail.php?ID=" . $rowSpecimen['specimen_ID'] . "\">link</a>\n"
+                . "      " . $this->addLine($specimen->getLocality())
+                . "      " . $this->addLine($this->specimenService->getStableIdentifier($specimen))
+                . "      <a href=\"".$this->specimenService->getStableIdentifier($specimen). "\">link</a>\n"
                 . "    ]]>\n"
                 . "  </description>\n"
                 . "  <Point>\n"
-                . "    <coordinates>$lon,$lat</coordinates>\n"
+                . "    <coordinates>".$specimen->getLongitude().','.$specimen->getLatitude()."</coordinates>\n"
                 . "  </Point>\n"
                 . "</Placemark>\n";
         }

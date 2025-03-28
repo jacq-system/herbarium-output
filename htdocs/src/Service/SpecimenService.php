@@ -401,7 +401,7 @@ readonly class SpecimenService extends BaseService
         if (!empty($specimen->getMainStableIdentifier()?->getIdentifier())) {
             return $specimen->getMainStableIdentifier()->getIdentifier();
         } else {
-            return $this->specimenService->constructStableIdentifier($specimen);
+            return $this->constructStableIdentifier($specimen);
         }
 
     }
