@@ -150,8 +150,6 @@ class SearchFormFacade
             ->setParameter('institution', $code);
     }
 
-// TODO table ts2 ommited from original query,  why rejoin the same table for (?probably) same query
-
     /**
      * simplified. Original code searched also in collectorNr for example. Let's use just trim the institution code and do simple fulltext
      */
