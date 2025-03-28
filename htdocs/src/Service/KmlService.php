@@ -24,7 +24,7 @@ class KmlService
     {
         $collectorText = $this->specimenService->getCollectionText($specimen);
 
-        $location = $specimen->getCountry()->getNameEng();
+        $location = $specimen->getCountry()?->getNameEng();
         if (!empty($specimen->getProvince()?->getName())) {
             $location .= " / " . trim($specimen->getProvince()->getName());
         }

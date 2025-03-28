@@ -13,7 +13,6 @@ use App\Service\SearchFormSessionService;
 use App\Service\SpecimenService;
 use App\Service\TypusService;
 use Doctrine\Common\Collections\Order;
-use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
@@ -23,7 +22,7 @@ class SearchFormFacade
     public const int PAGINATION_RANGE = 3;
     protected QueryBuilder $queryBuilder;
 
-    public function __construct(protected readonly EntityManagerInterface $entityManager, protected readonly InstitutionService $institutionService, protected readonly SearchFormSessionService $searchFormSessionService, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService, protected readonly KmlService $kmlService, protected readonly GeoService $geoService)
+    public function __construct(protected readonly EntityManagerInterface $entityManager, protected readonly InstitutionService $institutionService, protected  SearchFormSessionService $searchFormSessionService, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService, protected readonly KmlService $kmlService, protected readonly GeoService $geoService)
     {
     }
 
@@ -31,15 +30,15 @@ class SearchFormFacade
     {
         $this->buildQuery();
 
-        $recordsPerPage = $this->searchFormSessionService->getSetting('recordsPerPage', SearchFormController::RECORDS_PER_PAGE[0]);
-        $page = $this->searchFormSessionService->getSetting('page', 1);
+        $recordsPerPage = (int) $this->searchFormSessionService->getSetting('recordsPerPage', SearchFormController::RECORDS_PER_PAGE[0]);
+        $page = (int) $this->searchFormSessionService->getSetting('page', 3);
         $offset = ($page - 1) * $recordsPerPage;
 
         $sort = $this->searchFormSessionService->getSetting('sort');
 
         $this->queryBuilder
-            ->setFirstResult((int)$offset)
-            ->setMaxResults((int)$recordsPerPage);
+            ->setFirstResult($offset)
+            ->setMaxResults($recordsPerPage);
         return $this->queryBuilder->getQuery()->getResult();
     }
 
@@ -385,8 +384,8 @@ class SearchFormFacade
     public function providePaginationInfo(): array
     {
         $totalRecordCount = $this->countResults();
-        $recordsPerPage = $this->searchFormSessionService->getSetting('recordsPerPage', SearchFormController::RECORDS_PER_PAGE[0]);
-        $currentPage = $this->searchFormSessionService->getSetting('page', 1);
+        $recordsPerPage = (int) $this->searchFormSessionService->getSetting('recordsPerPage', SearchFormController::RECORDS_PER_PAGE[0]);
+        $currentPage = (int) $this->searchFormSessionService->getSetting('page', 1);
 
         $totalPages = ceil($totalRecordCount / $recordsPerPage);
 

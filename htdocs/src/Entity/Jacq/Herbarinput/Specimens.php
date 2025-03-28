@@ -140,7 +140,7 @@ class Specimens
 
     #[ORM\ManyToOne(targetEntity: Series::class)]
     #[ORM\JoinColumn(name: 'seriesID', referencedColumnName: 'seriesID')]
-    private ?Series $series;
+    private ?Series $series = null;
 
     #[ORM\ManyToOne(targetEntity: Collector::class)]
     #[ORM\JoinColumn(name: 'SammlerID', referencedColumnName: 'SammlerID')]
