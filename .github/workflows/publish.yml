@@ -71,6 +71,7 @@ jobs:
                 run: php bin/console assets:install public --symlink --relative
 
             -   name: Warm-up cache
+                if: github.ref == 'refs/heads/main'
                 working-directory: ./htdocs
                 run: php bin/console cache:warmup --env=prod
 

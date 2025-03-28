@@ -178,8 +178,8 @@ class SpecimenExtension extends AbstractExtension
             if ($switch) {
                 $text .= ". ";
             }
-            if (strlen(trim($specimen->getLocality())) > 200) {
-                $text .= substr(trim($specimen->getLocality()), 0, 200) . "...";
+            if (mb_strlen(trim($specimen->getLocality())) > 200) {
+                $text .= mb_substr(trim($specimen->getLocality()), 0, 200) . "...";
             } else {
                 $text .= trim($specimen->getLocality());
             }
