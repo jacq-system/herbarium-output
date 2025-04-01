@@ -76,6 +76,7 @@ class SearchFormController extends AbstractController
                 break;
             case "recordsPerPage":
                 $this->sessionService->setSetting('recordsPerPage', $value);
+                $this->sessionService->setSetting('page', 1);
                 break;
             case "sort":
                 $this->sessionService->setSetting('sort', $value);
