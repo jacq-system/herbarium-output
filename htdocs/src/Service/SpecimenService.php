@@ -257,10 +257,12 @@ readonly class SpecimenService extends BaseService
     public function getCollectionText(Specimens $specimen): string
     {
         $text = $specimen->getCollector()?->getName();
-        if (strstr((string)$specimen->getCollector2()?->getName(), "&") || strstr((string)$specimen->getCollector2()?->getName(), "et al.")) {
-            $text .= " et al.";
-        } else if (!empty($specimen->getCollector2()?->getName())) {
-            $text .= " & " . $specimen->getCollector2()?->getName();
+        if (!empty($specimen->getCollector2())) {
+            if (strstr($specimen->getCollector2()->getName(), "&") || strstr($specimen->getCollector2()->getName(), "et al.")) {
+                $text .= " et al.";
+            } else {
+                $text .= " & " . $specimen->getCollector2()->getName();
+            }
         }
 
         if (!empty($specimen->getSeriesNumber())) {

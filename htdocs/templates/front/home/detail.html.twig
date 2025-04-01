@@ -25,7 +25,21 @@
                         <div class="col s12 m3">
                             <h6>Stable identifiers</h6>
                         </div>
-                        <div class="col s12 m9"><h6>{{ specimen | pid | raw }}</h6></div>
+                        <div class="col s12 m9"><h6>
+                                {% set stableIdentifiers = specimen.getStableIdentifiers() %}
+                                {% if stableIdentifiers|length > 1 %}
+                                    {% for pid in stableIdentifiers %}
+                                        <b><a href="{{ pid.getIdentifier() }}" target="_blank">{{ pid.getIdentifier() }}</a></b>
+                                        ({{ pid.getTimestamp()|date('d-m-Y') }})<br>
+                                    {% endfor %}
+                                {% elseif stableIdentifiers|length == 1 %}
+                                    {% for pid in stableIdentifiers %}
+                                        <b><a href="{{ pid.getIdentifier() }}" target="_blank">{{ pid.getIdentifier() }}</a></b>
+                                    {% endfor %}
+                                {% else %}
+                                    {{ constructStableIdentifier(specimen) }}
+                                {% endif %}
+                                </h6></div>
                     </div>
                     <div class="row hide" id="dynamic-references" data-pid="{{ pid }}">
                         <div class="col s12 m3">
@@ -54,7 +68,7 @@
                         <div class="col s12 m9"><p><b></b></p>
                             <h6><b>{{ specimen.getSpecies() | taxonName | raw }}</b></h6>
 
-                            <a href="http://www.tropicos.org/NameSearch.aspx?name={{ specimen | tropicos }}&exact=true"
+                            <a href="http://www.tropicos.org/NameSearch.aspx?name={{ specimen.getSpecies().getGenus().getName()}} {{ specimen.getSpecies().getEpithetSpecies().getName() }}&exact=true"
                                title="Search in tropicos" target="_blank">
                                 <img alt="tropicos" src="{{ asset('recordIcons/tropicos.png') }}" width="16"
                                      height="16">
@@ -88,7 +102,7 @@
                                     </div>
                                     <div class="col s12 m9"><h6>{{ typus.getSpecies() | taxonName | raw }}</h6>
                                         <p>
-                                            {% for proto in typus.getSpecies() | protolog %}
+                                            {% for proto in getProtologs(typus.getSpecies()) %}
                                             {{ proto }}<br>
                                             {% endfor %}
                                         </p>
@@ -110,7 +124,10 @@
                         <div class="col s12 m3">
                             <h6>Collector</h6>
                         </div>
-                        <div class="col s12 m9"><h6>{{ specimen | collector | raw }} {{ specimen | collectorBotanyPilot | raw }}</h6>
+                        <div class="col s12 m9"><h6>
+                                {% include 'front/specimen/collector_links.html.twig' with { 'specimen': specimen } %}
+                                {% include 'front/specimen/collector_cetaf.html.twig' with { 'collector': specimen.getCollector() } %}
+                            </h6>
                         </div>
                     </div>
                     <div class="row">
