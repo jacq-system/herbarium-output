@@ -12,6 +12,7 @@ use App\Service\SpecimenService;
 use PhpOffice\PhpSpreadsheet\Writer\Csv;
 use PhpOffice\PhpSpreadsheet\Writer\Ods;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -29,13 +30,14 @@ class SearchFormController extends AbstractController
     //TODO the name of taxon is not part of the query now, hard to sort
     public const array SORT = ["taxon" => '', 'collector' => 's.collector'];
 
-    public function __construct(protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly ImageService $imageService, protected readonly SpecimenService $specimenService, protected readonly ExcelService $excelService)
+    public function __construct(protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly ImageService $imageService, protected readonly SpecimenService $specimenService, protected readonly ExcelService $excelService, protected LoggerInterface $logger)
     {
     }
 
     #[Route('/database', name: 'app_front_database')]
     public function database(Request $request, #[MapQueryParameter] bool $reset = false): Response
     {
+        $this->sessionService->setSetting('page', 1);
         if ($reset) {
             $this->sessionService->reset();
             return $this->redirectToRoute('app_front_database');
@@ -207,7 +209,10 @@ class SearchFormController extends AbstractController
     public function detail(int $specimenId): Response
     {
         $specimen = $this->specimenService->findAccessibleForPublic($specimenId);
-
+        $this->logger->info('Specimen [{id},{institution}] detail shown.', [
+            'id' => $specimen->getId(),
+            'institution' => $specimen->getHerbCollection()->getInstitution()->getAbbreviation()
+        ]);
         return $this->render('front/home/detail.html.twig', [
             'specimen' => $specimen,
             'pid' => $specimen->getMainStableIdentifier()?->getIdentifier()
