@@ -2,9 +2,10 @@
 
 namespace App\Entity\Jacq\Herbarinput;
 
+use App\Repository\Herbarinput\CollectorRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity()]
+#[ORM\Entity(repositoryClass: CollectorRepository::class)]
 #[ORM\Table(name: 'tbl_collector', schema: 'herbarinput')]
 class Collector
 {
@@ -27,6 +28,9 @@ class Collector
 
     #[ORM\Column(name: 'ORCID')]
     private ?string $orcidId = null;
+
+    #[ORM\Column(name: 'Bloodhound_ID')]
+    private ?string $bloodHoundId = null;
 
     public function getId(): ?int
     {
@@ -58,6 +62,9 @@ class Collector
         return $this->orcidId;
     }
 
-
+    public function getBloodHoundId(): ?string
+    {
+        return $this->bloodHoundId;
+    }
 
 }

@@ -6,6 +6,7 @@ use App\Entity\Jacq\Herbarinput\ImageDefinition;
 use App\Entity\Jacq\Herbarinput\Specimens;
 use App\Facade\Rest\IiifFacade;
 use App\Service\ImageService;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Twig\Extension\AbstractExtension;
@@ -13,7 +14,7 @@ use Twig\TwigFilter;
 
 class SpecimenIframeExtension extends AbstractExtension
 {
-    public function __construct(protected readonly RouterInterface $router, protected readonly IIIFFacade $iiifFacade, protected readonly ImageService $imageService)
+    public function __construct(protected readonly RouterInterface $router, protected readonly IIIFFacade $iiifFacade, protected readonly ImageService $imageService, protected LoggerInterface $logger)
     {
     }
 
@@ -33,9 +34,6 @@ class SpecimenIframeExtension extends AbstractExtension
         $imageDefinition = $specimen->getHerbCollection()->getInstitution()->getImageDefinition();
         $phaidra = false;
         if ($sourceId === 1) {
-            // for now, special treatment for phaidra is needed when wu has images
-            $output['phaidraUrl'] = "";
-
             // ask phaidra server if it has the desired picture. If not, use old method
             $picname = sprintf("WU%0" . $imageDefinition->getHerbNummerNrDigits() . ".0f", str_replace('-', '', $specimen->getHerbNumber()));
             $ch = curl_init("https://app05a.phaidra.org/viewer/" . $picname);
@@ -68,8 +66,10 @@ class SpecimenIframeExtension extends AbstractExtension
                 if (!empty($transfer['error'])) {
                     $djatokaError = "Picture server list error. Falling back to original image name";
                     $djatokaOptions[] = 'filename=' . rawurlencode(basename($picdetails['filename'])) . '&sid=' . $specimen->getId();
-                    //TODO logger
-                    //                    error_log($transfer['error']);
+                    $this->logger->info('Specimen {id} had transfer error {e}.', [
+                        'id' => $specimen->getId(),
+                        'e'=>$transfer['error']
+                    ]);
                 } else {
                     if (count($transfer['pics'] ?? array()) > 0) {
                         foreach ($transfer['pics'] as $v) {

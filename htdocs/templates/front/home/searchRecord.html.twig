@@ -8,12 +8,12 @@
             {% else %}
                 {% if (specimen.getHerbCollection().getInstitution().getImageDefinition() is not null and specimen.getHerbCollection().getInstitution().getImageDefinition().isIiifCapable()) or (specimen.getPhaidraImages() is not empty) %}
 
-                    <a href='{{ specimen.getHerbCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ specimen|manifestUrl }}'
+                    <a href='{{ specimen.getHerbCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ getManifestUrl(specimen) }}'
                        target='imgBrowser'>
                         <img height='15' width="15" alt=''
                              src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}">
                     </a><br>
-                    <a href='{{ specimen.getHerbCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ specimen|manifestUrl }}'
+                    <a href='{{ specimen.getHerbCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ getManifestUrl(specimen) }}'
                        target='_blank'>
                         <img height='15' width='15' alt='' src='{{ asset('recordIcons') }}/logo-iiif.png'>
                     </a>
@@ -26,13 +26,32 @@
         {% endif %}
     </td>
     <td>
-        <a href='{{ path('app_front_specimenDetail', {'specimenId': specimen.getId() }) }}'>{{ specimen | scientificName }}</a>
+        <a href='{{ path('app_front_specimenDetail', {'specimenId': specimen.getId() }) }}'>{{ getScientificName(specimen) }}</a>
         {{ specimen.getSpecies() | taxonAuthority | raw }}
     </td>
-    <td>{{ specimen | collector | raw }}</td>
+    <td>{% include 'front/specimen/collector_links.html.twig' with { 'specimen': specimen } %}</td>
     <td>{{ specimen.getDate() }}</td>
     <td>{{ specimen | locality | raw }}</td>
-    <td>{{ specimen | typus | raw }}</td>
-    {{ specimen | institution | raw}}
-    <td>{{ specimen | gps | raw}}</td>
+    <td>{% set first = true %}
+        {% for typus in specimen.getTypus() %}
+            {% if not first %}
+                <br>
+            {% endif %}
+            <span class="red-text"><b>{{ typus.getRank().getLatinName() }}</b></span>
+            {% set first = false %}
+        {% endfor %}</td>
+    {% if specimen.getHerbCollection().getInstitution().getId() == '29' %}
+        <td title="{{ specimen.getHerbCollection().getName() }}">
+            {{ specimen.getHerbNumber() }}
+        </td>
+    {% else %}
+        <td title="{{ specimen.getHerbCollection().getName() }}">
+            {{ specimen.getHerbCollection().getCollShortPrj()|upper }} {{ specimen.getHerbNumber() }}
+        </td>
+    {% endif %}
+    <td>{% if specimen.getLongitude() is not null or specimen.getLatitude() is not null %}
+            <img class="gps" width="15" height="15" src="/logo/institutions/OpenStreetMap.png"
+                 data-gps="{{ specimen.getCoords() }}">
+        {% endif %}
+    </td>
 </tr>
