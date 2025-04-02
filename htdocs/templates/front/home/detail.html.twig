@@ -68,7 +68,7 @@
                         <div class="col s12 m9"><p><b></b></p>
                             <h6><b>{{ specimen.getSpecies() | taxonName | raw }}</b></h6>
 
-                            <a href="http://www.tropicos.org/NameSearch.aspx?name={{ specimen.getSpecies().getGenus().getName()}} {{ specimen.getSpecies().getEpithetSpecies().getName() }}&exact=true"
+                            <a href="http://www.tropicos.org/NameSearch.aspx?name={{ specimen.getSpecies().getGenus().getName()}} {{ specimen.getSpecies().getEpithetSpecies() is not null ? specimen.getSpecies().getEpithetSpecies().getName() }}&exact=true"
                                title="Search in tropicos" target="_blank">
                                 <img alt="tropicos" src="{{ asset('recordIcons/tropicos.png') }}" width="16"
                                      height="16">

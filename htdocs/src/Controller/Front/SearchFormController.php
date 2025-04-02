@@ -205,7 +205,7 @@ class SearchFormController extends AbstractController
         }
     }
 
-    #[Route('/detail/{specimenId}', name: 'app_front_specimenDetail', methods: ['GET'])]
+    #[Route('/detail/{specimenId}', name: 'app_front_specimenDetail', requirements: ['specimenId' => '\d+'], methods: ['GET'])]
     public function detail(int $specimenId): Response
     {
         $specimen = $this->specimenService->findAccessibleForPublic($specimenId);
