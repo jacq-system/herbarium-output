@@ -30,7 +30,7 @@ class SearchFormController extends AbstractController
     //TODO the name of taxon is not part of the query now, hard to sort
     public const array SORT = ["taxon" => '', 'collector' => 's.collector'];
 
-    public function __construct(protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly ImageService $imageService, protected readonly SpecimenService $specimenService, protected readonly ExcelService $excelService, protected LoggerInterface $logger)
+    public function __construct(protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly ImageService $imageService, protected readonly SpecimenService $specimenService, protected readonly ExcelService $excelService, protected LoggerInterface $statisticsLogger)
     {
     }
 
@@ -209,7 +209,7 @@ class SearchFormController extends AbstractController
     public function detail(int $specimenId): Response
     {
         $specimen = $this->specimenService->findAccessibleForPublic($specimenId);
-        $this->logger->info('Specimen [{id},{institution}] detail shown.', [
+        $this->statisticsLogger->info('Specimen [{id},{institution}] detail shown.', [
             'id' => $specimen->getId(),
             'institution' => $specimen->getHerbCollection()->getInstitution()->getAbbreviation()
         ]);
