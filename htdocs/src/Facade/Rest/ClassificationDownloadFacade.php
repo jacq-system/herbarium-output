@@ -3,20 +3,19 @@
 namespace App\Facade\Rest;
 
 
+use App\Entity\Jacq\Herbarinput\Literature;
+use App\Entity\Jacq\Herbarinput\Synonymy;
+use App\Repository\Herbarinput\TaxonRankRepository;
+use App\Service\TaxonService;
+use App\Service\UuidConfiguration;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Routing\RouterInterface;
 
 class ClassificationDownloadFacade
 {
 
-    /**
-     * hide scientific name authors in output file
-     */
     protected bool $hideScientificNameAuthors = false;
-
-    /**
-     * header-line, pre-filled with fixed titles
-     */
     protected array $outputHeader = array(
         "reference_guid",
         "reference",
@@ -28,18 +27,9 @@ class ClassificationDownloadFacade
         "parent_scientific_name_id",
         "accepted_scientific_name_id",
         "taxonomic_status");
-
-    /**
-     * fill with amount of prefixed headers
-     */
-    protected int $outputHeaderPrefixLen;
-
-    /**
-     * body lines
-     */
     private array $outputBody = [];
 
-    public function __construct(protected EntityManagerInterface $entityManager, protected RouterInterface $router)
+    public function __construct(protected EntityManagerInterface $entityManager, protected RouterInterface $router, protected UuidConfiguration $uuidConfiguration, protected TaxonRankRepository $taxonRankRepository, protected readonly TaxonService $taxonService)
     {
     }
 
@@ -55,9 +45,39 @@ class ClassificationDownloadFacade
     public function getDownload(string $referenceType, int $referenceId, ?int $scientificNameId = 0, ?int $hideScientificNameAuthors = null): array
     {
         if (empty($referenceType) || empty($referenceId)) {
-            return array();
+            return [];
         }
 
+        $this->detectAuthorsVisibility($referenceId, $hideScientificNameAuthors);
+        foreach ($this->taxonRankRepository->getRankHierarchies() as $rank) {
+            $this->outputHeader[$this->headerLength() - 1 + $rank['hierarchy']] = $rank['name'];
+        }
+
+        $queryBuilder = $this->getBaseQueryBuilder()
+            ->andWhere('a.actualTaxonId IS NULL')
+            ->setParameter('reference', $referenceId)
+            ->setParameter('scientificNameId', $scientificNameId);
+
+        // check if a certain scientific name id is specified & load the fitting synonymy entry
+        if ($scientificNameId > 0) {
+            $queryBuilder = $queryBuilder
+                ->join('a.species', 'sp')
+                ->andWhere('sp.id = :scientificNameId');
+        } // if not, fetch all top-level entries for this reference
+        else {
+            $queryBuilder = $queryBuilder->leftJoin('a.classification', 'clas')->andWhere('class.id IS NOT NULL');
+        }
+
+        // cycle through top-level elements and continue exporting their children
+        foreach ($queryBuilder->getQuery()->getResult() as $dbRowTaxSynonymy) {
+            $this->exportClassification(array(), $dbRowTaxSynonymy);
+        }
+
+        return array('header' => $this->outputHeader, 'body' => $this->outputBody);
+    }
+
+    protected function detectAuthorsVisibility(int $referenceId, ?int $hideScientificNameAuthors = null): void
+    {
         switch ($hideScientificNameAuthors) {
             case 1:
                 $this->hideScientificNameAuthors = true;
@@ -67,74 +87,21 @@ class ClassificationDownloadFacade
                 break;
             default:
                 // if hide scientific name authors is null, use preference from literature entry
-                $this->hideScientificNameAuthors = $this->shouldHideScientificNameAuthors($referenceId);
+                $this->hideScientificNameAuthors = $this->entityManager->getRepository(Literature::class)->find($referenceId)->isHideScientificNameAuthors();
                 break;
         }
-
-        $sql = "SELECT tsy.source_citationID, tsy.taxonID, tsy.acc_taxon_ID,
-                   tr.rank_hierarchy,
-                   tc.parent_taxonID,
-                   `herbar_view`.GetProtolog(l.citationID) AS citation
-            FROM tbl_tax_synonymy tsy
-             LEFT JOIN tbl_tax_species ts ON ts.taxonID = tsy.taxonID
-             LEFT JOIN tbl_tax_rank tr ON tr.tax_rankID = ts.tax_rankID
-             LEFT JOIN tbl_lit l ON l.citationID = tsy.source_citationID
-             LEFT JOIN tbl_tax_classification tc ON tc.tax_syn_ID = tsy.tax_syn_ID ";
-        // check if a certain scientific name id is specified & load the fitting synonymy entry
-        if ($scientificNameId > 0) {
-            $sql .= " WHERE tsy.source_citationID = :referenceId
-                                                          AND tsy.acc_taxon_ID IS NULL
-                                                          AND tsy.taxonID = :scientificNameId";
-        } // if not, fetch all top-level entries for this reference
-        else {
-            $sql .= " WHERE tsy.source_citationID = :referenceId
-                                                        AND tsy.acc_taxon_ID IS NULL
-                                                        AND tc.classification_id IS NULL";
-        }
-
-        $dbRowsTaxSynonymy = $this->entityManager->getConnection()->executeQuery($sql, ['referenceId' => $referenceId, 'scientificNameId' => $scientificNameId])->fetchAllAssociative();
-
-        $this->outputHeaderPrefixLen = count($this->outputHeader);
-
-        // fetch all ranks, sorted by hierarchy for creating the headings of the download
-        $tax_ranks = $this->getRankHierarchies();
-        foreach ($tax_ranks as $rank) {
-            $this->outputHeader[$this->outputHeaderPrefixLen - 1 + $rank['hierarchy']] = $rank['rank'];
-        }
-
-        // cycle through top-level elements and continue exporting their children
-        foreach ($dbRowsTaxSynonymy as $dbRowTaxSynonymy) {
-            $this->exportClassification(array(), $dbRowTaxSynonymy);
-        }
-
-        return array('header' => $this->outputHeader, 'body' => $this->outputBody);
     }
 
-    /**
-     * what tells tbl_lit about hiding scientific name authors
-     *
-     * @param int $referenceId citationID
-     * @return int hide (1) or show (0) author name
-     */
-    protected function shouldHideScientificNameAuthors(int $referenceId): bool
+    protected function headerLength(): int
     {
-        $sql = "SELECT hideScientificNameAuthors
-                             FROM tbl_lit
-                             WHERE citationID = :referenceId";
-        return (bool) $this->entityManager->getConnection()->executeQuery($sql, ['referenceID' => $referenceId])->fetchOne();
+        return count($this->outputHeader);
     }
 
-    /**
-     * get all hierarchy names and numbers
-     *
-     * @return array list of all tax_rank hierarchies ['rank'] and numbers ['hierarchy']
-     */
-    protected function getRankHierarchies(): array
+    protected function getBaseQueryBuilder(): QueryBuilder
     {
-        $sql = "SELECT rank, rank_hierarchy AS hierarchy
-                             FROM tbl_tax_rank
-                             ORDER BY rank_hierarchy ASC";
-        return $this->entityManager->getConnection()->executeQuery($sql)->fetchAllAssociative();
+        return $this->entityManager->getRepository(Synonymy::class)->createQueryBuilder('a')
+            ->join('a.literature', 'lit')
+            ->andWhere('lit.id = :reference');
     }
 
     /**
@@ -143,88 +110,54 @@ class ClassificationDownloadFacade
      * @param array $parentTaxSynonymies an array of db-rows of all parent tax-synonymy entries
      * @param array $taxSynonymy db-row of the currently active tax-synonym entry
      */
-    protected function exportClassification($parentTaxSynonymies, $taxSynonymy)
+    protected function exportClassification($parentTaxSynonymies, Synonymy $taxSynonymy)
     {
 
-        $line[0] = 'TODO'; // TODO $this->getUuidUrl('citation', $taxSynonymy['source_citationID']);
-        $line[1] = $taxSynonymy['citation'];
-        $line[2] = 'TODO'; // TODO $this->settings['classifications_license'];  licence is depending on some app configuration? should be stored with data as it is fixed..?
+        $line[0] = $this->getUuidUrl('citation', $taxSynonymy->getLiterature()->getId());
+        $line[1] = $this->entityManager->getRepository(Literature::class)->getProtolog($taxSynonymy->getLiterature()->getId());
+        $line[2] = 'CC-BY-SA'; // TODO in original $this->settings['classifications_license'];  licence is depending on some app configuration? should be stored with data as it is fixed..?
         $line[3] = date("Y-m-d H:i:s");
         $line[4] = '';
-        $line[5] = 'TODO'; // TODO $this->getUuidUrl('scientific_name', $taxSynonymy['taxonID']);
-        $line[6] = $taxSynonymy['taxonID'];
-        $line[7] = $taxSynonymy['parent_taxonID'];
-        $line[8] = $taxSynonymy['acc_taxon_ID'];
-        $line[9] = ($taxSynonymy['acc_taxon_ID']) ? 'synonym' : 'accepted';
+        $line[5] = $this->getUuidUrl('scientific_name', $taxSynonymy->getSpecies()->getId());
+        $line[6] = $taxSynonymy->getSpecies()->getId();
+        $line[7] = $taxSynonymy->getClassification()->getParentTaxonId();
+        $line[8] = $taxSynonymy->getActualTaxonId();
+        $line[9] = ($taxSynonymy->getActualTaxonId()) ? 'synonym' : 'accepted';
 
         // add parent information
         foreach ($parentTaxSynonymies as $parentTaxSynonymy) {
-            $line[$this->outputHeaderPrefixLen + $parentTaxSynonymy['rank_hierarchy'] - 1] = $this->getScientificName($parentTaxSynonymy['taxonID']);
+            /** @var Synonymy $parentTaxSynonymy */
+            $line[$this->headerLength() + $parentTaxSynonymy->getSpecies()->getRank()->getHierarchy() - 1] = $this->taxonService->getScientificName($parentTaxSynonymy->getSpecies()->getId(), $this->hideScientificNameAuthors);
         }
 
         // add the currently active information
-        $line[$this->outputHeaderPrefixLen + $taxSynonymy['rank_hierarchy'] - 1] = $this->getScientificName($taxSynonymy['taxonID']);
+        $line[$this->headerLength() + $taxSynonymy->getSpecies()->getRank()->getHierarchy() - 1] = $this->taxonService->getScientificName($taxSynonymy->getSpecies()->getId(), $this->hideScientificNameAuthors);
 
         $this->outputBody[] = $line;
 
+        $queryBuilder = $this->getBaseQueryBuilder()
+            ->andWhere('a.actualTaxonId = :taxon')
+            ->setParameter('reference', $taxSynonymy->getLiterature()->getId())
+            ->setParameter('taxon', $taxSynonymy->getActualTaxonId());
+
         // fetch all synonyms
-        $sql = "SELECT tsy.source_citationID, tsy.taxonID, tsy.acc_taxon_ID,
-                                                    tr.rank_hierarchy,
-                                                    tc.parent_taxonID,
-                                                    `herbar_view`.GetProtolog(l.citationID) AS citation
-                                             FROM tbl_tax_synonymy tsy
-                                              LEFT JOIN tbl_tax_species ts ON ts.taxonID = tsy.taxonID
-                                              LEFT JOIN tbl_tax_rank tr ON tr.tax_rankID = ts.tax_rankID
-                                              LEFT JOIN tbl_lit l ON l.citationID = tsy.source_citationID
-                                              LEFT JOIN tbl_tax_classification tc ON tc.tax_syn_ID = tsy.tax_syn_ID
-                                             WHERE tsy.source_citationID = :source_citationID
-                                              AND tsy.acc_taxon_ID = :taxonID";
-        $taxSynonymySynonyms = $this->entityManager->getConnection()->executeQuery($sql, ['source_citationID' => $taxSynonymy['source_citationID'], 'taxonID' =>$taxSynonymy['taxonID'] ])->fetchAllAssociative();
-        foreach ($taxSynonymySynonyms as $taxSynonymySynonym) {
+        foreach ($queryBuilder->getQuery()->getResult() as $taxSynonymySynonym) {
             $this->exportClassification($parentTaxSynonymies, $taxSynonymySynonym);
         }
 
         // fetch all children
         $parentTaxSynonymies[] = $taxSynonymy;
-        $sql = "SELECT tsy.source_citationID, tsy.taxonID, tsy.acc_taxon_ID,
-                                                    tr.rank_hierarchy,
-                                                    tc.parent_taxonID,
-                                                    `herbar_view`.GetProtolog(l.citationID) AS citation
-                                             FROM tbl_tax_synonymy tsy
-                                              LEFT JOIN tbl_tax_species ts ON ts.taxonID = tsy.taxonID
-                                              LEFT JOIN tbl_tax_rank tr ON tr.tax_rankID = ts.tax_rankID
-                                              LEFT JOIN tbl_lit l ON l.citationID = tsy.source_citationID
-                                              LEFT JOIN tbl_tax_classification tc ON tc.tax_syn_ID = tsy.tax_syn_ID
-                                             WHERE tsy.source_citationID = :source_citationID
-                                              AND tc.parent_taxonID = :taxonID
-                                             ORDER BY tc.order ASC";
-        $taxSynonymyChildren = $this->entityManager->getConnection()->executeQuery($sql, ['source_citationID' => $taxSynonymy['source_citationID'], 'taxonID' =>$taxSynonymy['taxonID'] ])->fetchAllAssociative();
+        $queryBuilder = $this->getBaseQueryBuilder()
+            ->join('a.classification', 'clas')
+            ->andWhere('clas.parentTaxonId = :taxon')
+            ->setParameter('reference', $taxSynonymy->getLiterature()->getId())
+            ->setParameter('taxon', $taxSynonymy->getActualTaxonId())
+            ->orderBy('clas.sort', 'ASC');
 
-        foreach ($taxSynonymyChildren as $taxSynonymyChild) {
+        foreach ($queryBuilder->getQuery()->getResult() as $taxSynonymyChild) {
             $this->exportClassification($parentTaxSynonymies, $taxSynonymyChild);
         }
 
-    }
-
-    /**
-     * get scientific name from database
-     */
-    protected function getScientificName(int $taxonID): ?string
-    {
-        $sql = "CALL herbar_view._buildScientificNameComponents(:taxonID, @scientificName, @author)";
-        $this->entityManager->getConnection()->executeQuery($sql, ['taxonID' => $taxonID]);
-        $name = $this->entityManager->getConnection()->executeQuery("SELECT @scientificName, @author")->fetchAssociative();
-
-        if ($name) {
-            $scientificName = $name['@scientificName'];
-            if (!$this->hideScientificNameAuthors) {
-                $scientificName .= ' ' . $name['@author'];
-            }
-        } else {
-            return null;
-        }
-
-        return $scientificName;
     }
 
     /**
@@ -233,22 +166,24 @@ class ClassificationDownloadFacade
      * @param mixed $type type of uuid (1 or scientific_name, 2 or citation 3 or specimen)
      * @param int $id internal-id of uuid
      * @return string uuid-url returned from webservice
-     * TODO - this function is just copied for evidence and should be somehow rewritten,but I wasn't able to understood the logic of UUID in JACQ
+     * TODO - this architecture is not good
      */
-    private function getUuidUrl ($type, $id)
+    private function getUuidUrl($type, $id)
     {
-        $curl = curl_init($this->settings['jacq_input_services'] . "tags/uuid/$type/$id");
+        $curl = curl_init($this->uuidConfiguration->endpoint . "tags/uuid/$type/$id");
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array('APIKEY: ' . $this->settings['apikey']));
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('APIKEY: ' . $this->uuidConfiguration->secret));
         $curl_response = curl_exec($curl);
-        if ($curl_response === false) {
-            $result = '';
-        } else {
+        if ($curl_response !== false) {
             $json = json_decode($curl_response, true);
-            $result = $json['url'];
+            if (isset($json['url'])) {
+                curl_close($curl);
+                return $json['url'];
+            }
+
         }
         curl_close($curl);
-
-        return $result;
+        return '';
     }
+
 }

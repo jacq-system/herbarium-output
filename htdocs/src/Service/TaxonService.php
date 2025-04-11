@@ -125,4 +125,26 @@ readonly class TaxonService
         return $species->getFullName($html);
 
     }
+
+
+    /**
+     * get scientific name from database
+     */
+    public function getScientificName(int $taxonID, bool $hideScientificNameAuthors = false): ?string
+    {
+        $sql = "CALL herbar_view._buildScientificNameComponents(:taxonID, @scientificName, @author)";
+        $this->entityManager->getConnection()->executeQuery($sql, ['taxonID' => $taxonID]);
+        $name = $this->entityManager->getConnection()->executeQuery("SELECT @scientificName, @author")->fetchAssociative();
+
+        if ($name) {
+            $scientificName = $name['@scientificName'];
+            if (!$hideScientificNameAuthors) {
+                $scientificName .= ' ' . $name['@author'];
+            }
+        } else {
+            return null;
+        }
+
+        return $scientificName;
+    }
 }

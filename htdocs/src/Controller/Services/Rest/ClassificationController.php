@@ -32,7 +32,7 @@ class ClassificationController extends AbstractFOSRestController
                 description: 'Type of reference (citation, person, service, specimen, periodical)',
                 in: 'path',
                 required: true,
-                schema: new Schema(type: 'string'),
+                schema: new Schema(type: 'string',  enum: ['citation', 'person', 'service', 'specimen', 'periodical']),
                 example: 'citation'
             ),
             new PathParameter(
