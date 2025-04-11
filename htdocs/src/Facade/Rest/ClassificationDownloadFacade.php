@@ -27,6 +27,8 @@ class ClassificationDownloadFacade
         "parent_scientific_name_id",
         "accepted_scientific_name_id",
         "taxonomic_status");
+
+    protected array $rankKeys = [];
     private array $outputBody = [];
 
     public function __construct(protected EntityManagerInterface $entityManager, protected RouterInterface $router, protected UuidConfiguration $uuidConfiguration, protected TaxonRankRepository $taxonRankRepository, protected readonly TaxonService $taxonService)
@@ -49,9 +51,7 @@ class ClassificationDownloadFacade
         }
 
         $this->detectAuthorsVisibility($referenceId, $hideScientificNameAuthors);
-        foreach ($this->taxonRankRepository->getRankHierarchies() as $rank) {
-            $this->outputHeader[$this->headerLength() - 1 + $rank['hierarchy']] = $rank['name'];
-        }
+        $this->prepareHeader();
 
         $queryBuilder = $this->getBaseQueryBuilder()
             ->andWhere('a.actualTaxonId IS NULL')
@@ -92,9 +92,14 @@ class ClassificationDownloadFacade
         }
     }
 
-    protected function headerLength(): int
+    protected function prepareHeader(): void
     {
-        return count($this->outputHeader);
+        foreach ($this->taxonRankRepository->getRankHierarchies() as $rank) {
+            $this->rankKeys[$rank['hierarchy']] = count($this->outputHeader) - 1 + $rank['hierarchy'];
+        }
+        foreach ($this->taxonRankRepository->getRankHierarchies() as $rank) {
+            $this->outputHeader[$this->rankKeys[$rank['hierarchy']]] = $rank['name'];
+        }
     }
 
     protected function getBaseQueryBuilder(): QueryBuilder
@@ -121,18 +126,18 @@ class ClassificationDownloadFacade
         $line[5] = $this->getUuidUrl('scientific_name', $taxSynonymy->getSpecies()->getId());
         $line[6] = $taxSynonymy->getSpecies()->getId();
         $line[7] = $taxSynonymy->getClassification()->getParentTaxonId();
-        $line[8] = $taxSynonymy->getActualTaxonId();
+        $line[8] = $taxSynonymy->getActualTaxonId() ?? null;
         $line[9] = ($taxSynonymy->getActualTaxonId()) ? 'synonym' : 'accepted';
 
         // add parent information
         foreach ($parentTaxSynonymies as $parentTaxSynonymy) {
             /** @var Synonymy $parentTaxSynonymy */
-            $line[$this->headerLength() + $parentTaxSynonymy->getSpecies()->getRank()->getHierarchy() - 1] = $this->taxonService->getScientificName($parentTaxSynonymy->getSpecies()->getId(), $this->hideScientificNameAuthors);
+            $line[$this->rankKeys[$parentTaxSynonymy->getSpecies()->getRank()->getHierarchy()]] = $this->taxonService->getScientificName($parentTaxSynonymy->getSpecies()->getId(), $this->hideScientificNameAuthors);
         }
 
         // add the currently active information
-        $line[$this->headerLength() + $taxSynonymy->getSpecies()->getRank()->getHierarchy() - 1] = $this->taxonService->getScientificName($taxSynonymy->getSpecies()->getId(), $this->hideScientificNameAuthors);
-
+        $line[$this->rankKeys[$taxSynonymy->getSpecies()->getRank()->getHierarchy()]] = $this->taxonService->getScientificName($taxSynonymy->getSpecies()->getId(), $this->hideScientificNameAuthors);
+        ksort($line);
         $this->outputBody[] = $line;
 
         $queryBuilder = $this->getBaseQueryBuilder()
@@ -151,7 +156,7 @@ class ClassificationDownloadFacade
             ->leftJoin('a.classification', 'clas')
             ->andWhere('clas.parentTaxonId = :taxon')
             ->setParameter('reference', $taxSynonymy->getLiterature()->getId())
-            ->setParameter('taxon', $taxSynonymy->getActualTaxonId())
+            ->setParameter('taxon', $taxSynonymy->getSpecies()->getId())
             ->orderBy('clas.sort', 'ASC');
 
         foreach ($queryBuilder->getQuery()->getResult() as $taxSynonymyChild) {
