@@ -40,7 +40,7 @@ class ClassificationController extends AbstractFOSRestController
                 name: 'referenceID',
                 description: 'ID of reference',
                 in: 'path',
-                required: false, //TODO wrong concept - pathParameter must be required according to the OpenAPI/Swagger spec (https://github.com/OAI/OpenAPI-Specification/blob/main/versions/2.0.md#fixed-fields-7) -> a solution could be split into two routes (listAll, getByID)... Code works, but Swagger UI throws an error..
+                required: true,
                 schema: new Schema(type: 'integer', nullable: true),
                 example: 15
             )
@@ -61,20 +61,7 @@ class ClassificationController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(property: 'name', description: 'name of reference', type: 'string', example: 'Addisonia'),
-                                    new Property(property: 'id', description: 'ID of reference', type: 'integer', example: 15)
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -145,26 +132,7 @@ class ClassificationController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(property: 'referenceName', description: 'name of the reference', type: 'string', example: ''),
-                                    new Property(property: 'referenceId', description: 'ID of reference', type: 'integer', example: 15),
-                                    new Property(property: 'referenceType', description: 'Type of the reference', type: 'string', example: ''),
-                                    new Property(property: 'taxonID', description: 'the taxon-ID we asked for', type: 'integer', example: 15),
-                                    new Property(property: 'uuid', description: 'URL to UUID service', type: 'object', example: '{"href": "url to get the uuid"}'),
-                                    new Property(property: 'hasChildren', description: 'true if children of this entry exist', type: 'boolean', example: true),
-                                    new Property(property: 'hasType', description: ' true if Typi exist', type: 'boolean', example: false),
-                                    new Property(property: 'hasSpecimen', description: 'true if at least one specimen exists', type: 'boolean', example: false)
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -243,27 +211,7 @@ class ClassificationController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(property: 'taxonID', description: 'the taxon-ID we asked for', type: 'integer', example: 15),
-                                    new Property(property: 'uuid', description: 'URL to UUID service', type: 'object', example: '{"href": "url to get the uuid"}'),
-                                    new Property(property: 'referenceId', description: 'ID of reference', type: 'integer', example: 15),
-                                    new Property(property: 'referenceName', description: 'name of the reference', type: 'string', example: ''),
-                                    new Property(property: 'referenceType', description: 'Type of the reference', type: 'string', example: ''),
-                                    new Property(property: 'hasChildren', description: 'true if children of this entry exist', type: 'boolean', example: true),
-                                    new Property(property: 'hasType', description: ' true if Typi exist', type: 'boolean', example: false),
-                                    new Property(property: 'hasSpecimen', description: 'true if at least one specimen exists', type: 'boolean', example: false),
-                                    new Property(property: 'referenceInfo', description: '', type: 'object', example: '{"number": "classification number","order": "classification order","rank_abbr": "rank abbreviation","rank_hierarchy": "rank hierarchy","tax_syn_ID": "internal ID of synonym"}')
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -341,26 +289,7 @@ class ClassificationController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(property: 'taxonID', description: 'the taxon-ID we asked for', type: 'integer', example: 15),
-                                    new Property(property: 'uuid', description: 'URL to UUID service', type: 'object', example: '{"href": "url to get the uuid"}'),
-                                    new Property(property: 'referenceId', description: 'ID of reference', type: 'integer', example: 15),
-                                    new Property(property: 'referenceName', description: 'name of the reference', type: 'string', example: ''),
-                                    new Property(property: 'referenceType', description: 'Type of the reference', type: 'string', example: ''),
-                                    new Property(property: 'hasType', description: ' true if Typi exist', type: 'boolean', example: false),
-                                    new Property(property: 'hasSpecimen', description: 'true if at least one specimen exists', type: 'boolean', example: false),
-                                    new Property(property: 'referenceInfo', description: '', type: 'object', example: '{"type": "","cited": ""}')
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -430,26 +359,7 @@ class ClassificationController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(property: 'taxonID', description: 'the taxon-ID we asked for', type: 'integer', example: 15),
-                                    new Property(property: 'uuid', description: 'URL to UUID service', type: 'object', example: '{"href": "url to get the uuid"}'),
-                                    new Property(property: 'referenceId', description: 'ID of reference', type: 'integer', example: 15),
-                                    new Property(property: 'referenceName', description: 'name of the reference', type: 'string', example: ''),
-                                    new Property(property: 'referenceType', description: 'Type of the reference', type: 'string', example: ''),
-                                    new Property(property: 'hasType', description: ' true if Type exist', type: 'boolean', example: false),
-                                    new Property(property: 'hasSpecimen', description: 'true if at least one specimen exists', type: 'boolean', example: false),
-                                    new Property(property: 'referenceInfo', description: '', type: 'object', example: '{"number": "","order": ""}')
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -499,14 +409,7 @@ class ClassificationController extends AbstractFOSRestController
                         type: 'integer',
                         example: 2
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'integer',
-                            example: 2
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -562,28 +465,7 @@ class ClassificationController extends AbstractFOSRestController
                                 )
                             ]),
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(property: "nrAccTaxa", type: "integer", example: 492),
-                                    new Property(property: "nrSynonyms", type: "integer", example: 34),
-                                    new Property(
-                                        property: "ranks",
-                                        type: "array",
-                                        items: new Items(
-                                            properties: [
-                                                new Property(property: "rank", type: "string", example: "divisions"),
-                                                new Property(property: "nrAccTaxa", type: "integer", example: 1),
-                                                new Property(property: "nrSynTaxa", type: "integer", example: 0),
-                                            ]
-                                        )
-                                    )
-                                ]),
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -645,10 +527,7 @@ class ClassificationController extends AbstractFOSRestController
                 description: 'parent entry of a given reference',
                 content: [new MediaType(
                     mediaType: 'application/json',
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
