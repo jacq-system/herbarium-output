@@ -61,7 +61,7 @@ class ClassificationDownloadFacade
         // check if a certain scientific name id is specified & load the fitting synonymy entry
         if ($scientificNameId > 0) {
             $queryBuilder = $queryBuilder
-                ->join('a.species', 'sp')
+                ->leftJoin('a.species', 'sp')
                 ->andWhere('sp.id = :scientificNameId');
         } // if not, fetch all top-level entries for this reference
         else {
@@ -100,7 +100,7 @@ class ClassificationDownloadFacade
     protected function getBaseQueryBuilder(): QueryBuilder
     {
         return $this->entityManager->getRepository(Synonymy::class)->createQueryBuilder('a')
-            ->join('a.literature', 'lit')
+            ->leftJoin('a.literature', 'lit')
             ->andWhere('lit.id = :reference');
     }
 
@@ -148,7 +148,7 @@ class ClassificationDownloadFacade
         // fetch all children
         $parentTaxSynonymies[] = $taxSynonymy;
         $queryBuilder = $this->getBaseQueryBuilder()
-            ->join('a.classification', 'clas')
+            ->leftJoin('a.classification', 'clas')
             ->andWhere('clas.parentTaxonId = :taxon')
             ->setParameter('reference', $taxSynonymy->getLiterature()->getId())
             ->setParameter('taxon', $taxSynonymy->getActualTaxonId())
