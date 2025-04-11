@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace App\Service;
+namespace App\Service\Tools;
 
+use App\Service\ImageService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityNotFoundException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;

@@ -1,8 +1,7 @@
 <?php declare(strict_types = 1);
 
-namespace App\Controller;
+namespace App\Controller\OAuth;
 
-use App\Entity\User;
 use App\Service\Rest\DevelopersService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
