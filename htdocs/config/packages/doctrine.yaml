@@ -30,6 +30,7 @@ doctrine:
         dql:
             string_functions:
                 GetScientificName: App\Doctrine\Functions\GetScientificNameFunction
+                GetProtolog: App\Doctrine\Functions\GetProtologFunction
 
 when@test:
     doctrine:
