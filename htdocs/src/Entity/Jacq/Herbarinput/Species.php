@@ -2,9 +2,10 @@
 
 namespace App\Entity\Jacq\Herbarinput;
 
+use App\Repository\Herbarinput\SpeciesRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity()]
+#[ORM\Entity(repositoryClass: SpeciesRepository::class)]
 #[ORM\Table(name: 'tbl_tax_species', schema: 'herbarinput')]
 class Species
 {
@@ -62,6 +63,9 @@ class Species
 
     #[ORM\Column(name: 'statusID')]
     private int $status;
+
+    #[ORM\Column(name: 'external')]
+    private bool $external;
 
     #[ORM\ManyToOne(targetEntity: Species::class)]
     #[ORM\JoinColumn(name: "synID", referencedColumnName: "taxonID", nullable: true)]
@@ -224,6 +228,12 @@ class Species
     {
         return $this->rank;
     }
+
+    public function isExternal(): bool
+    {
+        return $this->external;
+    }
+
 
 
 }

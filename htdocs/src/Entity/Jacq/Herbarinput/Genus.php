@@ -17,17 +17,17 @@ class Genus
     #[ORM\JoinColumn(name: 'familyID', referencedColumnName: 'familyID')]
     private Family $family;
 
-    public function getFamily(): Family
-    {
-        return $this->family;
-    }
-
     #[ORM\Column(name: 'genus')]
     private string $name;
 
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function getFamily(): Family
+    {
+        return $this->family;
     }
 
 }
