@@ -27,6 +27,9 @@ doctrine:
                 alias: App
         controller_resolver:
             auto_mapping: false
+        dql:
+            string_functions:
+                GetScientificName: App\Doctrine\Functions\GetScientificNameFunction
 
 when@test:
     doctrine:
