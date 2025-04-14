@@ -125,7 +125,7 @@ class ClassificationDownloadService
         $line[4] = '';
         $line[5] = $this->uuidService->getUuid('scientific_name', $taxSynonymy->getSpecies()->getId());
         $line[6] = $taxSynonymy->getSpecies()->getId();
-        $line[7] = $taxSynonymy->getClassification()->getParentTaxonId();
+        $line[7] = $taxSynonymy->getClassification()?->getParentTaxonId();
         $line[8] = $taxSynonymy->getActualTaxonId() ?? null;
         $line[9] = ($taxSynonymy->getActualTaxonId()) ? 'synonym' : 'accepted';
 
@@ -143,7 +143,7 @@ class ClassificationDownloadService
         $queryBuilder = $this->getBaseQueryBuilder()
             ->andWhere('a.actualTaxonId = :taxon')
             ->setParameter('reference', $taxSynonymy->getLiterature()->getId())
-            ->setParameter('taxon', $taxSynonymy->getActualTaxonId());
+            ->setParameter('taxon', $taxSynonymy->getSpecies()->getId());
 
         // fetch all synonyms
         foreach ($queryBuilder->getQuery()->getResult() as $taxSynonymySynonym) {
