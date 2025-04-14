@@ -2,7 +2,7 @@
 
 namespace App\Controller\Services\Rest;
 
-use App\Service\TaxonService;
+use App\Service\Rest\ExternalScinamesService;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\Items;
@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ExternalScinamesController extends AbstractFOSRestController
 {
-    public function __construct(protected readonly TaxonService $taxaNamesService)
+    public function __construct(protected readonly ExternalScinamesService $scinamesService)
     {
     }
 
@@ -52,23 +52,7 @@ class ExternalScinamesController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(property: 'uuid', description: 'Universally Unique Identifier', type: 'string'),
-                                    new Property(property: 'url', description: 'url for uuid request resolver', type: 'string'),
-                                    new Property(property: 'taxonID', description: 'ID of scientific name', type: 'integer'),
-                                    new Property(property: 'scientificName', description: 'scientific name', type: 'string'),
-                                    new Property(property: 'taxonName', description: 'scientific name without hybrids', type: 'string')
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -78,10 +62,9 @@ class ExternalScinamesController extends AbstractFOSRestController
         ]
     )]
     #[Route('/services/rest/externalScinames/find/{term}', name: "services_rest_externalScinames_find", methods: ['GET'])]
-    public function uuid(string $term): Response
+    public function search(string $term): Response
     {
-        $results = ["not implemented, in development by Johannes"];
-        //TODO not implemented, in development by Johannes
+        $results = $this->scinamesService->searchAll($term);
         $view = $this->view($results, 418);
 
         return $this->handleView($view);
