@@ -1,18 +1,18 @@
 <?php declare(strict_types=1);
 
-namespace App\Facade\Rest;
+namespace App\Service\Rest;
 
 
 use App\Entity\Jacq\Herbarinput\Literature;
 use App\Entity\Jacq\Herbarinput\Synonymy;
 use App\Repository\Herbarinput\TaxonRankRepository;
 use App\Service\TaxonService;
-use App\Service\UuidConfiguration;
+use App\Service\UuidService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Routing\RouterInterface;
 
-class ClassificationDownloadFacade
+class ClassificationDownloadService
 {
 
     protected bool $hideScientificNameAuthors = false;
@@ -31,7 +31,7 @@ class ClassificationDownloadFacade
     protected array $rankKeys = [];
     private array $outputBody = [];
 
-    public function __construct(protected EntityManagerInterface $entityManager, protected RouterInterface $router, protected UuidConfiguration $uuidConfiguration, protected TaxonRankRepository $taxonRankRepository, protected readonly TaxonService $taxonService)
+    public function __construct(protected EntityManagerInterface $entityManager, protected RouterInterface $router, protected UuidService $uuidService, protected TaxonRankRepository $taxonRankRepository, protected readonly TaxonService $taxonService)
     {
     }
 
@@ -118,12 +118,12 @@ class ClassificationDownloadFacade
     protected function exportClassification($parentTaxSynonymies, Synonymy $taxSynonymy)
     {
 
-        $line[0] = $this->getUuidUrl('citation', $taxSynonymy->getLiterature()->getId());
+        $line[0] = $this->uuidService->getUuid('citation', $taxSynonymy->getLiterature()->getId());
         $line[1] = $this->entityManager->getRepository(Literature::class)->getProtolog($taxSynonymy->getLiterature()->getId());
         $line[2] = 'CC-BY-SA'; // TODO in original $this->settings['classifications_license'];  licence is depending on some app configuration? should be stored with data as it is fixed..?
         $line[3] = date("Y-m-d H:i:s");
         $line[4] = '';
-        $line[5] = $this->getUuidUrl('scientific_name', $taxSynonymy->getSpecies()->getId());
+        $line[5] = $this->uuidService->getUuid('scientific_name', $taxSynonymy->getSpecies()->getId());
         $line[6] = $taxSynonymy->getSpecies()->getId();
         $line[7] = $taxSynonymy->getClassification()->getParentTaxonId();
         $line[8] = $taxSynonymy->getActualTaxonId() ?? null;
@@ -165,30 +165,5 @@ class ClassificationDownloadFacade
 
     }
 
-    /**
-     * use input-webservice "uuid" to get the uuid-url for a given id and type
-     *
-     * @param mixed $type type of uuid (1 or scientific_name, 2 or citation 3 or specimen)
-     * @param int $id internal-id of uuid
-     * @return string uuid-url returned from webservice
-     * TODO - this architecture is not good
-     */
-    private function getUuidUrl($type, $id)
-    {
-        $curl = curl_init($this->uuidConfiguration->endpoint . "tags/uuid/$type/$id");
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array('APIKEY: ' . $this->uuidConfiguration->secret));
-        $curl_response = curl_exec($curl);
-        if ($curl_response !== false) {
-            $json = json_decode($curl_response, true);
-            if (isset($json['url'])) {
-                curl_close($curl);
-                return $json['url'];
-            }
-
-        }
-        curl_close($curl);
-        return '';
-    }
 
 }

@@ -4,7 +4,7 @@ namespace App\Service;
 
 readonly class UuidConfiguration
 {
-    public function __construct(protected(set) string $endpoint, protected(set) string $secret)
+    public function __construct(protected(set) string $endpoint, protected(set) string $secret, protected(set) string $prefix)
     {
     }
 

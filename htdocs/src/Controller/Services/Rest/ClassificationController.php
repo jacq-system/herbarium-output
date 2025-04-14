@@ -2,8 +2,8 @@
 
 namespace App\Controller\Services\Rest;
 
-use App\Facade\Rest\ClassificationDownloadFacade;
 use App\Facade\Rest\ClassificationFacade;
+use App\Service\Rest\ClassificationDownloadService;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\Items;
@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ClassificationController extends AbstractFOSRestController
 {
-    public function __construct(protected readonly ClassificationFacade $classificationFacade, protected readonly ClassificationDownloadFacade $classificationDownloadFacade)
+    public function __construct(protected readonly ClassificationFacade $classificationFacade, protected readonly ClassificationDownloadService $downloadService)
     {
     }
 
@@ -78,7 +78,7 @@ class ClassificationController extends AbstractFOSRestController
     #[Route('/services/rest/classification/download/{referenceType}/{referenceID}', name: "services_rest_classification_download", methods: ['GET'])]
     public function download(string $referenceType, int $referenceID, #[MapQueryParameter] ?int $scientificNameId, #[MapQueryParameter] ?int $hideScientificNameAuthors): Response
     {
-        $data = $this->classificationDownloadFacade->getDownload($referenceType, $referenceID, $scientificNameId, $hideScientificNameAuthors);
+        $data = $this->downloadService->getDownload($referenceType, $referenceID, $scientificNameId, $hideScientificNameAuthors);
         $view = $this->view($data, 200);
 
         return $this->handleView($view);

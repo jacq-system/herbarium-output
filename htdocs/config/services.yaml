@@ -26,5 +26,6 @@ services:
         arguments:
             $endpoint: '%uuid_endpoint_url%'
             $secret: '%uuid_endpoint_key%'
+            $prefix: '%env(UUID_PREFIX)%'
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
