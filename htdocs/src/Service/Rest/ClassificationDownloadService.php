@@ -3,12 +3,12 @@
 namespace App\Service\Rest;
 
 
-use App\Entity\Jacq\Herbarinput\Literature;
 use App\Entity\Jacq\Herbarinput\Synonymy;
+use App\Repository\Herbarinput\LiteratureRepository;
+use App\Repository\Herbarinput\SynonymyRepository;
 use App\Repository\Herbarinput\TaxonRankRepository;
 use App\Service\TaxonService;
 use App\Service\UuidService;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -31,7 +31,7 @@ class ClassificationDownloadService
     protected array $rankKeys = [];
     private array $outputBody = [];
 
-    public function __construct(protected EntityManagerInterface $entityManager, protected RouterInterface $router, protected UuidService $uuidService, protected TaxonRankRepository $taxonRankRepository, protected readonly TaxonService $taxonService)
+    public function __construct(protected RouterInterface $router, protected UuidService $uuidService, protected TaxonRankRepository $taxonRankRepository, protected readonly TaxonService $taxonService, protected readonly LiteratureRepository $literatureRepository, protected readonly SynonymyRepository $synonymyRepository)
     {
     }
 
@@ -87,7 +87,7 @@ class ClassificationDownloadService
                 break;
             default:
                 // if hide scientific name authors is null, use preference from literature entry
-                $this->hideScientificNameAuthors = $this->entityManager->getRepository(Literature::class)->find($referenceId)->isHideScientificNameAuthors();
+                $this->hideScientificNameAuthors = $this->literatureRepository->find($referenceId)->isHideScientificNameAuthors();
                 break;
         }
     }
@@ -104,7 +104,7 @@ class ClassificationDownloadService
 
     protected function getBaseQueryBuilder(): QueryBuilder
     {
-        return $this->entityManager->getRepository(Synonymy::class)->createQueryBuilder('a')
+        return $this->synonymyRepository->createQueryBuilder('a')
             ->leftJoin('a.literature', 'lit')
             ->andWhere('lit.id = :reference');
     }
@@ -119,7 +119,7 @@ class ClassificationDownloadService
     {
 
         $line[0] = $this->uuidService->getUuid('citation', $taxSynonymy->getLiterature()->getId());
-        $line[1] = $this->entityManager->getRepository(Literature::class)->getProtolog($taxSynonymy->getLiterature()->getId());
+        $line[1] = $this->literatureRepository->getProtolog($taxSynonymy->getLiterature()->getId());
         $line[2] = 'CC-BY-SA'; // TODO in original $this->settings['classifications_license'];  licence is depending on some app configuration? should be stored with data as it is fixed..?
         $line[3] = date("Y-m-d H:i:s");
         $line[4] = '';

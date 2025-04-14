@@ -2,10 +2,10 @@
 
 namespace App\Entity\Jacq\Herbarinput;
 
-use Doctrine\Common\Collections\Collection;
+use App\Repository\Herbarinput\SynonymyRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity()]
+#[ORM\Entity(repositoryClass: SynonymyRepository::class)]
 #[ORM\Table(name: 'tbl_tax_synonymy', schema: 'herbarinput')]
 class Synonymy
 {
