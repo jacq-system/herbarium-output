@@ -1,8 +1,9 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace App\Controller\Services\Rest;
 
 use App\Service\TaxonService;
+use App\Service\UuidService;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\Items;
@@ -15,7 +16,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ScinamesController extends AbstractFOSRestController
 {
-    public function __construct(protected readonly TaxonService $taxaNamesService)
+    public function __construct(protected readonly TaxonService $taxaNamesService, protected readonly UuidService $uuidService)
     {
     }
 
@@ -52,23 +53,7 @@ class ScinamesController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(property: 'uuid', description: 'Universally Unique Identifier', type: 'string'),
-                                    new Property(property: 'url', description: 'url for uuid request resolver', type: 'string'),
-                                    new Property(property: 'taxonID', description: 'ID of scientific name', type: 'integer'),
-                                    new Property(property: 'scientificName', description: 'scientific name', type: 'string'),
-                                    new Property(property: 'taxonName', description: 'scientific name without hybrids', type: 'string')
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -80,10 +65,14 @@ class ScinamesController extends AbstractFOSRestController
     #[Route('/services/rest/JACQscinames/uuid/{taxonID}', name: "services_rest_scinames_uuid", methods: ['GET'])]
     public function uuid(int $taxonID): Response
     {
-        $results = [];
-        //TODO need access to another database
-        $view = $this->view($results, 500);
-
+        $uuid = $this->uuidService->getUuid('scientific_name', $taxonID);
+        $data = array(
+            'uuid' => $uuid,
+            'url' => $this->uuidService->getResolvableUri($uuid),
+            'taxonID' => $taxonID,
+            'scientificName' => $this->taxaNamesService->getScientificName($taxonID),
+            'taxonName' => $this->taxaNamesService->getTaxonName($taxonID));
+        $view = $this->view($data, 200);
         return $this->handleView($view);
     }
 
@@ -120,23 +109,7 @@ class ScinamesController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(property: 'uuid', description: 'Universally Unique Identifier', type: 'string'),
-                                    new Property(property: 'url', description: 'url for uuid request resolver', type: 'string'),
-                                    new Property(property: 'taxonID', description: 'ID of scientific name', type: 'integer'),
-                                    new Property(property: 'scientificName', description: 'scientific name', type: 'string'),
-                                    new Property(property: 'taxonName', description: 'scientific name without hybrids', type: 'string')
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -149,8 +122,7 @@ class ScinamesController extends AbstractFOSRestController
     public function name(int $taxonID): Response
     {
         //TODO this service is just a synonym to $this->uuid()
-//        return $this->redirectToRoute('services_rest_scinames_uuid', ['taxonID' => $taxonID]);
-                return $this->forward(self::class.'::uuid', ['taxonID' => $taxonID]);
+        return $this->forward(self::class . '::uuid', ['taxonID' => $taxonID]);
     }
 
     #[Get(
@@ -184,21 +156,7 @@ class ScinamesController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(property: 'taxonID', description: 'ID of scientific name', type: 'integer', example: 47239),
-                                    new Property(property: 'scientificName', description: 'scientific name', type: 'string', example: 'Prunus avium subsp. duracina (L.) Schübl. & G. Martens'),
-                                    new Property(property: 'taxonName', description: 'scientific name without hybrids', type: 'string', example: 'Prunus avium subsp. duracina (L.) Schübl. & G. Martens')
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -210,7 +168,7 @@ class ScinamesController extends AbstractFOSRestController
     #[Route('/services/rest/JACQscinames/find/{term}', name: "services_rest_scinames_find", methods: ['GET'])]
     public function find(string $term): Response
     {
-        $data =  $this->taxaNamesService->fulltextSearch($term);
+        $data = $this->taxaNamesService->fulltextSearch($term);
         $view = $this->view($data, 200);
 
         return $this->handleView($view);
@@ -240,7 +198,7 @@ class ScinamesController extends AbstractFOSRestController
                         type: 'array',
                         items: new Items(
                             properties: [
-                                new Property(property: 'uuid', description: 'Universally Unique Identifier', type: 'string'), //TODO add examples
+                                new Property(property: 'uuid', description: 'Universally Unique Identifier', type: 'string'),
                                 new Property(property: 'url', description: 'url for uuid request resolver', type: 'string'),
                                 new Property(property: 'taxonID', description: 'ID of scientific name', type: 'integer'),
                                 new Property(property: 'scientificName', description: 'scientific name', type: 'string'),
@@ -249,23 +207,7 @@ class ScinamesController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(property: 'uuid', description: 'Universally Unique Identifier', type: 'string'), //TODO add examples
-                                    new Property(property: 'url', description: 'url for uuid request resolver', type: 'string'),
-                                    new Property(property: 'taxonID', description: 'ID of scientific name', type: 'integer'),
-                                    new Property(property: 'scientificName', description: 'scientific name', type: 'string'),
-                                    new Property(property: 'taxonName', description: 'scientific name without hybrids', type: 'string')
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -277,9 +219,14 @@ class ScinamesController extends AbstractFOSRestController
     #[Route('/services/rest/JACQscinames/resolve/{uuid}', name: "services_rest_scinames_resolve", methods: ['GET'])]
     public function resolve(string $uuid): Response
     {
-        $data =  $this->taxaNamesService->findByUuid($uuid);
-        $view = $this->view($data, 500);
-
+        $taxonID = $this->uuidService->getTaxonFromUuid($uuid);
+        $data = array(
+            'uuid' => $uuid,
+            'url' => $this->uuidService->getResolvableUri($uuid),
+            'taxonID' => $taxonID,
+            'scientificName' => $this->taxaNamesService->getScientificName($taxonID),
+            'taxonName' => $this->taxaNamesService->getTaxonName($taxonID));
+        $view = $this->view($data, 200);
         return $this->handleView($view);
     }
 

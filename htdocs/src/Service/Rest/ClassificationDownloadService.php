@@ -118,12 +118,12 @@ class ClassificationDownloadService
     protected function exportClassification($parentTaxSynonymies, Synonymy $taxSynonymy)
     {
 
-        $line[0] = $this->uuidService->getUuid('citation', $taxSynonymy->getLiterature()->getId());
+        $line[0] = $this->uuidService->getResolvableUri($this->uuidService->getUuid('citation', $taxSynonymy->getLiterature()->getId()));
         $line[1] = $this->literatureRepository->getProtolog($taxSynonymy->getLiterature()->getId());
         $line[2] = 'CC-BY-SA'; // TODO in original $this->settings['classifications_license'];  licence is depending on some app configuration? should be stored with data as it is fixed..?
         $line[3] = date("Y-m-d H:i:s");
         $line[4] = '';
-        $line[5] = $this->uuidService->getUuid('scientific_name', $taxSynonymy->getSpecies()->getId());
+        $line[5] =  $this->uuidService->getResolvableUri($this->uuidService->getUuid('scientific_name', $taxSynonymy->getSpecies()->getId()));
         $line[6] = $taxSynonymy->getSpecies()->getId();
         $line[7] = $taxSynonymy->getClassification()?->getParentTaxonId();
         $line[8] = $taxSynonymy->getActualTaxonId() ?? null;

@@ -16,7 +16,7 @@ class UuidService
         $sql = "SELECT uuid FROM uuid_replica WHERE uuid_minter_type = :type  AND internal_id = :id";
         $uuid = $this->entityManager->getConnection()->executeQuery($sql, ['type' => $type, 'id' => $referenceId])->fetchOne();
         if ($uuid) {
-            return $this->uuidConfiguration->prefix . $uuid;
+            return $uuid;
         } else {
             return $this->getUuidUrl($type, $referenceId);
         }
@@ -27,7 +27,7 @@ class UuidService
      *
      * TODO - this architecture is not good
      */
-    private function getUuidUrl($type, $id)
+    protected function getUuidUrl($type, $id)
     {
         $curl = curl_init($this->uuidConfiguration->endpoint . "tags/uuid/$type/$id");
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -43,6 +43,27 @@ class UuidService
         }
         curl_close($curl);
         return '';
+    }
+
+    public function getTaxonFromUuid(string $uuid): ?int
+    {
+        $curl = curl_init("https://resolve.jacq.org/resolve.php?uuid=$uuid&type=internal_id");
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        $curl_response = curl_exec($curl);
+        if ($curl_response === false) {
+            curl_close($curl);
+            return null;
+        } else {
+            $taxonID = intval($curl_response);
+            curl_close($curl);
+            return $taxonID;
+        }
+
+    }
+
+    public function getResolvableUri(string $uuid): string
+    {
+        return $this->uuidConfiguration->prefix . $uuid;
     }
 
 }

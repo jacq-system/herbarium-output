@@ -31,11 +31,6 @@ readonly class TaxonService
         return $this->entityManager->getConnection()->executeQuery($sql, ['searchTerm' => $searchTerm])->fetchAllAssociative();
     }
 
-    public function findByUuid(string $uuid): ?int
-    {
-     return NULL; //TODO
-    }
-
     /**
      * check if the accepted taxon is part of a classification
      * only select entries which are part of a classification, so either tc.tax_syn_ID or has_children_syn.tax_syn_ID must not be NULL
@@ -146,5 +141,20 @@ readonly class TaxonService
         }
 
         return $scientificName;
+    }
+
+    /**
+     * get scientific name without hybrids from database for a given taxon-ID
+     */
+    public function getTaxonName(int $taxonID): ?string
+    {
+        $sql = ("SELECT `herbar_view`.GetTaxonName($taxonID) AS taxname");
+        $name = $this->entityManager->getConnection()->executeQuery($sql)->fetchOne();
+        if ($name) {
+            return trim($name);
+        } else {
+            return null;
+        }
+
     }
 }
