@@ -27,21 +27,22 @@ class ObjectsController extends AbstractFOSRestController
     {
     }
 
-//    #[Get(
-//        path: '/services/rest/objects/specimens/search',
-//        summary: '"/specimens/search" is deprecated, use "/specimens" instead',
-//        tags: ['objects'],
-//        responses: [
-//            new \OpenApi\Attributes\Response(
-//                response: 307,
-//                description: 'Deprecated'
-//            ),
-//            new \OpenApi\Attributes\Response(
-//                response: 400,
-//                description: 'Bad Request'
-//            )
-//        ]
-//    )]
+    #[Get(
+        path: '/services/rest/objects/specimens/search',
+        summary: '"/specimens/search" is deprecated, use "/specimens" instead',
+        tags: ['objects'],
+        responses: [
+            new \OpenApi\Attributes\Response(
+                response: 307,
+                description: 'Deprecated'
+            ),
+            new \OpenApi\Attributes\Response(
+                response: 400,
+                description: 'Bad Request'
+            )
+        ],
+        deprecated: true
+    )]
     #[Route('/services/rest/objects/specimens/search', methods: ['GET'])]
     public function results(Request $request): Response
     {
