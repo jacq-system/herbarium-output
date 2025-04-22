@@ -14,6 +14,7 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\RequestBody;
 use OpenApi\Attributes\Schema;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,7 +23,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ObjectsController extends AbstractFOSRestController
 {
-    public function __construct(protected readonly ObjectsFacade $objectsFacade, protected readonly SpecimenService $specimenService)
+    public function __construct(protected readonly ObjectsFacade $objectsFacade, protected readonly SpecimenService $specimenService, protected LoggerInterface $logger)
     {
     }
 
@@ -44,6 +45,7 @@ class ObjectsController extends AbstractFOSRestController
     #[Route('/services/rest/objects/specimens/search', methods: ['GET'])]
     public function results(Request $request): Response
     {
+        $this->logger->warning('used deprecated "/specimens/search" endpoint');
         return $this->redirectToRoute('services_rest_objects_specimens', $request->query->all(), 307);
     }
 
@@ -76,19 +78,7 @@ class ObjectsController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(property: 'results')
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -225,19 +215,7 @@ class ObjectsController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(property: 'results')
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -310,7 +288,7 @@ class ObjectsController extends AbstractFOSRestController
          $rawBody = $request->getContent();
         $ids = preg_split('/[\s,]+/', trim($rawBody), -1, PREG_SPLIT_NO_EMPTY);
         $data = $this->objectsFacade->resolveSpecimensFromList($ids, $fieldgroups);
-        return new JsonResponse($data, 200); //TODO FOS bundle problem with return format I wan!t able solve --> force JSON
+        return new JsonResponse($data, 200);
     }
 
     #[Post(
@@ -378,8 +356,7 @@ class ObjectsController extends AbstractFOSRestController
         $rawContent = file_get_contents($file->getPathname());
         $ids = preg_split('/[\s,]+/', trim($rawContent), -1, PREG_SPLIT_NO_EMPTY);
         $data = $this->objectsFacade->resolveSpecimensFromList($ids, $fieldgroups);
-        return new JsonResponse($data, 200);//TODO FOS bundle problem with return format I wan!t able solve --> force JSON
+        return new JsonResponse($data, 200);
     }
-
 
 }
