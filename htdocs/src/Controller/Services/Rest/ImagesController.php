@@ -21,7 +21,7 @@ class ImagesController extends AbstractFOSRestController
 
     #[Get(
         path: '/services/rest/images/show/{specimenID}/{imageNr}',
-        summary: 'et the uri to show the first image of a given specimen-ID',
+        summary: 'get the uri to show the first image of a given specimen-ID',
         tags: ['images'],
         parameters: [
             new PathParameter(
@@ -44,7 +44,7 @@ class ImagesController extends AbstractFOSRestController
         responses: [
             new \OpenApi\Attributes\Response(
                 response: 200,
-                description: 'List of taxa names',
+                description: 'uri',
                 content: [new MediaType(
                     mediaType: 'application/json',
                     schema: new Schema(
@@ -98,7 +98,7 @@ class ImagesController extends AbstractFOSRestController
         responses: [
             new \OpenApi\Attributes\Response(
                 response: 200,
-                description: 'links to download',
+                description: 'uri',
                 content: [new MediaType(
                     mediaType: 'application/json',
                     schema: new Schema(

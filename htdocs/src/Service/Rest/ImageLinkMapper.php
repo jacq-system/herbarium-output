@@ -17,6 +17,7 @@ class ImageLinkMapper
     protected ?Specimens $specimen = null;
     protected array $imageLinks = array();
     protected array $fileLinks = array();
+    protected bool $linksActive = false;
 
     public function __construct(protected readonly Connection $connection, protected readonly RouterInterface $router, protected readonly IiifFacade $iiifFacade, protected HttpClientInterface $client, protected readonly SpecimenService $specimenService)
     {
@@ -31,19 +32,21 @@ class ImageLinkMapper
 
     private function linkbuilder(): void
     {
-
-        $imageDefinition = $this->specimen->getHerbCollection()->getInstitution()->getImageDefinition();
-        if ($this->specimen->hasImage() || $this->specimen->hasImageObservation()) {
-            if ($this->specimen->getPhaidraImages() !== null) {
-                // for now, special treatment for phaidra is needed when wu has images
-                $this->phaidra();
-            } elseif ($imageDefinition->isIiifCapable()) {
-                $this->iiif();
-            } elseif ($imageDefinition->getServerType() === 'bgbm') {
-                $this->bgbm();
-            } elseif ($imageDefinition->getServerType() == 'djatoka') {
-                $this->djatoka();
+        if (!$this->linksActive) {
+            $imageDefinition = $this->specimen->getHerbCollection()->getInstitution()->getImageDefinition();
+            if ($this->specimen->hasImage() || $this->specimen->hasImageObservation()) {
+                if ($this->specimen->getPhaidraImages() !== null) {
+                    // for now, special treatment for phaidra is needed when wu has images
+                    $this->phaidra();
+                } elseif ($imageDefinition->isIiifCapable()) {
+                    $this->iiif();
+                } elseif ($imageDefinition->getServerType() === 'bgbm') {
+                    $this->bgbm();
+                } elseif ($imageDefinition->getServerType() == 'djatoka') {
+                    $this->djatoka();
+                }
             }
+            $this->linksActive = true;
         }
     }
 
@@ -63,9 +66,9 @@ class ImageLinkMapper
             foreach ($manifest['sequences'] as $sequence) {
                 foreach ($sequence['canvases'] as $canvas) {
                     foreach ($canvas['images'] as $image) {
-                        $this->fileLinks['full'][] = 'https://www.jacq.org/downloadPhaidra.php?filename=' . sprintf("WU%0" . $imageDefinition->getHerbNummerNrDigits() . ".0f", str_replace('-', '', $this->specimen->getHerbNumber())) . ".jpg&url=" . $image['resource']['service']['@id'] . "/full/full/0/default.jpg";
-                        $this->fileLinks['europeana'][] = 'https://www.jacq.org/downloadPhaidra.php?filename=' . sprintf("WU%0" . $imageDefinition->getHerbNummerNrDigits() . ".0f", str_replace('-', '', $this->specimen->getHerbNumber())) . ".jpg&url=" . $image['resource']['service']['@id'] . "/full/1200,/0/default.jpg";
-                        $this->fileLinks['thumb'][] = 'https://www.jacq.org/downloadPhaidra.php?filename=' . sprintf("WU%0" . $imageDefinition->getHerbNummerNrDigits() . ".0f", str_replace('-', '', $this->specimen->getHerbNumber())) . ".jpg&url=" . $image['resource']['service']['@id'] . "/full/160,/0/default.jpg";
+                        $this->fileLinks['full'][]      = $image['resource']['service']['@id'] . "/full/full/0/default.jpg";
+                        $this->fileLinks['europeana'][] = $image['resource']['service']['@id'] . "/full/1200,/0/default.jpg";
+                        $this->fileLinks['thumb'][]     = $image['resource']['service']['@id'] . "/full/160,/0/default.jpg";
                     }
                 }
             }
@@ -165,23 +168,23 @@ class ImageLinkMapper
                     } elseif (substr($picProcessed, 0, 4) == 'tab_') {
                         $images_tab[] = $picProcessed;
                     } else {
-                        $images[] = "filename=$picProcessed&sid=" . $this->specimen->getId();
+                        $images[] = ["filename"=>$picProcessed, "sid" => $this->specimen->getId()];
                     }
                 }
                 if (!empty($images_obs)) {
                     foreach ($images_obs as $pic) {
-                        $images[] = "filename=$pic&sid=" . $this->specimen->getId();
+                        $images[] = ["filename"=>$pic, "sid" => $this->specimen->getId()];
                     }
                 }
                 if (!empty($images_tab)) {
                     foreach ($images_tab as $pic) {
-                        $images[] = "filename=$pic&sid=" . $this->specimen->getId();
+                        $images[] = ["filename"=>$pic, "sid" => $this->specimen->getId()];
                     }
                 }
             }
         } catch (Exception $e) {
             // something went wrong, so we fall back to the original filename
-            $images[0] = 'filename=' . rawurlencode(basename($filename)) . '&sid=' . $this->specimen->getId();
+            $images[0] = ["filename"=>rawurlencode(basename($filename)), "sid" => $this->specimen->getId()];
         }
 
         if (!empty($images)) {
@@ -191,15 +194,21 @@ class ImageLinkMapper
                 if ($firstImage) {
                     $firstImageFilesize = $this->specimen->getEuropeanaImages()?->getFilesize();
                 }
-                $this->imageLinks[] = 'https://www.jacq.org/image.php?' . $image . '&method=show';
-                $this->fileLinks['full'][] = 'https://www.jacq.org/image.php?' . $image . '&method=download';
+
+                $showParams = array_merge($image, ['method'=>'show']);
+                $downloadParams = array_merge($image, ['method'=>'download']);
+                $europeanaParams = array_merge($image, ['method'=>'europeana']);
+                $thumbParams = array_merge($image, ['method'=>'thumb']);
+
+                $this->imageLinks[] = $this->router->generate('app_front_image_endpoint', $showParams, UrlGeneratorInterface::ABSOLUTE_URL);
+                $this->fileLinks['full'][] = $this->router->generate('app_front_image_endpoint', $downloadParams, UrlGeneratorInterface::ABSOLUTE_URL);
                 if ($firstImage && ($firstImageFilesize ?? null) > 1500) {  // use europeana-cache only for images without errors and only for the first image
                     $sourceCode = $this->specimen->getHerbCollection()->getInstitution()->getCode();
                     $this->fileLinks['europeana'][] = "https://object.jacq.org/europeana/$sourceCode/$this->specimen->getId().jpg";
                 } else {
-                    $this->fileLinks['europeana'][] = 'https://www.jacq.org/image.php?' . $image . '&method=europeana';
+                    $this->fileLinks['europeana'][] = $this->router->generate('app_front_image_endpoint', $europeanaParams, UrlGeneratorInterface::ABSOLUTE_URL);
                 }
-                $this->fileLinks['thumb'][] = 'https://www.jacq.org/image.php?' . $image . '&method=thumb';
+                $this->fileLinks['thumb'][] = $this->router->generate('app_front_image_endpoint', $thumbParams, UrlGeneratorInterface::ABSOLUTE_URL);
                 $firstImage = false;
             }
         }
