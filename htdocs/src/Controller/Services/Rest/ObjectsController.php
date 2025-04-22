@@ -14,6 +14,7 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\RequestBody;
 use OpenApi\Attributes\Schema;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,7 +23,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ObjectsController extends AbstractFOSRestController
 {
-    public function __construct(protected readonly ObjectsFacade $objectsFacade, protected readonly SpecimenService $specimenService)
+    public function __construct(protected readonly ObjectsFacade $objectsFacade, protected readonly SpecimenService $specimenService, protected LoggerInterface $logger)
     {
     }
 
@@ -39,11 +40,13 @@ class ObjectsController extends AbstractFOSRestController
                 response: 400,
                 description: 'Bad Request'
             )
-        ]
+        ],
+        deprecated: true
     )]
     #[Route('/services/rest/objects/specimens/search', methods: ['GET'])]
     public function results(Request $request): Response
     {
+        $this->logger->warning('used deprecated "/specimens/search" endpoint');
         return $this->redirectToRoute('services_rest_objects_specimens', $request->query->all(), 307);
     }
 
@@ -76,19 +79,7 @@ class ObjectsController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(property: 'results')
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -225,19 +216,7 @@ class ObjectsController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(property: 'results')
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -255,131 +234,5 @@ class ObjectsController extends AbstractFOSRestController
 
         return $this->handleView($view);
     }
-
-    #[Post(
-        path: '/services/rest/objects/specimens/fromList',
-        summary: 'return all specimens from a given list of specimen-IDs or Unit-IDs or Stable Identifiers',
-        requestBody: new RequestBody(
-            description: 'A plain text body with a list of IDs to search, separated by commas, spaces, or new lines',
-            required: true,
-            content: new MediaType(
-                mediaType: 'text/plain',
-                schema: new Schema(
-                    type: 'string',
-                    example: "1,2,3\n4\n5"
-                )
-            )
-        ),
-        tags: ['objects'],
-        parameters: [
-            new QueryParameter(
-                name: 'fieldgroups',
-                description: 'optional fieldgroups to return as comma-seperated list; possible are jacq, dc and dwc, defaults to dc,dwc,jacq',
-                in: 'query',
-                required: false,
-                schema: new Schema(type: 'string'),
-                example: "jacq,dc"
-            )
-        ],
-        responses: [
-            new \OpenApi\Attributes\Response(
-                response: 200,
-                description: 'List',
-                content: [new MediaType(
-                    mediaType: 'application/json',
-                    schema: new Schema(
-                        type: 'array',
-                        items: new Items(
-                            properties: [
-                                new Property(property: 'results', type: 'object')
-                            ],
-                            type: 'object'
-                        )
-                    )
-                )
-                ]
-            ),
-            new \OpenApi\Attributes\Response(
-                response: 400,
-                description: 'Bad Request'
-            )
-        ])]
-    #[Route('/services/rest/objects/specimens/fromList', name: "services_rest_objects_fromList", methods: ['POST'])]
-    public function fromList(Request $request, #[MapQueryParameter] ?string $fieldgroups = ''): Response
-    {
-         $rawBody = $request->getContent();
-        $ids = preg_split('/[\s,]+/', trim($rawBody), -1, PREG_SPLIT_NO_EMPTY);
-        $data = $this->objectsFacade->resolveSpecimensFromList($ids, $fieldgroups);
-        return new JsonResponse($data, 200); //TODO FOS bundle problem with return format I wan!t able solve --> force JSON
-    }
-
-    #[Post(
-        path: '/services/rest/objects/specimens/fromFile',
-        summary: 'return all specimens from a given list of specimen-IDs or Unit-IDs or Stable Identifiers from file',
-        requestBody: new RequestBody(
-            description: 'A file containing a plain text list of IDs to search, separated by commas, spaces, or new lines',
-            required: true,
-            content: new MediaType(
-                mediaType: 'multipart/form-data',
-                schema: new Schema(
-                    properties: [
-                        new Property(
-                            property: 'file',
-                            description: 'The uploaded file with IDs',
-                            type: 'string',
-                            format: 'binary'
-                        )
-                    ],
-                    type: 'object'
-                )
-            )
-        ),
-        tags: ['objects'],
-        parameters: [
-            new QueryParameter(
-                name: 'fieldgroups',
-                description: 'optional fieldgroups to return as comma-seperated list; possible are jacq, dc and dwc, defaults to dc,dwc,jacq',
-                in: 'query',
-                required: false,
-                schema: new Schema(type: 'string'),
-                example: "jacq,dc"
-            )
-        ],
-        responses: [
-            new \OpenApi\Attributes\Response(
-                response: 200,
-                description: 'List',
-                content: [new MediaType(
-                    mediaType: 'application/json',
-                    schema: new Schema(
-                        type: 'array',
-                        items: new Items(
-                            properties: [
-                                new Property(property: 'results', type: 'object')
-                            ],
-                            type: 'object'
-                        )
-                    )
-                )
-                ]
-            ),
-            new \OpenApi\Attributes\Response(
-                response: 400,
-                description: 'Bad Request'
-            )
-        ])]
-    #[Route('/services/rest/objects/specimens/fromFile', name: "services_rest_objects_fromFile", methods: ['POST'])]
-    public function fromFile(Request $request, #[MapQueryParameter] ?string $fieldgroups = ''): Response
-    {
-        $file = $request->files->get('file');
-        if (!$file || !$file->isValid()) {
-            return $this->json(['error' => 'Invalid or missing file'], 400);
-        }
-        $rawContent = file_get_contents($file->getPathname());
-        $ids = preg_split('/[\s,]+/', trim($rawContent), -1, PREG_SPLIT_NO_EMPTY);
-        $data = $this->objectsFacade->resolveSpecimensFromList($ids, $fieldgroups);
-        return new JsonResponse($data, 200);//TODO FOS bundle problem with return format I wan!t able solve --> force JSON
-    }
-
 
 }

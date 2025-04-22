@@ -1,11 +1,11 @@
 <?php declare(strict_types = 1);
 
-namespace App\Controller;
+namespace App\Controller\OAuth;
 
 use App\Entity\OAuth2UserConsent;
 use App\Entity\User;
-use League\Bundle\OAuth2ServerBundle\Model\Client;
 use Doctrine\Persistence\ManagerRegistry;
+use League\Bundle\OAuth2ServerBundle\Model\Client;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

@@ -13,45 +13,6 @@ readonly class TaxonService
     {
     }
 
-    public function autocompleteStartsWith(string $term): array
-    {
-        $words = preg_split('/\s+/', $term, 2);
-        if (empty($words)) {
-            return [];
-        }
-        if (count($words) === 2) {
-            $sql = <<<SQL
-                SELECT ts.taxonID, herbar_view.GetScientificName(ts.taxonID, 0) AS ScientificName
-                FROM herbarinput.tbl_tax_species ts
-                LEFT JOIN herbarinput.tbl_tax_genera tg ON tg.genID = ts.genID
-                LEFT JOIN herbarinput.tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                WHERE
-                    ts.external = 0
-                    AND tg.genus LIKE :piece0
-                    AND te.epithet LIKE :piece1
-                HAVING ScientificName != ''
-                ORDER BY ScientificName
-                SQL;
-
-            return $this->entityManager->getConnection()->executeQuery($sql, ['piece0' => $words[0] . '%', 'piece1' => $words[1] . '%'])->fetchAllAssociative();
-        } else {
-            $sql = <<<SQL
-                SELECT ts.taxonID, herbar_view.GetScientificName(ts.taxonID, 0) AS ScientificName
-                FROM herbarinput.tbl_tax_species ts
-                LEFT JOIN herbarinput.tbl_tax_genera tg ON tg.genID = ts.genID
-                WHERE
-                    ts.external = 0
-                    AND tg.genus LIKE :piece0
-                    AND ts.speciesID IS NULL
-                HAVING ScientificName != ''
-                ORDER BY ScientificName
-                SQL;
-
-            return $this->entityManager->getConnection()->executeQuery($sql, ['piece0' => $words[0] . '%'])->fetchAllAssociative();
-
-        }
-    }
-
     public function fulltextSearch(string $term): array
     {
         $words = preg_split('/\s+/', $term);
@@ -68,11 +29,6 @@ readonly class TaxonService
                 ORDER BY scientificName
                 SQL;
         return $this->entityManager->getConnection()->executeQuery($sql, ['searchTerm' => $searchTerm])->fetchAllAssociative();
-    }
-
-    public function findByUuid(string $uuid): ?int
-    {
-     return NULL; //TODO
     }
 
     /**
@@ -162,6 +118,43 @@ readonly class TaxonService
         }
 
         return $species->getFullName($html);
+
+    }
+
+
+    /**
+     * get scientific name from database
+     */
+    public function getScientificName(int $taxonID, bool $hideScientificNameAuthors = false): ?string
+    {
+        $sql = "CALL herbar_view._buildScientificNameComponents(:taxonID, @scientificName, @author)";
+        $this->entityManager->getConnection()->executeQuery($sql, ['taxonID' => $taxonID]);
+        $name = $this->entityManager->getConnection()->executeQuery("SELECT @scientificName, @author")->fetchAssociative();
+
+        if ($name) {
+            $scientificName = $name['@scientificName'];
+            if (!$hideScientificNameAuthors) {
+                $scientificName .= ' ' . $name['@author'];
+            }
+        } else {
+            return null;
+        }
+
+        return $scientificName;
+    }
+
+    /**
+     * get scientific name without hybrids from database for a given taxon-ID
+     */
+    public function getTaxonName(int $taxonID): ?string
+    {
+        $sql = ("SELECT `herbar_view`.GetTaxonName($taxonID) AS taxname");
+        $name = $this->entityManager->getConnection()->executeQuery($sql)->fetchOne();
+        if ($name) {
+            return trim($name);
+        } else {
+            return null;
+        }
 
     }
 }

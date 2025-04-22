@@ -4,6 +4,8 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    uuid_endpoint_url: '%env(UUID_ENDPOINT_URL)%'
+    uuid_endpoint_key: '%env(UUID_ENDPOINT_KEY)%'
 
 services:
     # default configuration for services in *this* file
@@ -20,5 +22,10 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    App\Service\UuidConfiguration:
+        arguments:
+            $endpoint: '%uuid_endpoint_url%'
+            $secret: '%uuid_endpoint_key%'
+            $prefix: '%env(UUID_PREFIX)%'
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

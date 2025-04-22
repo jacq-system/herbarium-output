@@ -3,7 +3,6 @@
 namespace App\Controller\Services\Rest;
 
 use App\Facade\Rest\IiifFacade;
-use App\Service\IiifService;
 use App\Service\SpecimenService;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use OpenApi\Attributes\Get;
@@ -38,7 +37,7 @@ class IiifController extends AbstractFOSRestController
         responses: [
             new \OpenApi\Attributes\Response(
                 response: 200,
-                description: 'List of taxa names',
+                description: 'IIIF manifest uri',
                 content: [new MediaType(
                     mediaType: 'application/json',
                     schema: new Schema(
@@ -90,7 +89,7 @@ If no backend is configured, the webservice tries to get the manifest from the a
         responses: [
             new \OpenApi\Attributes\Response(
                 response: 200,
-                description: 'List of taxa names',
+                description: 'IIIF manifest',
                 content: [new MediaType(
                     mediaType: 'application/json',
                     schema: new Schema(
@@ -104,6 +103,10 @@ If no backend is configured, the webservice tries to get the manifest from the a
             new \OpenApi\Attributes\Response(
                 response: 400,
                 description: 'Bad Request'
+            ),
+            new \OpenApi\Attributes\Response(
+                response: 404,
+                description: 'no manifest available'
             )
         ]
     )]
@@ -123,59 +126,63 @@ If no backend is configured, the webservice tries to get the manifest from the a
         return $this->handleView($view);
     }
 
-    #[Get(
-        path: '/services/rest/iiif/createManifest/{serverID}/{imageIdentifier}',
-        summary: 'create a manifest for an image server with a given image filename',
-        tags: ['iiif'],
-        parameters: [
-            new PathParameter(
-                name: 'serverID',
-                description: 'ID of image server',
-                in: 'path',
-                required: true,
-                schema: new Schema(type: 'integer'),
-                example: 1
-            ),
-            new PathParameter(
-                name: 'imageIdentifier',
-                description: 'image Identifier',
-                in: 'path',
-                required: true,
-                schema: new Schema(type: 'string'),
-                example: 1
-            )
-        ],
-        responses: [
-            new \OpenApi\Attributes\Response(
-                response: 200,
-                description: 'List of taxa names',
-                content: [new MediaType(
-                    mediaType: 'application/json',
-                    schema: new Schema(
-                        properties: [
-                            new Property(property: 'manifest')
-                        ]
-                    )
-                )
-                ]
-            ),
-            new \OpenApi\Attributes\Response(
-                response: 400,
-                description: 'Bad Request'
-            )
-        ]
-    )]
-    #[Route('/services/rest/iiif/createManifest/{serverID}/{imageIdentifier}', name: "services_rest_iiif_createManifest", methods: ['GET'])]
-    public function createManifest(int $serverID, string $imageIdentifier): Response
-    {
-        $manifest = $this->iiifFacade->createManifestFromExtendedCantaloupeImage($serverID, $imageIdentifier);
-
-        if(empty($manifest)){
-            return new JsonResponse(null, 404);
-        }
-        $view = $this->view($manifest, 200);
-
-        return $this->handleView($view);
-    }
+//    #[Get(
+//        path: '/services/rest/iiif/createManifest/{serverID}/{imageIdentifier}',
+//        summary: 'create a manifest for an image server with a given image filename',
+//        tags: ['iiif'],
+//        parameters: [
+//            new PathParameter(
+//                name: 'serverID',
+//                description: 'ID of image server',
+//                in: 'path',
+//                required: true,
+//                schema: new Schema(type: 'integer'),
+//                example: 1
+//            ),
+//            new PathParameter(
+//                name: 'imageIdentifier',
+//                description: 'image Identifier',
+//                in: 'path',
+//                required: true,
+//                schema: new Schema(type: 'string'),
+//                example: 1
+//            )
+//        ],
+//        responses: [
+//            new \OpenApi\Attributes\Response(
+//                response: 200,
+//                description: 'IIIF manifest',
+//                content: [new MediaType(
+//                    mediaType: 'application/json',
+//                    schema: new Schema(
+//                        properties: [
+//                            new Property(property: 'manifest')
+//                        ]
+//                    )
+//                )
+//                ]
+//            ),
+//            new \OpenApi\Attributes\Response(
+//                response: 400,
+//                description: 'Bad Request'
+//            ),
+//            new \OpenApi\Attributes\Response(
+//                response: 404,
+//                description: 'no manifest available'
+//            )
+//        ]
+//    )]
+//    #[Route('/services/rest/iiif/createManifest/{serverID}/{imageIdentifier}', name: "services_rest_iiif_createManifest", methods: ['GET'])]
+//    public function createManifest(int $serverID, string $imageIdentifier): Response
+//    {
+//        $manifest = $this->iiifFacade->createManifestFromExtendedCantaloupeImage($serverID, $imageIdentifier);
+//
+//        if(empty($manifest)){
+//            return new JsonResponse(null, 404);
+//        }
+//        $view = $this->view($manifest, 200);
+//
+//        return $this->handleView($view);
+//    }
 
 }

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace App\Service\Rest;
+namespace App\Service\Tools;
 
 use App\Enum\CoreObjectsEnum;
 use App\Enum\TimeIntervalEnum;
@@ -9,7 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 readonly class StatisticsService
 {
-    public function __construct(protected readonly EntityManagerInterface $entityManager)
+    public function __construct(protected EntityManagerInterface $entityManager)
     {
     }
 

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace App\Service;
+namespace App\Service\Output;
 
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;

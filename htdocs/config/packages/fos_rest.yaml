@@ -3,6 +3,8 @@ fos_rest:
     param_fetcher_listener:  force
     allowed_methods_listener:  true
     routing_loader: false
+    serializer:
+        serialize_null: true
     view:
         view_response_listener:  true
         formats:

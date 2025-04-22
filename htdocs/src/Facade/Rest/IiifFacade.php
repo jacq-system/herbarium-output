@@ -9,12 +9,17 @@ use App\Service\SpecimenService;
 use App\Service\TaxonService;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\ORM\EntityManagerInterface;
+use GuzzleHttp\Exception\GuzzleException;
+use Nyholm\Psr7\Request;
+use Psr\Http\Client\ClientInterface;
+use SimpleXMLElement;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
+use function PHPUnit\Framework\isEmpty;
 
 readonly class IiifFacade extends BaseFacade
 {
-    public function __construct(EntityManagerInterface $entityManager, RouterInterface $router, protected TaxonService $taxonService, protected ReferenceService $referenceService, protected SpecimenService $specimenService)
+    public function __construct(EntityManagerInterface $entityManager, RouterInterface $router, protected TaxonService $taxonService, protected ReferenceService $referenceService, protected SpecimenService $specimenService, protected ClientInterface $client)
     {
         parent::__construct($entityManager, $router);
     }
@@ -26,7 +31,7 @@ readonly class IiifFacade extends BaseFacade
      * @param string $filename name of image file
      * @return array manifest metadata
      */
-    public function createManifestFromExtendedCantaloupeImage(int $server_id, string $identifier)
+    public function createManifestFromExtendedCantaloupeImage(int $server_id, string $identifier): array
     {
         // check if this image identifier is already part of a specimen and return the correct manifest if so
         $sql = "SELECT specimen_ID
@@ -54,7 +59,7 @@ readonly class IiifFacade extends BaseFacade
      * @param int $specimenID ID of specimen
      * @return array received manifest
      */
-    public function getManifest(Specimens $specimen)
+    public function getManifest(Specimens $specimen): array
     {
         $manifest_backend = $specimen->getHerbCollection()?->getIiifDefinition()?->getManifestBackend();
 
@@ -74,16 +79,9 @@ readonly class IiifFacade extends BaseFacade
             if (str_starts_with($manifestBackend, 'POST:')) {
                 $result = $this->getManifestIiifServer($specimen);
             } else {
-                $curl = curl_init($manifestBackend);
-                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-                $curl_response = curl_exec($curl);
-
-                if ($curl_response !== false) {
-                    $result = json_decode($curl_response, true);
-                }
-                curl_close($curl);
+                $request = new Request('GET', $manifestBackend);
+                $response = $this->client->sendRequest($request)->getBody()->getContents();
+                $result = (!empty($response)) ? json_decode($response, true) : array();
             }
             if ($result && !$fallback) {  // we used a true backend, so enrich the manifest with additional data
                 $result['@id'] = $this->router->generate('services_rest_iiif_manifest', ['specimenID' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL);  // to point at ourselves
@@ -123,7 +121,7 @@ readonly class IiifFacade extends BaseFacade
      * @param int $specimenID ID of specimen
      * @param array $parts text and tokens
      */
-    protected function makeURI(Specimens $specimen, string $manifestUri): ?string
+    protected function makeURI(Specimens $specimen, ?string $manifestUri=''): ?string
     {
         $uri = '';
         foreach ($this->parser($manifestUri) as $part) {
@@ -230,9 +228,10 @@ readonly class IiifFacade extends BaseFacade
         $serverId = $specimen->getHerbCollection()->getInstitution()->getImageDefinition()->getId();
 
         $urlmanifestpre = $this->makeURI($specimen, $specimen->getHerbCollection()?->getIiifDefinition()?->getManifestUri());
+        $urlmanifestBackend = substr($this->makeURI($specimen, $specimen->getHerbCollection()?->getIiifDefinition()?->getManifestBackend()), 5);
         $identifier = $this->getFilename($specimen);
 
-        return $this->createManifestFromExtendedCantaloupe($serverId, $identifier, $urlmanifestpre);
+        return $this->createManifestFromExtendedCantaloupe($serverId, $identifier, $urlmanifestpre, $urlmanifestBackend);
     }
 
     /**
@@ -284,63 +283,111 @@ readonly class IiifFacade extends BaseFacade
     }
 
     /**
-     * create image manifest as an array for a given specimen with data from a Cantaloupe-Server extended with a Djatoka-Interface
-     *
-     * @param int $specimenID specimen-ID
-     * @return array manifest metadata
+     * create image manifest as an array for a given specimen with data from a Cantaloupe-Server with a djatoka-extension or another api
      */
-    protected function createManifestFromExtendedCantaloupe(int $server_id, string $identifier, string $urlmanifestpre)
+    protected function createManifestFromExtendedCantaloupe(int $server_id, string $identifier, string $urlmanifestpre, ?string $urlmanifestBackend = ''):array
     {
-        $sql = "SELECT iiif.manifest_backend, img.imgserver_url, img.key
+        $sql = "SELECT iiif.manifest_backend, iiif.extension, img.imgserver_url, img.key
                                    FROM tbl_img_definition img
                                     LEFT JOIN herbar_pictures.iiif_definition iiif ON iiif.source_id_fk = img.source_id_fk
                                    WHERE img.img_def_ID = :server_id";
         $imgServer = $this->entityManager->getConnection()->executeQuery($sql, ['server_id' => $server_id])->fetchAssociative();
 
-        if (empty($imgServer['manifest_backend'])) {
-            return array();  // nothing found
+        if (empty($urlmanifestBackend)) {
+            $urlmanifestBackend = substr($imgServer['manifest_backend'], 5);
         }
 
-        // ask the enhanced djatoka server for resources with metadata
-        $data = array(
-            'id' => '1',
-            'method' => 'listResourcesWithMetadata',
-            'params' => array(
-                $imgServer['key'],
-                array(
-                    $identifier,
-                    $identifier . "_%",
-                    $identifier . "A",
-                    $identifier . "B",
-                    "tab_" . $identifier,
-                    "obs_" . $identifier,
-                    "tab_" . $identifier . "_%",
-                    "obs_" . $identifier . "_%"
-                )
-            )
-        );
-
-        $data_string = json_encode($data);
-        $curl = curl_init();
         // TODO example for curl request debugging
 //        curl_setopt($curl, CURLOPT_PROXY, 'http://mitmproxy:8080');
 
-        curl_setopt($curl, CURLOPT_URL, substr($imgServer['manifest_backend'], 5));
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($curl, CURLOPT_POST, true);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json',
-                'Content-Length: ' . strlen($data_string))
-        );
+        switch ($imgServer['extension']) {
+            case 'djatoka': // ask the djatoka extension for resources with metadata
+                $data = array(
+                    'id' => '1',
+                    'method' => 'listResourcesWithMetadata',
+                    'params' => array(
+                        $imgServer['key'],
+                        array(
+                            $identifier,
+                            $identifier . "_%",
+                            $identifier . "A",
+                            $identifier . "B",
+                            "tab_" . $identifier,
+                            "obs_" . $identifier,
+                            "tab_" . $identifier . "_%",
+                            "obs_" . $identifier . "_%"
+                        )
+                    )
+                );
 
-        $curl_response = curl_exec($curl);
-        if ($curl_response === false) {
-            return [];
+                $data_string = json_encode($data);
+                $curl = curl_init();
+                curl_setopt($curl, CURLOPT_URL, $urlmanifestBackend);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_setopt($curl, CURLOPT_POST, true);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json',
+                        'Content-Length: ' . strlen($data_string))
+                );
+
+                $curl_response = curl_exec($curl);
+                $obj = json_decode($curl_response, TRUE);
+                curl_close($curl);
+
+                break;
+            case 's3proxy':  // the iiif-server uses a s3-backend via a proxy, which we can use
+
+
+                try {
+                    $request = new Request('GET', $urlmanifestBackend . "?prefix=$identifier");
+                    $response = $this->client->sendRequest($request)->getBody()->getContents();
+
+                    $xml = new SimpleXMLElement($response);
+
+                    $obj['result'] = array();
+                    // "Contents" gives an array of objects
+                    foreach ($xml->Contents as $contents) {
+                        if (!empty($contents->Key[0])) {
+                            $filename = pathinfo((string) $contents->Key, PATHINFO_FILENAME);
+                            // the backend only gives the filenames, to get the width and height we need to ask the iiif-server
+                            $request = new Request('GET', $imgServer['imgserver_url'] . $filename . "/info.json");
+                            $response = $this->client->sendRequest($request)->getBody()->getContents();
+                            $data = json_decode($response, true);
+                            $obj['result'][] = [
+                                'identifier' => $filename,
+                                'path' => '/' . $filename,
+                                'width' => $data['width'],
+                                'height' => $data['height']
+                            ];
+                        }
+                    }
+                }
+                catch (\Exception) {
+                    return array();  //something went wrong, so consider it as "nothing found"
+                }
+
+                break;
+            default:    // no extension or api present, so use the identifier as filename and ask the iiif-server for width and height
+                try {
+                    $request = new Request('GET', $imgServer['imgserver_url'] . $identifier . "/info.json");
+                    $response = $this->client->sendRequest($request)->getBody()->getContents();
+                    if (isEmpty($response)){
+                        return array();
+                    }
+                    $data = json_decode($response, true);
+                    $obj['result'][0] = [
+                        'identifier' => $identifier,
+                        'path' => '/' . $identifier,
+                        'width' => $data['width'],
+                        'height' => $data['height']
+                    ];
+                }
+                catch (GuzzleException) {
+                    return array();  //something went wrong, so consider it as "nothing found"
+                }
         }
-        $obj = json_decode($curl_response, TRUE);
-        curl_close($curl);
 
         if (empty($obj['result'])) {
             return array();  // nothing found
@@ -436,8 +483,15 @@ readonly class IiifFacade extends BaseFacade
 
         $dwcData = $this->specimenService->getDarwinCore($specimenEntity);
         foreach ($dwcData as $label => $value) {
-            $metadata[] = array('label' => $label,
-                'value' => $value);
+            if (is_array($value)) {
+                foreach ($value as $subValue) {
+                    $metadata[] = array('label' => $label,
+                        'value' => $subValue);
+                }
+            } else {
+                $metadata[] = array('label' => $label,
+                    'value' => $value);
+            }
         }
 
         $collector =$specimenEntity->getCollector();

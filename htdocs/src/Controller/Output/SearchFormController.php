@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace App\Controller\Front;
+namespace App\Controller\Output;
 
 use App\Facade\SearchFormFacade;
 use App\Service\CollectionService;
-use App\Service\ExcelService;
 use App\Service\ImageService;
 use App\Service\InstitutionService;
-use App\Service\SearchFormSessionService;
+use App\Service\Output\ExcelService;
+use App\Service\Output\SearchFormSessionService;
 use App\Service\SpecimenService;
 use PhpOffice\PhpSpreadsheet\Writer\Csv;
 use PhpOffice\PhpSpreadsheet\Writer\Ods;

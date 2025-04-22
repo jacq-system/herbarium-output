@@ -78,23 +78,7 @@ class GeoController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(property: 'zone', type: 'integer', example: 33),
-                                    new Property(property: 'hemisphere', type: 'string', example: "N"),
-                                    new Property(property: 'easting', type: 'integer', example: 601779),
-                                    new Property(property: 'northing', type: 'integer', example: 5340548),
-                                    new Property(property: 'string', type: 'string', example: "33U 601779 5340548"),
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -182,26 +166,7 @@ class GeoController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(
-                                        property: 'nation',
-                                        properties: [
-                                            new Property(property: 'nrBoundaries', type: 'integer', example: 1),
-                                            new Property(property: 'inside', type: 'boolean', example: true),
-                                        ],
-                                        type: 'object'
-                                    )
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(

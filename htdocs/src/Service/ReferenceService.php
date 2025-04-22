@@ -61,48 +61,6 @@ readonly class ReferenceService extends BaseService
 
     }
 
-    /**
-     * check if there are any classification children of the taxonID according to this reference
-     */
-    public function hasClassificationChildren(int $taxonID, int $referenceID): bool
-    {
-        $sqlQueryChild = "SELECT ts.taxonID
-                                       FROM tbl_tax_synonymy ts
-                                        LEFT JOIN tbl_tax_classification tc ON ts.tax_syn_ID = tc.tax_syn_ID
-                                       WHERE ts.source_citationID = :referenceID
-                                        AND ts.acc_taxon_ID IS NULL
-                                        AND tc.parent_taxonID = :taxonID";
-        $child = $this->query($sqlQueryChild, ['taxonID' => $taxonID, 'referenceID' => $referenceID])->fetchAssociative();
-        if ($child !== false) {
-            return true;
-        } else {
-            $sqlQueryChild = "SELECT ts.taxonID
-                                       FROM tbl_tax_synonymy ts
-                                       WHERE ts.source_citationID = :referenceID
-                                        AND ts.acc_taxon_ID = $taxonID";
-            $child = $this->query($sqlQueryChild, ['referenceID' => $referenceID])->fetchAssociative();
-            return (bool)$child;
-        }
-    }
-
-    /**
-     * get all citations which belong to the given periodical
-     */
-    public function getPeriodicalChildrenReferences(int $referenceID): array
-    {
-
-        $sql = "SELECT `herbar_view`.GetProtolog(l.citationID) AS referenceName, l.citationID AS referenceID
-                    FROM tbl_lit l
-                     LEFT JOIN tbl_tax_synonymy ts ON ts.source_citationID = l.citationID
-                     LEFT JOIN tbl_tax_classification tc ON tc.tax_syn_ID = ts.tax_syn_ID
-                    WHERE ts.tax_syn_ID IS NOT NULL
-                     AND tc.classification_id IS NOT NULL
-                     AND l.periodicalID = :referenceID
-                    GROUP BY ts.source_citationID
-                    ORDER BY referenceName";
-        return $this->query($sql, ['referenceID' => $referenceID])->fetchAllAssociative();
-
-    }
 
     /**
      * get all citations which belong to the given citation
@@ -147,7 +105,7 @@ readonly class ReferenceService extends BaseService
 
     }
 
-    public function findCitations(int $insertSeries, int $referenceID, int $taxonID): array
+    public function findCitationsId(int $insertSeries, int $referenceID, int $taxonID): array
     {
         $sql = "SELECT citationID
                 FROM tbl_classification_citation_insert
@@ -155,18 +113,10 @@ readonly class ReferenceService extends BaseService
                  AND taxonID = :taxonID
                  AND referenceId = :referenceID
                 ORDER BY sequence";
-        return $this->query($sql, ['taxonID' => $taxonID, 'insertSeries' => $insertSeries, 'referenceID' => $referenceID])->fetchAllAssociative();
+        return $this->query($sql, ['taxonID' => $taxonID, 'insertSeries' => $insertSeries, 'referenceID' => $referenceID])->fetchFirstColumn();
 
     }
 
-    public function getCitationName(int $id): ?string
-    {
-        $sql = "SELECT `herbar_view`.GetProtolog(`citationID`) AS `referenceName`
-                           FROM `tbl_lit`
-                           WHERE `citationID` = :id";
-        $name = $this->query($sql, ['id' => $id])->fetchOne();
-        return $name === false ? null : $name;
-    }
 
 
 }

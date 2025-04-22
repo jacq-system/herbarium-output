@@ -4,7 +4,7 @@ namespace App\Controller\Services\Rest;
 
 use App\Enum\CoreObjectsEnum;
 use App\Enum\TimeIntervalEnum;
-use App\Service\Rest\StatisticsService;
+use App\Service\Tools\StatisticsService;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\Items;

@@ -2,14 +2,14 @@
 
 namespace App\Facade;
 
-use App\Controller\Front\SearchFormController;
+use App\Controller\Output\SearchFormController;
 use App\Entity\Jacq\Herbarinput\Specimens;
 use App\Entity\Jacq\Herbarinput\Typus;
-use App\Service\ExcelService;
 use App\Service\GeoService;
 use App\Service\InstitutionService;
-use App\Service\KmlService;
-use App\Service\SearchFormSessionService;
+use App\Service\Output\ExcelService;
+use App\Service\Output\KmlService;
+use App\Service\Output\SearchFormSessionService;
 use App\Service\SpecimenService;
 use App\Service\TypusService;
 use Doctrine\Common\Collections\Order;

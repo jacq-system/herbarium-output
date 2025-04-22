@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace App\Controller\Front;
+namespace App\Controller\Output;
 
 use App\Entity\User;
 use App\Enum\CoreObjectsEnum;
 use App\Enum\TimeIntervalEnum;
-use App\Service\DjatokaService;
 use App\Service\Rest\DevelopersService;
-use App\Service\Rest\StatisticsService;
+use App\Service\Tools\DjatokaService;
+use App\Service\Tools\StatisticsService;
 use Doctrine\ORM\EntityNotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,7 +20,7 @@ class ToolsController extends AbstractController
     public function __construct(protected DevelopersService $developersService, protected readonly DjatokaService $djatokaService, protected readonly StatisticsService $statisticsService)
     {
     }
- 
+
     #[Route('/tools/statistics', name: 'app_tools_statistics')]
     public function jacqStatistics(): Response
     {

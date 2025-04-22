@@ -2,6 +2,7 @@
 
 namespace App\Controller\Services\Rest;
 
+use App\Repository\Herbarinput\SpeciesRepository;
 use App\Service\TaxonService;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use OpenApi\Attributes\Get;
@@ -16,7 +17,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class AutocompleteController extends AbstractFOSRestController
 {
-    public function __construct(protected readonly TaxonService $taxaNamesService)
+    public function __construct(protected readonly SpeciesRepository $speciesRepository)
     {
     }
 
@@ -31,7 +32,7 @@ class AutocompleteController extends AbstractFOSRestController
                 in: 'path',
                 required: true,
                 schema: new Schema(type: 'string'),
-                example: 'Asteranth'
+                example: 'Asteranthe'
             )
         ],
         responses: [
@@ -44,30 +45,15 @@ class AutocompleteController extends AbstractFOSRestController
                         type: 'array',
                         items: new Items(
                             properties: [
-                                new Property(property: 'label', description: 'scientific name', type: 'string', example: 'Aster L.'),
-                                new Property(property: 'value', description: 'scientific name', type: 'string', example: 'Aster L.'),
-                                new Property(property: 'id', description: 'ID of taxon name', type: 'integer', example: 16885),
+                                new Property(property: 'label', description: 'scientific name', type: 'string', example: 'Asteranthera Hanst.'),
+                                new Property(property: 'value', description: 'scientific name', type: 'string', example: 'Asteranthera Hanst.'),
+                                new Property(property: 'id', description: 'ID of taxon name', type: 'integer', example: 16889),
                                 new Property(property: 'uuid', description: 'URL to UUID service', type: 'object', example: '{"href": "url to get the uuid"}')
                             ],
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(property: 'label', description: 'scientific name', type: 'string', example: 'Aster L.'),
-                                    new Property(property: 'value', description: 'scientific name', type: 'string', example: 'Aster L.'),
-                                    new Property(property: 'id', description: 'ID of taxon name', type: 'integer', example: 16885),
-                                    new Property(property: 'uuid', description: 'URL to UUID service', type: 'object', example: '{"href": "url to get the uuid"}')
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -80,13 +66,13 @@ class AutocompleteController extends AbstractFOSRestController
     public function scientificNames(string $term): Response
     {
         $results = [];
-        $data = $this->taxaNamesService->autocompleteStartsWith($term);
+        $data = $this->speciesRepository->autocompleteStartsWith($term);
         foreach ($data as $row) {
             $results[] = array(
-                "label" => $row['ScientificName'],
-                "value" => $row['ScientificName'],
-                "id" => $row['taxonID'],
-                "uuid" => array('href' => $this->generateUrl('services_rest_scinames_uuid', ['taxonID' => $row['taxonID']], UrlGeneratorInterface::ABSOLUTE_URL))
+                "label" => $row['scientificName'],
+                "value" => $row['scientificName'],
+                "id" => $row['id'],
+                "uuid" => array('href' => $this->generateUrl('services_rest_scinames_uuid', ['taxonID' => $row['id']], UrlGeneratorInterface::ABSOLUTE_URL))
             );
         }
         $view = $this->view($results, 200);

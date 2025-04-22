@@ -3,6 +3,8 @@
 namespace App\Facade\Rest;
 
 
+use App\Repository\Herbarinput\LiteratureRepository;
+use App\Repository\Herbarinput\SynonymyRepository;
 use App\Service\ReferenceService;
 use App\Service\TaxonService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -11,7 +13,7 @@ use Symfony\Component\Routing\RouterInterface;
 
 readonly class ClassificationFacade
 {
-    public function __construct(protected ReferenceService $referenceService, protected EntityManagerInterface $entityManager, protected TaxonService $taxonService, protected RouterInterface $router)
+    public function __construct(protected ReferenceService $referenceService, protected EntityManagerInterface $entityManager, protected TaxonService $taxonService, protected RouterInterface $router, protected LiteratureRepository $literatureRepository, protected SynonymyRepository $synonymyRepository)
     {
     }
 
@@ -76,7 +78,7 @@ readonly class ClassificationFacade
                     "referenceId" => intval($dbRow['referenceId']),
                     "referenceType" => "citation", "taxonID" => $taxonID,
                     "uuid" => array('href' => $this->router->generate('services_rest_scinames_uuid', ['taxonID' => $taxonID], UrlGeneratorInterface::ABSOLUTE_URL)),
-                    "hasChildren" => $this->referenceService->hasClassificationChildren($taxonID, $dbRow['referenceId']),
+                    "hasChildren" => $this->synonymyRepository->hasClassificationChildren($taxonID, $dbRow['referenceId']),
                     "hasType" => false, //TODO always false?
                     "hasSpecimen" => false //TODO always false?
                 ];
@@ -252,7 +254,7 @@ readonly class ClassificationFacade
 
         switch ($referenceType) {
             case 'periodical':
-                $dbRows = $this->referenceService->getPeriodicalChildrenReferences($referenceID);
+                $dbRows = $this->literatureRepository->getChildrenReferences($referenceID);
                 foreach ($dbRows as $dbRow) {
                     $results[] = array(
                         "taxonID" => 0,
@@ -523,15 +525,15 @@ readonly class ClassificationFacade
     {
         $results = [];
 
-        $dbRows = $this->referenceService->findCitations($insertSeries, $referenceID, $taxonID);
-        foreach ($dbRows as $row) {
+        $ids = $this->referenceService->findCitationsId($insertSeries, $referenceID, $taxonID);
+        foreach ($ids as $id) {
             $results[] = array(
-                'referenceName' => $this->referenceService->getCitationName($row['citationID']),
-                'referenceId' => intval($row['citationID']),
+                'referenceName' => $this->literatureRepository->getProtolog($id),
+                'referenceId' => $id,
                 "referenceType" => "citation",
                 "taxonID" => $taxonID,
                 "uuid" => array('href' => $this->router->generate('services_rest_scinames_uuid', ['taxonID' => $taxonID], UrlGeneratorInterface::ABSOLUTE_URL)),
-                "hasChildren" => $this->referenceService->hasClassificationChildren($taxonID, $row['citationID']),
+                "hasChildren" => $this->synonymyRepository->hasClassificationChildren($taxonID, $id),
             );
         }
 
