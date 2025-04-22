@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 readonly class CoordinateBoundaryService
 {
 
-    public function __construct(protected readonly EntityManagerInterface $entityManager)
+    public function __construct(protected EntityManagerInterface $entityManager)
     {
     }
 
@@ -47,7 +47,7 @@ readonly class CoordinateBoundaryService
         $boundaries = $this->entityManager->getConnection()->executeQuery($sql, ['provinceID' => $provinceID])->fetchAllAssociative();
 
         return array("nrBoundaries" => count($boundaries),
-            "inside"       => $this->checkBoundingBox(floatval($lat), floatval($lon), $boundaries));
+            "inside"       => $this->checkBoundingBox($lat, $lon, $boundaries));
     }
 
 
