@@ -68,37 +68,7 @@ class StableIdentifierController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(property: 'specimenID', description: 'ID of specimen', type: 'integer', example: 1385945
-                                    ),
-                                    new Property(property: 'stableIdentifierLatest', description: 'Latest stable identifier', properties: [
-                                        new Property(property: 'stableIdentifier', description: 'Stable identifier', type: 'string'),
-                                        new Property(property: 'timestamp', description: 'Timestamp of the stable identifier', type: 'string', format: 'date-time'),
-                                        new Property(property: 'link', description: 'Link to details page of JACQ (for convenience)', type: 'string', format: 'uri'),
-                                    ],
-                                        type: 'object'
-                                    ),
-                                    new Property(
-                                        property: 'stableIdentifierList', description: 'List of all found stable identifiers, ordered by timestamp', type: 'array',
-                                        items: new Items(
-                                            properties: [
-                                                new Property(property: 'stableIdentifier', description: 'Stable identifier', type: 'string'),
-                                                new Property(property: 'timestamp', description: 'Timestamp of the stable identifier', type: 'string', format: 'date-time'),
-                                            ],
-                                            type: 'object'
-                                        )
-                                    ),
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -113,7 +83,8 @@ class StableIdentifierController extends AbstractFOSRestController
         $results = [];
         try {
             $specimen = $this->specimenService->findAccessibleForPublic($specimenID);
-        }catch (\Exception $e){
+        }
+        catch (\Exception $e){
             $view = $this->view([], 404);
             return $this->handleView($view);
         }
@@ -122,12 +93,10 @@ class StableIdentifierController extends AbstractFOSRestController
             $results['stableIdentifierLatest'] = $this->specimenService->sid2array($specimen);
             $results['stableIdentifierList'] = $this->specimenService->sids2array($specimen);
         }else{
-            //TODO better to use http codes, left for backward compatibility
-
-            $results['error'] = (empty($results)) ? "nothing to do" : '';
+            $view = $this->view("Stable Identifier does not exist", 404);
+            return $this->handleView($view);
         }
         $view = $this->view($results, 200);
-
         return $this->handleView($view);
     }
 
@@ -283,78 +252,7 @@ class StableIdentifierController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: [
-                                    new Property(
-                                        property: 'total',
-                                        description: 'Total number of records found',
-                                        type: 'integer'
-                                    ),
-                                    new Property(
-                                        property: 'result',
-                                        description: 'List of found entries',
-                                        type: 'array',
-                                        items: new Items(
-                                            properties: [
-                                                new Property(
-                                                    property: 'specimenID',
-                                                    description: 'ID of specimen',
-                                                    type: 'integer'
-                                                ),
-                                                new Property(
-                                                    property: 'link',
-                                                    description: 'Link to details-page of JACQ (for convenience)',
-                                                    type: 'string',
-                                                    format: 'uri'
-                                                ),
-                                                new Property(
-                                                    property: 'errorList',
-                                                    description: 'List of errors and existing stable identifiers (if any) for this specimen-ID',
-                                                    type: 'array',
-                                                    items: new Items(
-                                                        properties: [
-                                                            new Property(
-                                                                property: 'stableIdentifier',
-                                                                description: 'Stable identifier (if it exists) or null',
-                                                                type: 'string',
-                                                                nullable: true
-                                                            ),
-                                                            new Property(
-                                                                property: 'timestamp',
-                                                                description: 'Timestamp of creation',
-                                                                type: 'string',
-                                                                format: 'date-time'
-                                                            ),
-                                                            new Property(
-                                                                property: 'error',
-                                                                description: 'The error description',
-                                                                type: 'string'
-                                                            ),
-                                                            new Property(
-                                                                property: 'link',
-                                                                description: 'Link to details-page of JACQ of the blocking specimen (if present)',
-                                                                type: 'string',
-                                                                format: 'uri',
-                                                                nullable: true
-                                                            ),
-                                                        ],
-                                                        type: 'object'
-                                                    )
-                                                ),
-                                            ],
-                                            type: 'object'
-                                        )
-                                    ),
-                                ],
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
@@ -440,43 +338,7 @@ class StableIdentifierController extends AbstractFOSRestController
                             type: 'object'
                         )
                     )
-                ),
-                    new MediaType(
-                        mediaType: 'application/xml',
-                        schema: new Schema(
-                            type: 'array',
-                            items: new Items(
-                                properties: array(
-                                    new Property(property: 'page', description: 'Page currently displayed', type: 'integer'),
-                                    new Property(property: 'previousPage', description: 'Link to the previous page', type: 'string', format: 'uri', nullable: true),
-                                    new Property(property: 'nextPage', description: 'Link to the next page', type: 'string', format: 'uri', nullable: true),
-                                    new Property(property: 'firstPage',description: 'Link to the first page',type: 'string',format: 'uri'),
-                                    new Property(property: 'lastPage',description: 'Link to the last page',type: 'string',format: 'uri'),
-                                    new Property(property: 'totalPages',description: 'Total number of pages',type: 'integer'),
-                                    new Property(property: 'total',description: 'Total number of records found',type: 'integer'),
-                                    new Property(property: 'result',description: 'List of found entries',type: 'array',
-                                        items: new Items(
-                                            properties: array(
-                                                new Property(property: 'specimenID',description: 'ID of the specimen',type: 'integer'),
-                                                new Property(property: 'numberOfEntries',description: 'Number of records found for this specimen ID',type: 'integer'),
-                                                new Property(property: 'stableIdentifierList',description: 'List of stable identifiers for this specimen ID',type: 'array',
-                                                    items: new Items(
-                                                        properties: array(
-                                                            new Property(property: 'stableIdentifier',description: 'Stable identifier',type: 'string'),
-                                                            new Property(property: 'timestamp',description: 'Timestamp associated with the stable identifier',type: 'string',format: 'date-time'),
-                                                        ),
-                                                        type: 'object'
-                                                    )
-                                                ),
-                                            ),
-                                            type: 'object'
-                                        )
-                                    ),
-                                ),
-                                type: 'object'
-                            )
-                        )
-                    )
+                )
                 ]
             ),
             new \OpenApi\Attributes\Response(
