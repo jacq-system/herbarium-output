@@ -35,7 +35,7 @@ class ExternalScientificNamesService
             } catch (TransportExceptionInterface $e) {
                 $this->errors[$externalService->getId()] = $e->getMessage();
             } finally {
-                $this->result[$externalService->getName()] = [
+                $this->result[$externalService->getApiCode()] = [
                     'match'      => [],
                     'candidates' => [],
                     'serviceID'  => $externalService->getId(),
@@ -86,11 +86,11 @@ class ExternalScientificNamesService
     {
         if (isset($result['count']) && $result['count'] > 0) {
             if ($result['count'] === 1) {
-                $this->result[$service->getName()]['match'] = array('id'    => $result['results'][0]['key'],
+                $this->result[$service->getApiCode()]['match'] = array('id'    => $result['results'][0]['key'],
                     'name'  => $result['results'][0]['scientificName']);
             } else {
                 foreach ($result['results'] as $candidate) {
-                    $this->result[$service->getName()]['candidates'][] = array('id'   => $candidate['key'],
+                    $this->result[$service->getApiCode()]['candidates'][] = array('id'   => $candidate['key'],
                         'name' => $candidate['scientificName']);
                 }
             }
@@ -106,11 +106,11 @@ class ExternalScientificNamesService
     private function wfo_read(ExternalServices $service, $result): void
     {
         if (!empty($result['match'])) {
-            $this->result[$service->getName()]['match'] = array('id'    => $result['match']['wfo_id'],
+            $this->result[$service->getApiCode()]['match'] = array('id'    => $result['match']['wfo_id'],
                 'name'  => $result['match']['full_name_plain']);
         } elseif (!empty($result['candidates'])) {
             foreach ($result['candidates'] as $candidate) {
-                $this->result[$service->getName()]['candidates'][] = array('id'   => $candidate['wfo_id'],
+                $this->result[$service->getApiCode()]['candidates'][] = array('id'   => $candidate['wfo_id'],
                     'name' => $candidate['full_name_plain']);
             }
         }
@@ -126,11 +126,11 @@ class ExternalScientificNamesService
     {
         if (count($result) > 1) {
             foreach ($result as $candidate) {
-                $this->result[$service->getName()]['candidates'][] = array('id'   => $candidate['AphiaID'],
+                $this->result[$service->getApiCode()]['candidates'][] = array('id'   => $candidate['AphiaID'],
                     'name' => $candidate['scientificname']);
             }
         } else {
-            $this->result[$service->getName()]['match'] = array('id'   => $result[0]['AphiaID'],
+            $this->result[$service->getApiCode()]['match'] = array('id'   => $result[0]['AphiaID'],
                 'name' => $result[0]['scientificname']);
         }
     }
