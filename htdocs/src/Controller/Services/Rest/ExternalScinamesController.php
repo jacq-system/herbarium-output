@@ -2,7 +2,7 @@
 
 namespace App\Controller\Services\Rest;
 
-use App\Service\Rest\ExternalScinamesService;
+use App\Service\Rest\ExternalScientificNamesService;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\Items;
@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ExternalScinamesController extends AbstractFOSRestController
 {
-    public function __construct(protected readonly ExternalScinamesService $scinamesService)
+    public function __construct(protected readonly ExternalScientificNamesService $scinamesService)
     {
     }
 
@@ -65,7 +65,7 @@ class ExternalScinamesController extends AbstractFOSRestController
     public function search(string $term): Response
     {
         $results = $this->scinamesService->searchAll($term);
-        $view = $this->view($results, 418);
+        $view = $this->view($results, 200);
 
         return $this->handleView($view);
     }
