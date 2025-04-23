@@ -89,7 +89,7 @@ readonly class IiifFacade extends BaseFacade
                 $result['label'] = $this->specimenService->getScientificName($specimen);
                 $result['attribution'] = $specimen->getHerbCollection()->getInstitution()->getLicenseUri();
                 $result['logo'] = array('@id' => $specimen->getHerbCollection()->getInstitution()->getOwnerLogoUri());
-                $rdfLink = array('@id' => $specimen->getMainStableIdentifier(),
+                $rdfLink = array('@id' => $specimen->getMainStableIdentifier()->getIdentifier(),
                     'label' => 'RDF',
                     'format' => 'application/rdf+xml',
                     'profile' => 'https://cetafidentifiers.biowikifarm.net/wiki/CSPP');

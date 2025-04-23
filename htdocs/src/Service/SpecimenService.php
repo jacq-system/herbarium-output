@@ -336,8 +336,8 @@ readonly class SpecimenService extends BaseService
             'dwc:country' => $specimen->getCountry()?->getNameEng(),
             'dwc:countryCode' => $specimen->getCountry()?->getIsoCode3(),
             'dwc:locality' => $specimen->getLocality(),
-            'dwc:decimalLatitude' => $specimen->getLatitude(),
-            'dwc:decimalLongitude' => $specimen->getLongitude(),
+            'dwc:decimalLatitude' => round($specimen->getLatitude(), 5),
+            'dwc:decimalLongitude' => round($specimen->getLongitude(),5),
             'dwc:verbatimLatitude' => $specimen->getVerbatimLatitude(),
             'dwc:verbatimLongitude' => $specimen->getVerbatimLongitude(),
             'dwc:eventDate' => $specimen->getDatesAsString(),
@@ -363,12 +363,12 @@ readonly class SpecimenService extends BaseService
         }
 
         return [
-            'jacq:stableIdentifier' => $specimen->getMainStableIdentifier(),
+            'jacq:stableIdentifier' => $specimen->getMainStableIdentifier()->getIdentifier(),
             'jacq:specimenID' => $specimen->getId(),
             'jacq:scientificName' => $this->getScientificName($specimen),
             'jacq:family' => $specimen->getSpecies()->getGenus()->getFamily()->getName(),
             'jacq:genus' => $specimen->getSpecies()->getGenus()->getName(),
-            'jacq:epithet' => $specimen->getSpecies()->getEpithetSpecies(),
+            'jacq:epithet' => $specimen->getSpecies()->getEpithetSpecies()->getName(),
             'jacq:HerbNummer' => $specimen->getHerbNumber(),
             'jacq:CollNummer' => $specimen->getCollectionNumber(),
             'jacq:observation' => $specimen->isObservation() ? '1' : '0',
