@@ -276,44 +276,4 @@ readonly class ObjectsFacade
         return $ret;
     }
 
-    public function resolveSpecimensFromList(array $ids, string $fieldGroups = ''): array
-    {
-        $result = [];
-        $alreadyFound = [];
-        foreach ($ids as $item) {
-            $item = trim($item);
-            if (is_numeric(substr($item, 0, 1))) {
-                $specimenID = intval($item);
-                if (!in_array($specimenID, $alreadyFound)) {
-                    $specimen = $this->specimenService->findAccessibleForPublic($specimenID);
-                    $data = $this->resolveSpecimen($specimen, $fieldGroups, true);
-                    if (!empty($data)) {
-                        $alreadyFound[] = $specimenID;
-                        $result[] = array_merge(["searchterm" => $specimenID], $data);
-                    } else {
-                        $result[] = ["error" => "Identifier $specimenID not found"];
-                    }
-                }
-            } else {
-                $this->herbNumberScan->initialize($item);
-                $specimenID = $this->specimenService->getSpecimenIdFromHerbNummer($this->herbNumberScan->getHerbNumber(), $this->herbNumberScan->getSourceId());
-                if ($specimenID) {
-                    if (!in_array($specimenID, $alreadyFound)) {
-                        $specimen = $this->specimenService->findAccessibleForPublic($specimenID);
-                        $data = $this->resolveSpecimen($specimen, $fieldGroups, true);
-                        if (!empty($data)) {
-                            $alreadyFound[] = $specimenID;
-                        }
-                        $result[] = array_merge(["searchterm" => $item], $data);
-                    }
-                } else {
-                    $result[] = ["error" => "Identifier $item not found"];
-                }
-            }
-        }
-        return $result;
-    }
-
-
-
 }
