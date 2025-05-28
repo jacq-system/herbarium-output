@@ -10,8 +10,6 @@ doctrine:
                 replicas: # usage of replicas - https://medium.com/@dominykasmurauskas1/how-to-add-read-write-replicas-on-symfony-6-using-doctrine-bundle-a46447449f35
                     replica1:
                         url: '%env(resolve:DATABASE_RO_URL)%'
-                options:
-                    1009: '/etc/mysql/ssl/ca-cert.pem' # PDO::MYSQL_ATTR_SSL_CA
 
     orm:
         auto_generate_proxy_classes: true
@@ -51,6 +49,14 @@ when@prod:
             result_cache_driver:
                 type: pool
                 pool: doctrine.result_cache_pool
+        dbal:
+            connections:
+                default:
+                    replicas: # usage of replicas - https://medium.com/@dominykasmurauskas1/how-to-add-read-write-replicas-on-symfony-6-using-doctrine-bundle-a46447449f35
+                        replica1:
+                            url: '%env(resolve:DATABASE_RO_URL)%'
+                            options:
+                                1009: '/etc/mysql/ssl/ca-cert.pem' # PDO::MYSQL_ATTR_SSL_CA
 
     framework:
         cache:
