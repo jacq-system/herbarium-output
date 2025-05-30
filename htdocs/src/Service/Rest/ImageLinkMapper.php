@@ -84,12 +84,31 @@ class ImageLinkMapper
         $this->imageLinks[0] = $iifUrl . "?manifest=" . $this->iiifFacade->resolveManifestUri($this->specimen);
         $manifest = $this->iiifFacade->getManifest($this->specimen);
         if (!empty($manifest)) {
-            foreach ($manifest['sequences'] as $sequence) {
-                foreach ($sequence['canvases'] as $canvas) {
-                    foreach ($canvas['images'] as $image) {
-                        $this->fileLinks['full'][] = $image['resource']['service']['@id'] . "/full/max/0/default.jpg";
-                        $this->fileLinks['europeana'][] = $image['resource']['service']['@id'] . "/full/1200,/0/default.jpg";
-                        $this->fileLinks['thumb'][] = $image['resource']['service']['@id'] . "/full/160,/0/default.jpg";
+
+            $version = 2;
+            foreach ($manifest['@context'] as $context) {
+                if ($context == "http://iiif.io/api/presentation/3/context.json") {
+                    $version = 3;
+                    break;
+                }
+            }
+            if ($version == 2) {
+                foreach ($manifest['sequences'] as $sequence) {
+                    foreach ($sequence['canvases'] as $canvas) {
+                        foreach ($canvas['images'] as $image) {
+                            $this->fileLinks['full'][] = $image['resource']['service']['@id'] . "/full/max/0/default.jpg";
+                            $this->fileLinks['europeana'][] = $image['resource']['service']['@id'] . "/full/1200,/0/default.jpg";
+                            $this->fileLinks['thumb'][] = $image['resource']['service']['@id'] . "/full/160,/0/default.jpg";
+                        }
+                    }
+                }
+            } else {
+                foreach ($manifest['thumbnail'] as $thumbnail) {
+                    foreach ($thumbnail['service'] as $service) {
+                        $this->fileLinks['full'][] = $service['id'] . "/full/max/0/default.jpg";
+                        $this->fileLinks['europeana'][] = $service['id'] . "/full/1200,/0/default.jpg";
+                        $this->fileLinks['thumb'][] = $service['id'] . "/full/160,/0/default.jpg";
+                        break;  // use the first service only
                     }
                 }
             }

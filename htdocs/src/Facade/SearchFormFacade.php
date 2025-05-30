@@ -145,7 +145,7 @@ class SearchFormFacade
     {
         $this->queryBuilder
             ->join('c.institution', 'i')
-            ->andWhere('i.code = :institution OR i.name = :institution')
+            ->andWhere('i.code = :institution')
             ->setParameter('institution', $code);
     }
 
@@ -418,7 +418,7 @@ class SearchFormFacade
     public function countResults(): int
     {
         $this->buildQuery();
-        return $this->queryBuilder->select('count(DISTINCT s.id)')->getQuery()->getSingleScalarResult();
+        return $this->queryBuilder->resetDQLPart('orderBy')->select('count(DISTINCT s.id)')->getQuery()->getSingleScalarResult();
     }
 
     public function getSpecimenDataforExport(): array
