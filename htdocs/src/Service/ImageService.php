@@ -115,9 +115,8 @@ readonly class ImageService
                 $url = $row['imgserver_url'];
 
                 // Remove hyphens
-                $HerbNummer = str_replace('-', '', $row['HerbNummer']);
-
-
+                $herbNumber = $row['HerbNummer'] ?? '';
+                $HerbNummer = str_replace('-', '', $herbNumber);
 
                 // Construct clean filename
                 if ($row['imgserver_type'] == 'bgbm') {

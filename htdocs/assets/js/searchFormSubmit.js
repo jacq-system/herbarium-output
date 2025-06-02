@@ -36,9 +36,11 @@ export function searchResults(form) {
         .then((html) => {
             targetElement.innerHTML = html;
             let paginator = document.getElementById('recordsPerPage');
-            M.FormSelect.init(paginator);
-            paginationInit();
-            popupMap();
+            if (paginator) {
+                M.FormSelect.init(paginator);
+                paginationInit();
+                popupMap();
+            }
             hideProgressBar();
         })
         .catch((error) => {
@@ -60,7 +62,7 @@ export function hideProgressBar() {
     progressBar.classList.add('hide');
 
 
-        let elems = document.querySelectorAll('.tooltipped');
-        M.Tooltip.init(elems);
+    let elems = document.querySelectorAll('.tooltipped');
+    M.Tooltip.init(elems);
 
 }

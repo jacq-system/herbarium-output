@@ -56,6 +56,16 @@ class SearchFormController extends AbstractController
     public function databaseSearch(Request $request): Response
     {
         $postData = $request->request->all();
+        $allEmpty = true;
+        foreach ($postData as $value) {
+            if ($value !== null && $value !== '') {
+                $allEmpty = false;
+                break;
+            }
+        }
+        if ($allEmpty) {
+            return $this->render('front/home/databaseSearchEmpty.html.twig');
+        }
         $this->sessionService->setFilters($postData);
 
         $pagination = $this->searchFormFacade->providePaginationInfo();
