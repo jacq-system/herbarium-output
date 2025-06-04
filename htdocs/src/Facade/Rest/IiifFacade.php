@@ -4,6 +4,7 @@ namespace App\Facade\Rest;
 
 
 use App\Entity\Jacq\Herbarinput\Specimens;
+use App\Service\JacqNetworkService;
 use App\Service\ReferenceService;
 use App\Service\SpecimenService;
 use App\Service\TaxonService;
@@ -19,7 +20,7 @@ use function PHPUnit\Framework\isEmpty;
 
 readonly class IiifFacade extends BaseFacade
 {
-    public function __construct(EntityManagerInterface $entityManager, RouterInterface $router, protected TaxonService $taxonService, protected ReferenceService $referenceService, protected SpecimenService $specimenService, protected ClientInterface $client)
+    public function __construct(EntityManagerInterface $entityManager, RouterInterface $router, protected TaxonService $taxonService, protected ReferenceService $referenceService, protected SpecimenService $specimenService, protected ClientInterface $client, protected JacqNetworkService $jacqNetworkService)
     {
         parent::__construct($entityManager, $router);
     }
@@ -84,7 +85,7 @@ readonly class IiifFacade extends BaseFacade
                 $result = (!empty($response)) ? json_decode($response, true) : array();
             }
             if ($result && !$fallback) {  // we used a true backend, so enrich the manifest with additional data
-                $result['@id'] = $this->router->generate('services_rest_iiif_manifest', ['specimenID' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL);  // to point at ourselves
+                $result['@id'] = $this->jacqNetworkService->translateSymfonyToRealServicePath($this->router->generate('services_rest_iiif_manifest', ['specimenID' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL));  // to point at ourselves
                 $result['description'] = $this->specimenService->getSpecimenDescription($specimen);
                 $result['label'] = $this->specimenService->getScientificName($specimen);
                 $result['attribution'] = $specimen->getHerbCollection()->getInstitution()->getLicenseUri();

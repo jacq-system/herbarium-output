@@ -4,6 +4,7 @@ namespace App\Service\Rest;
 
 use App\Entity\Jacq\Herbarinput\Specimens;
 use App\Facade\Rest\IiifFacade;
+use App\Service\JacqNetworkService;
 use App\Service\SpecimenService;
 use Doctrine\DBAL\Connection;
 use Exception;
@@ -19,7 +20,7 @@ class ImageLinkMapper
     protected array $fileLinks = array();
     protected bool $linksActive = false;
 
-    public function __construct(protected readonly Connection $connection, protected readonly RouterInterface $router, protected readonly IiifFacade $iiifFacade, protected HttpClientInterface $client, protected readonly SpecimenService $specimenService)
+    public function __construct(protected readonly Connection $connection, protected readonly RouterInterface $router, protected readonly IiifFacade $iiifFacade, protected HttpClientInterface $client, protected readonly SpecimenService $specimenService, protected readonly JacqNetworkService $jacqNetworkService)
     {
     }
 
@@ -59,7 +60,7 @@ class ImageLinkMapper
         $imageDefinition = $this->specimen->getHerbCollection()->getInstitution()->getImageDefinition();
         $iifUrl = $imageDefinition->getIiifUrl();
 
-        $manifestRoute = $this->router->generate('services_rest_iiif_manifest', ['specimenID' => $this->specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $manifestRoute = $this->jacqNetworkService->translateSymfonyToRealServicePath($this->router->generate('services_rest_iiif_manifest', ['specimenID' => $this->specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL));
         $this->imageLinks[0] = $iifUrl . "?manifest=" . $manifestRoute;
         $manifest = $this->iiifFacade->getManifest($this->specimen);
         if ($manifest) {
