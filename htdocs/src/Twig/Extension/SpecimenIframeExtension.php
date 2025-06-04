@@ -6,6 +6,7 @@ use App\Entity\Jacq\Herbarinput\ImageDefinition;
 use App\Entity\Jacq\Herbarinput\Specimens;
 use App\Facade\Rest\IiifFacade;
 use App\Service\ImageService;
+use App\Service\JacqNetworkService;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -14,7 +15,7 @@ use Twig\TwigFilter;
 
 class SpecimenIframeExtension extends AbstractExtension
 {
-    public function __construct(protected readonly RouterInterface $router, protected readonly IIIFFacade $iiifFacade, protected readonly ImageService $imageService, protected LoggerInterface $logger)
+    public function __construct(protected readonly RouterInterface $router, protected readonly IIIFFacade $iiifFacade, protected readonly ImageService $imageService, protected LoggerInterface $logger, protected readonly JacqNetworkService $jacqNetworkService)
     {
     }
 
@@ -43,7 +44,7 @@ class SpecimenIframeExtension extends AbstractExtension
                 $info = curl_getinfo($ch);
                 if ($info['http_code'] == 200) {
                     $phaidra = true;
-                    $phaidraManifest = $this->router->generate("services_rest_iiif_manifest", ['specimenID' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+                    $phaidraManifest = $this->jacqNetworkService->translateSymfonyToRealServicePath($this->router->generate('services_rest_iiif_manifest', ['specimenID' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL));
                 }
             }
             curl_close($ch);
