@@ -153,6 +153,12 @@ class Specimens
     #[ORM\OrderBy(["date" => "DESC"])]
     private Collection $typus;
 
+    /**
+     * @note https://github.com/jacq-system/jacq-legacy/issues/4, this col should be removed in favor of 1:M relation
+     */
+    #[ORM\Column(name: 'typusID')]
+    private(set) ?bool $isTypus;
+
     #[ORM\OneToMany(targetEntity: StableIdentifier::class, mappedBy: 'specimen')]
     #[ORM\OrderBy(['timestamp' => 'DESC'])]
     private Collection $stableIdentifiers;
@@ -536,6 +542,5 @@ class Specimens
     {
         return $this->region;
     }
-
 
 }

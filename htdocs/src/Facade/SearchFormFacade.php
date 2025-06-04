@@ -264,15 +264,12 @@ class SearchFormFacade
 
     protected function queryType(): void
     {
+        /**
+         * @note https://github.com/jacq-system/jacq-legacy/issues/4
+         */
         $this->queryBuilder
             ->andWhere(
-                $this->queryBuilder->expr()->exists(
-                    $this->entityManager->createQueryBuilder()
-                        ->select('1')
-                        ->from(Typus::class, 'hasType')
-                        ->where('hasType.specimen = s')
-                        ->getDQL()
-                )
+                's.isTypus IS NOT NULL'
             );
 
     }
