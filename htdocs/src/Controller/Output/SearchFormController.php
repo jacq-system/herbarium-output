@@ -2,6 +2,7 @@
 
 namespace App\Controller\Output;
 
+use App\Exception\InvalidStateException;
 use App\Facade\SearchFormFacade;
 use App\Service\CollectionService;
 use App\Service\ImageService;
@@ -30,7 +31,7 @@ class SearchFormController extends AbstractController
     //TODO the name of taxon is not part of the query now, hard to sort
     public const array SORT = ["taxon" => '', 'collector' => 's.collector'];
 
-    public function __construct(protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly ImageService $imageService, protected readonly SpecimenService $specimenService, protected readonly ExcelService $excelService, protected LoggerInterface $statisticsLogger)
+    public function __construct(protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly ImageService $imageService, protected readonly SpecimenService $specimenService, protected readonly ExcelService $excelService, protected LoggerInterface $statisticsLogger, protected LoggerInterface $appLogger)
     {
     }
 
@@ -174,7 +175,19 @@ class SearchFormController extends AbstractController
                 'ssl' => ["verify_peer" => false,
                     "verify_peer_name" => false]
             ]);
-            $imageStream = @fopen($url, 'rb', false, $streamContext);
+
+            $imageStream = fopen($url, 'rb', false, $streamContext);
+            if ($imageStream === false) {
+                $this->appLogger->warning('Image [{filename}] not found.', [
+                    'url' => $url,
+                    'filename' => $filename,
+                    'sid' => $sid,
+                    'method' => $method,
+                    'format' => $format
+                ]);
+                throw new InvalidStateException('Unable to open image stream from '.$url.' route');
+            }
+
 
             $headers = get_headers($url, true);
 

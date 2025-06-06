@@ -26,7 +26,7 @@ readonly class StatisticsService
                                         FROM herbarinput_log.log_tax_species l, herbarinput_log.tbl_herbardb_users u
                                         WHERE l.userID = u.userID
                                          AND l.updated = :updated
-                                         AND l.timestamp >= :periodStar
+                                         AND l.timestamp >= :periodStart
                                          AND l.timestamp <= :periodEnd
                                         GROUP BY period, u.source_id
                                         ORDER BY period";

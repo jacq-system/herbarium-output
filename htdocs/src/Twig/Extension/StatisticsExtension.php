@@ -7,7 +7,7 @@ use Twig\TwigFilter;
 
 class StatisticsExtension extends AbstractExtension
 {
-    public function getFilters()
+    public function getFilters(): array
     {
         return [
             new TwigFilter('median', [$this, 'calculateMedian']),
