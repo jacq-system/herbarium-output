@@ -2,14 +2,16 @@
 
 namespace App\Service;
 
+use App\Exception\InvalidStateException;
 use App\Service\Rest\ImageLinkMapper;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 readonly class ImageService
 {
-    public function __construct(protected EntityManagerInterface $entityManager, protected HttpClientInterface $client, protected RouterInterface $router, protected ImageLinkMapper $imageLinkMapper)
+    public function __construct(protected EntityManagerInterface $entityManager, protected HttpClientInterface $client, protected RouterInterface $router, protected ImageLinkMapper $imageLinkMapper, protected LoggerInterface $appLogger)
     {
     }
 
@@ -99,6 +101,13 @@ readonly class ImageService
                         }
                     }
                 }
+            }
+            if (!isset($specimenID)) {
+                $this->appLogger->warning('getPicDetails() did not found a record for id [{id}].', [
+                    'id' => $id,
+                    'sid' => $sid
+                ]);
+                throw new InvalidStateException('Unable to find the image');
             }
 
             $sql = "SELECT id.`imgserver_url`, id.`imgserver_type`, id.`HerbNummerNrDigits`, id.`key`, id.`iiif_capable`,
