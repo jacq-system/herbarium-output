@@ -21,7 +21,7 @@ class SpecimenExtension extends AbstractExtension
     {
     }
 
-    public function getFilters()
+    public function getFilters(): array
     {
         return [
             new TwigFilter('taxonAuthority', [$this, 'getTaxonAuthority']),

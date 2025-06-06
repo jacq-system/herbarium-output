@@ -19,7 +19,7 @@ class SpecimenIframeExtension extends AbstractExtension
     {
     }
 
-    public function getFilters()
+    public function getFilters(): array
     {
         return [
             new TwigFilter('photoIframe', [$this, 'getPhotoIframe']),
