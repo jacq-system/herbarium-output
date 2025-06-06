@@ -31,12 +31,12 @@ function subsetCollections(element) {
                 defaultOption.textContent = 'all subcollections';
                 secondSelect.appendChild(defaultOption);
 
-                for (const [value, label] of Object.entries(data)) {
+                data.forEach(({ id, name }) => {
                     const option = document.createElement('option');
-                    option.value = value;
-                    option.textContent = label;
+                    option.value = id;
+                    option.textContent = name;
                     secondSelect.appendChild(option);
-                }
+                });
                 M.FormSelect.init(secondSelect);
             })
             .catch((error) => console.error('Error:', error));
