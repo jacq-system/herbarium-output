@@ -299,6 +299,10 @@ class SearchFormFacade
     {
         $taxaIds = $this->getTaxonIds($id);
         $conditions = [];
+        if(empty($taxaIds)) {
+            $this->queryBuilder->andWhere('1 = 0');
+        }
+
         //result includes NULL rows that need to be excluded
         $taxonId = array_filter(array_column($taxaIds, 'taxonID'), fn($value) => $value !== null);
         $basID = array_filter(array_column($taxaIds, 'basID'), fn($value) => $value !== null);
