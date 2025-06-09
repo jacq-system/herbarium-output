@@ -82,13 +82,13 @@
         <thead>
         <tr>
             <th></th>
-            <th class="resulttax">Taxon</th>
-            <th class="resultcol">Collector</th>
-            <th class="result">Date</th>
-            <th class="result">Location</th>
-            <th class="result">Typus</th>
-            <th class="result">Collection Herb.#</th>
-            <th class="result">Lat/Lon</th>
+            <th class="resulttax sortable {% if sessionService.isSortedBy('taxon') %}sorted{% endif %}" data-sort="taxon" data-path="{{ path('app_front_databaseSearchSettings') }}">Taxon{{ 'taxon' | sortableChar }}</th>
+            <th class="resultcol sortable {% if sessionService.isSortedBy('collector') %}sorted{% endif %}" data-sort="collector" data-path="{{ path('app_front_databaseSearchSettings') }}">Collector{{ 'collector' | sortableChar }}</th>
+            <th class="result sortable {% if sessionService.isSortedBy('date') %}sorted{% endif %}" data-sort="date" data-path="{{ path('app_front_databaseSearchSettings') }}">Date{{ 'date' | sortableChar }}</th>
+            <th class="result sortable {% if sessionService.isSortedBy('location') %}sorted{% endif %}" data-sort="location" data-path="{{ path('app_front_databaseSearchSettings') }}">Location{{ 'location' | sortableChar }}</th>
+            <th class="result sortable {% if sessionService.isSortedBy('typus') %}sorted{% endif %}" data-sort="typus" data-path="{{ path('app_front_databaseSearchSettings') }}">Typus{{ 'typus' | sortableChar }}</th>
+            <th class="result sortable {% if sessionService.isSortedBy('collection') %}sorted{% endif %}" data-sort="collection" data-path="{{ path('app_front_databaseSearchSettings') }}">Collection Herb.#{{ 'collection' | sortableChar }}</th>
+            <th class="result sortable {% if sessionService.isSortedBy('coords') %}sorted{% endif %}" data-sort="coords" data-path="{{ path('app_front_databaseSearchSettings') }}">Lat/Lon{{ 'coords' | sortableChar }}</th>
         </tr>
         </thead>
         <tbody>

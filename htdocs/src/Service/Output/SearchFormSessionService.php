@@ -9,6 +9,7 @@ readonly class SearchFormSessionService
 {
     public const string SESSION_FILTERS = 'searchFormFilters';
     public const string SESSION_SETTINGS = 'searchFormSettings';
+    public const string SESSION_SORT = 'searchFormSort';
 
     private ?SessionInterface $session;
 
@@ -57,10 +58,53 @@ readonly class SearchFormSessionService
         return $this;
     }
 
+    public function setSort($formData): static
+    {
+
+        $actualSort = $this->getSort();
+        if ($actualSort === null || key($actualSort) !== $formData) {
+            $this->session->set(self::SESSION_SORT, [$formData => 'ASC']);
+        } else {
+            if ($actualSort[$formData] === 'ASC') {
+                $this->session->set(self::SESSION_SORT, [$formData => 'DESC']);
+            } else {
+                $this->session->remove(self::SESSION_SORT);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getSort()
+    {
+        $sort = $this->session->get(self::SESSION_SORT);
+        if (isset($sort)) {
+            return $sort;
+        }
+        return null;
+    }
+
+    public function isSortedBy(string $sort): bool
+    {
+        if ($this->hasSort() !== false && key($this->getSort()) === $sort) {
+            return true;
+        }
+        return false;
+    }
+
+    public function hasSort(): bool
+    {
+        if ($this->session->get(self::SESSION_SORT) === null) {
+            return false;
+        }
+        return true;
+    }
+
     public function reset(): static
     {
         $this->session->remove(self::SESSION_FILTERS);
         $this->session->remove(self::SESSION_SETTINGS);
+        $this->session->remove(self::SESSION_SORT);
         return $this;
     }
 

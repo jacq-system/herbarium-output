@@ -92,7 +92,7 @@ class SearchFormController extends AbstractController
                 $this->sessionService->setSetting('page', 1);
                 break;
             case "sort":
-                $this->sessionService->setSetting('sort', $value);
+                $this->sessionService->setSort($value);
                 break;
             default:
                 break;
