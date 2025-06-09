@@ -4,7 +4,6 @@ namespace App\Facade;
 
 use App\Controller\Output\SearchFormController;
 use App\Entity\Jacq\Herbarinput\Specimens;
-use App\Entity\Jacq\Herbarinput\Typus;
 use App\Service\GeoService;
 use App\Service\InstitutionService;
 use App\Service\Output\ExcelService;
@@ -34,12 +33,65 @@ class SearchFormFacade
         $page = (int) $this->searchFormSessionService->getSetting('page', 3);
         $offset = ($page - 1) * $recordsPerPage;
 
-        $sort = $this->searchFormSessionService->getSetting('sort');
+        $sort = $this->searchFormSessionService->getSort();
+        if($sort === null){
+            $this->defaultSort();
+        }else{
+            $this->sort($sort);
+        }
 
         $this->queryBuilder
             ->setFirstResult($offset)
             ->setMaxResults($recordsPerPage);
         return $this->queryBuilder->getQuery()->getResult();
+    }
+
+    protected function defaultSort(string $direction = Order::Ascending->value): void
+    {
+        $this->queryBuilder->orderBy('genus.name', $direction)
+        ->addOrderBy('epithet.name', $direction)
+        ->addOrderBy('author.name', $direction);
+    }
+
+    protected function sort(array $sort)
+    {
+        $column = key($sort);
+        $direction = $sort[$column];
+        switch ($column) {
+            case 'collector':
+                $this->queryBuilder
+                    ->join('s.collector', 'collector')
+                    ->orderBy('collector.name', $direction);
+                break;
+            case 'date':
+                $this->queryBuilder->orderBy('s.date', $direction);
+                break;
+            case 'location':
+                $this->queryBuilder
+                    ->join('s.country', 'country')
+                    ->join('s.province', 'province')
+                    ->orderBy('country.nameEng', $direction)
+                    ->addOrderBy('province.name', $direction)
+                    ->addOrderBy('s.locality', $direction);
+                break;
+            case 'typus':
+                $this->queryBuilder
+                    ->join('s.typus', 'typus')
+                    ->join('typus.rank', 'rank')
+                    ->orderBy('rank.latinName', $direction);
+                break;
+            case 'collection':
+                $this->queryBuilder->orderBy('s.herbNumber', $direction);
+                break;
+            case 'coords':
+                $this->queryBuilder
+                    ->orderBy('s.degreeS', $direction)
+                    ->addOrderBy('s.degreeN', $direction);
+                break;
+            case 'taxon':
+                $this->defaultSort($direction);
+        }
+
     }
 
     protected function buildQuery(): void
@@ -51,10 +103,7 @@ class SearchFormFacade
             ->leftJoin('species.authorSpecies', 'author')
             ->leftJoin('species.epithetSpecies', 'epithet')
             ->join('s.herbCollection', 'c')
-            ->orderBy('genus.name', Order::Ascending->value)
-            ->andWhere('s.accessibleForPublic = 1')
-            ->addOrderBy('epithet.name', Order::Ascending->value)
-            ->addOrderBy('author.name', Order::Ascending->value);
+            ->andWhere('s.accessibleForPublic = 1');
 
         if (!empty($this->searchFormSessionService->getFilter('institution'))) {
             $this->queryInstitution($this->searchFormSessionService->getFilter('institution'));
@@ -445,22 +494,6 @@ class SearchFormFacade
             $rows[] = $this->prepareRowForExport($specimen);
         }
         return $rows;
-    }
-
-    public function searchOnlyIds(?int $limit = null): array
-    {
-        $this->buildQuery();
-        if ($limit) {
-            $this->queryBuilder->setMaxResults($limit);
-        }
-        return $this->queryBuilder
-            ->select('DISTINCT s.id')
-            ->resetDQLPart('orderBy') //TODO maybe better keep sort as in UI? - sort is not fully resolved in the code
-            ->orderBy('genus.name', Order::Ascending->value)
-            ->addOrderBy('epithet.name', Order::Ascending->value)
-            ->addOrderBy('author.name', Order::Ascending->value)
-            ->getQuery()
-            ->getSingleColumnResult();
     }
 
     public function searchForExport(?int $limit = null): array

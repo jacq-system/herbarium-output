@@ -15,3 +15,11 @@ button.waves-effect {
 #reset{
     color: black;
 }
+
+.sortable {
+    color: $jacq-color;
+    cursor: pointer;
+    &.sorted {
+        color: $jacq-color-selected;
+    }
+}

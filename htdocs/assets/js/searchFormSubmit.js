@@ -1,5 +1,6 @@
 import paginationInit from "./searchFormPagination";
 import popupMap from "./popupMap";
+import searchFormSortingInit from "./searchFormSorting";
 
 export function searchFormSubmit() {
 
@@ -39,6 +40,7 @@ export function searchResults(form) {
             if (paginator) {
                 M.FormSelect.init(paginator);
                 paginationInit();
+                searchFormSortingInit();
                 popupMap();
             }
             hideProgressBar();
