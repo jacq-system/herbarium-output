@@ -135,6 +135,10 @@ class SearchFormFacade
             $this->queryFamily($this->searchFormSessionService->getFilter('family'));
         }
 
+        if (!empty($this->searchFormSessionService->getFilter('onlyCoords'))) {
+            $this->queryCoords();
+        }
+
         if (!empty($this->searchFormSessionService->getFilter('taxon'))) {
             $this->queryTaxon($this->searchFormSessionService->getFilter('taxon'));
         }
@@ -270,6 +274,17 @@ class SearchFormFacade
         $this->queryBuilder
             ->andWhere(
                 's.isTypus IS NOT NULL'
+            );
+
+    }
+
+    protected function queryCoords(): void
+    {
+        $this->queryBuilder
+            ->andWhere($this->queryBuilder->expr()->orX(
+                's.degreeS IS NOT NULL',
+                's.degreeN IS NOT NULL'
+                )
             );
 
     }

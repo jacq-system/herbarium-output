@@ -166,7 +166,7 @@
                     </ul>
                 </div>
                 <!-- All Records/Type Records -->
-                <div class="input-field col s4">
+                <div class="input-field col s3">
                     <div class="center-align">
                         <div class="switch">
                             <label>
@@ -177,8 +177,19 @@
                         </div>
                     </div>
                 </div>
+                <div class="input-field col s3">
+                    <div class="center-align">
+                        <div class="switch">
+                            <label>
+                                Only georeferenced
+                                <input type="checkbox" id="checkbox_type" name="onlyCoords" {% if sessionService.getFilter('onlyCoords') == 'on' %}checked{% endif %}>
+                                <span class="lever"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
                 <!-- Images -->
-                <div class="input-field col s4">
+                <div class="input-field col s3">
                     <div class="center-align">
                         <div class="switch">
                             <label>
@@ -190,7 +201,7 @@
                     </div>
                 </div>
                 <!-- Synonym -->
-                <div class="input-field col s4">
+                <div class="input-field col s3">
                     <div class="center-align">
                         <div class="switch">
                             <label>
