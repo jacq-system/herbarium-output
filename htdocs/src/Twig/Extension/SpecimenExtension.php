@@ -42,6 +42,7 @@ class SpecimenExtension extends AbstractExtension
             new TwigFunction('getScientificName', [$this, 'getScientificName']),
             new TwigFunction('constructStableIdentifier', [$this, 'constructStableIdentifier']),
             new TwigFunction('getProtologs', [$this, 'getProtologs']),
+            new TwigFunction('getRelatedSpecimens', [$this, 'getRelatedSpecimenRelations']),
 
         ];
     }
@@ -57,27 +58,28 @@ class SpecimenExtension extends AbstractExtension
         $sql = "SELECT serviceID, hyper FROM herbar_view.view_taxon_link_service WHERE taxonID = :taxon";
         $result = $this->entityManager->getConnection()->executeQuery($sql, ['taxon' => $taxon->getId()])->fetchAllAssociative();
 
-            foreach ($result as $rowtax) {
-                $text .= '<br/>';
-                if ($rowtax['serviceID'] == 1) {
-                    $text .= $rowtax["hyper"] . "&nbsp;";
-                    $text .= str_replace("IPNI (K)", "Plants of the World Online / POWO (K)", str_replace("serviceID1_logo", "serviceID49_logo", str_replace("http://ipni.org/ipni/idPlantNameSearch.do?id=", "http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:", $rowtax["hyper"])));
-                } else {
-                    $text .= $rowtax["hyper"];
-                }
+        foreach ($result as $rowtax) {
+            $text .= '<br/>';
+            if ($rowtax['serviceID'] == 1) {
+                $text .= $rowtax["hyper"] . "&nbsp;";
+                $text .= str_replace("IPNI (K)", "Plants of the World Online / POWO (K)", str_replace("serviceID1_logo", "serviceID49_logo", str_replace("http://ipni.org/ipni/idPlantNameSearch.do?id=", "http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:", $rowtax["hyper"])));
+            } else {
+                $text .= $rowtax["hyper"];
             }
-            $text = str_replace('assets/images', '/logo/services', $text);
+        }
+        $text = str_replace('assets/images', '/logo/services', $text);
 
         return $text;
     }
 
-    public function getBloodHoundId(Collector $collector):?string
+    public function getBloodHoundId(Collector $collector): ?string
     {
         return $this->collectorRepository->getBloodhoundId($collector);
     }
-    public function getCollectionText(Specimens $specimen):?string
+
+    public function getCollectionText(Specimens $specimen): ?string
     {
-        return  $this->specimenService->getCollectionText($specimen);
+        return $this->specimenService->getCollectionText($specimen);
 
     }
 
@@ -132,14 +134,14 @@ class SpecimenExtension extends AbstractExtension
         }
 
         if ($specimen->getLongitude() != null || $specimen->getLatitude() != null) {
-            $text .= " - ". $specimen->getCoords();
+            $text .= " - " . $specimen->getCoords();
         }
         return $text;
     }
 
     public function constructStableIdentifier(Specimens $specimen): string
     {
-           return $this->specimenService->constructStableIdentifier($specimen);
+        return $this->specimenService->constructStableIdentifier($specimen);
     }
 
     public function getHerbariumNumber(Specimens $specimen): string
@@ -155,6 +157,7 @@ class SpecimenExtension extends AbstractExtension
         }
 
     }
+
     public function getAnnotation(Specimens $specimen): string
     {
         $sourceId = $specimen->getHerbCollection()->getId();
@@ -173,6 +176,19 @@ class SpecimenExtension extends AbstractExtension
     public function getProtologs(Species $species): array
     {
         return $this->typusService->getProtologs($species);
+    }
+
+    public function getRelatedSpecimenRelations(Specimens $specimen): array
+    {
+        $relations = [];
+        foreach ($specimen->getAllRelations() as $relation) {
+            if ($relation->getSpecimen1()->getId() === $specimen->getId()) {
+                $relations[] = ["relation"=>$relation->getLinkQualifier()?->getName(), "specimen"=>$relation->getSpecimen2()];
+            } else {
+                $relations[] = ["relation"=>$relation->getLinkQualifier()?->getName(), "specimen"=>$relation->getSpecimen1()];
+            }
+        }
+        return $relations;
     }
 
 }

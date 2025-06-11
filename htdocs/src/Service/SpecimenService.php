@@ -4,6 +4,7 @@ namespace App\Service;
 
 
 use App\Entity\Jacq\Herbarinput\Specimens;
+use App\Repository\Herbarinput\SpecimensRepository;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\ORM\EntityNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -34,6 +35,11 @@ readonly class SpecimenService extends BaseService
             throw new EntityNotFoundException('Specimen not found');
         }
         return $specimen;
+    }
+
+    public function getRepository(): SpecimensRepository
+    {
+        return $this->entityManager->getRepository(Specimens::class);
     }
 
     public function findBySid(string $sid): int
@@ -143,9 +149,54 @@ readonly class SpecimenService extends BaseService
 
     public function sid2array(Specimens $specimen): array
     {
-        return ['stableIdentifier' => $specimen->getMainStableIdentifier()->getIdentifier(), 'timestamp' => $specimen->getMainStableIdentifier()->getTimestamp()->format('Y-m-d H:i:s'), 'link' => $this->router->generate('app_front_specimenDetail', ['specimenId' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL)
+        /**
+         * SID is assigned asynchron, could happen it does not exists (and the timestamp is not clear))
+         */
+        return ['stableIdentifier' => $this->getStableIdentifier($specimen), 'timestamp' => $specimen->getMainStableIdentifier()?->getTimestamp()->format('Y-m-d H:i:s'), 'link' => $this->router->generate('app_front_specimenDetail', ['specimenId' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL)
 
         ];
+    }
+
+    public function getStableIdentifier(Specimens $specimen): string
+    {
+        if (!empty($specimen->getMainStableIdentifier()?->getIdentifier())) {
+            return $specimen->getMainStableIdentifier()->getIdentifier();
+        } else {
+            return $this->constructStableIdentifier($specimen);
+        }
+
+    }
+
+    /**
+     * try to construct PID
+     */
+    public function constructStableIdentifier(Specimens $specimen): string
+    {
+        $sourceId = $specimen->getHerbCollection()->getId();
+        if (!empty($sourceId) && !empty($specimen->getHerbNumber())) {
+            $modifiedHerbNumber = str_replace(' ', '', $specimen->getHerbNumber());
+
+            if ($sourceId == '29') { // B
+                if (strlen(trim($modifiedHerbNumber)) > 0) {
+                    $modifiedHerbNumber = str_replace('-', '', $modifiedHerbNumber);
+                } else {
+                    $modifiedHerbNumber = self::JACQID_PREFIX . $specimen->getId();
+                }
+                return "https://herbarium.bgbm.org/object/" . $modifiedHerbNumber;
+            } elseif ($sourceId == '27') { // LAGU
+                return "https://lagu.jacq.org/object/" . $modifiedHerbNumber;
+            } elseif ($sourceId == '48') { // TBI
+                return "https://tbi.jacq.org/object/" . $modifiedHerbNumber;
+            } elseif ($sourceId == '50') { // HWilling
+                if (strlen(trim($modifiedHerbNumber)) > 0) {
+                    $modifiedHerbNumber = str_replace('-', '', $modifiedHerbNumber);
+                } else {
+                    $modifiedHerbNumber = self::JACQID_PREFIX . $specimen->getId();
+                }
+                return "https://willing.jacq.org/object/" . $modifiedHerbNumber;
+            }
+        }
+        return '';
     }
 
     /**
@@ -202,7 +253,6 @@ readonly class SpecimenService extends BaseService
         return $this->router->generate('services_rest_sid_multi', ['page' => $page, 'entriesPerPage' => $entriesPerPage], UrlGeneratorInterface::ABSOLUTE_URL);
     }
 
-
     /**
      * get the specimen-ID of a given HerbNumber and source-id
      */
@@ -220,38 +270,6 @@ readonly class SpecimenService extends BaseService
         }
         return null;
 
-    }
-
-    /**
-     * try to construct PID
-     */
-    public function constructStableIdentifier(Specimens $specimen): string
-    {
-        $sourceId = $specimen->getHerbCollection()->getId();
-        if (!empty($sourceId) && !empty($specimen->getHerbNumber())) {
-            $modifiedHerbNumber = str_replace(' ', '', $specimen->getHerbNumber());
-
-            if ($sourceId == '29') { // B
-                if (strlen(trim($modifiedHerbNumber)) > 0) {
-                    $modifiedHerbNumber = str_replace('-', '', $modifiedHerbNumber);
-                } else {
-                    $modifiedHerbNumber = self::JACQID_PREFIX . $specimen->getId();
-                }
-                return "https://herbarium.bgbm.org/object/" . $modifiedHerbNumber;
-            } elseif ($sourceId == '27') { // LAGU
-                return "https://lagu.jacq.org/object/" . $modifiedHerbNumber;
-            } elseif ($sourceId == '48') { // TBI
-                return "https://tbi.jacq.org/object/" . $modifiedHerbNumber;
-            } elseif ($sourceId == '50') { // HWilling
-                if (strlen(trim($modifiedHerbNumber)) > 0) {
-                    $modifiedHerbNumber = str_replace('-', '', $modifiedHerbNumber);
-                } else {
-                    $modifiedHerbNumber = self::JACQID_PREFIX . $specimen->getId();
-                }
-                return "https://willing.jacq.org/object/" . $modifiedHerbNumber;
-            }
-        }
-        return '';
     }
 
     public function getCollectionText(Specimens $specimen): string
@@ -324,7 +342,7 @@ readonly class SpecimenService extends BaseService
     {
 
         return [
-            'dwc:materialSampleID' => $specimen->getMainStableIdentifier()?->getIdentifier(),
+            'dwc:materialSampleID' => $this->getStableIdentifier($specimen),
             'dwc:basisOfRecord' => $specimen->getBasisOfRecordField(),
             'dwc:collectionCode' => $specimen->getHerbCollection()->getInstitution()->getAbbreviation(),
             'dwc:catalogNumber' => ($specimen->getHerbNumber()) ?: ('JACQ-ID ' . $specimen->getId()),
@@ -351,7 +369,7 @@ readonly class SpecimenService extends BaseService
     /**
      * get the properties of this specimen with JACQ Names (jacq:...)
      */
-    public function getJACQ(Specimens $specimen):array
+    public function getJACQ(Specimens $specimen): array
     {
 //TODO - using german terms as identifiers - but probably nobody use this service
 
@@ -363,7 +381,7 @@ readonly class SpecimenService extends BaseService
         }
 
         return [
-            'jacq:stableIdentifier' => $specimen->getMainStableIdentifier()->getIdentifier(),
+            'jacq:stableIdentifier' => $this->getStableIdentifier($specimen),
             'jacq:specimenID' => $specimen->getId(),
             'jacq:scientificName' => $this->getScientificName($specimen),
             'jacq:family' => $specimen->getSpecies()->getGenus()->getFamily()->getName(),
@@ -374,7 +392,7 @@ readonly class SpecimenService extends BaseService
             'jacq:observation' => $specimen->isObservation() ? '1' : '0',
             'jacq:taxon_alt' => $specimen->getTaxonAlternative(),
             'jacq:Fundort' => $specimen->getLocality(),
-             'jacq:decimalLatitude' => $specimen->getLatitude(),
+            'jacq:decimalLatitude' => $specimen->getLatitude(),
             'jacq:decimalLongitude' => $specimen->getLongitude(),
             'jacq:verbatimLatitude' => $specimen->getVerbatimLatitude(),
             'jacq:verbatimLongitude' => $specimen->getVerbatimLongitude(),
@@ -396,15 +414,5 @@ readonly class SpecimenService extends BaseService
             'jacq:downloadImage' => $firstImageDownloadLink
 
         ];
-    }
-
-    public function getStableIdentifier(Specimens $specimen): string
-    {
-        if (!empty($specimen->getMainStableIdentifier()?->getIdentifier())) {
-            return $specimen->getMainStableIdentifier()->getIdentifier();
-        } else {
-            return $this->constructStableIdentifier($specimen);
-        }
-
     }
 }
