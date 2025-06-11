@@ -238,7 +238,7 @@ class SearchFormController extends AbstractController
         ]);
         return $this->render('front/home/detail.html.twig', [
             'specimen' => $specimen,
-            'pid' => $specimen->getMainStableIdentifier()?->getIdentifier()
+            'pid' => $this->specimenService->getStableIdentifier($specimen)
         ]);
     }
 

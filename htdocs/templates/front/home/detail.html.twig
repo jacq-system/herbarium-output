@@ -130,6 +130,19 @@
                             </h6>
                         </div>
                     </div>
+                    {% if specimen.hasRelatedSpecimens %}
+                    <div class="row">
+                        <div class="col s12 m3">
+                            <h6>Linked specimens</h6>
+                        </div>
+                        <div class="col s12 m9"><h6>
+                                    {% for relatedSpecimen in getRelatedSpecimens(specimen) %}
+                                        <p><a href='{{ path('app_front_specimenDetail', {'specimenId': relatedSpecimen['specimen'].getId() }) }}'>{{ relatedSpecimen['specimen'] | herbariumNr | raw }}</a> {% if relatedSpecimen['relation'] is not empty %}({{ relatedSpecimen['relation'] }}){% endif %}</p>
+                                {% endfor %}
+                            </h6>
+                        </div>
+                    </div>
+                        {% endif %}
                     <div class="row">
                         <div class="col s12 m3">
                             <h6>Date</h6>

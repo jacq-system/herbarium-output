@@ -5,11 +5,12 @@ namespace App\Entity\Jacq\Herbarinput;
 
 use App\Entity\Jacq\GbifPilot\EuropeanaImages;
 use App\Entity\Jacq\HerbarPictures\PhaidraCache;
+use App\Repository\Herbarinput\SpecimensRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity()]
+#[ORM\Entity(repositoryClass: SpecimensRepository::class)]
 #[ORM\Table(name: 'tbl_specimens', schema: 'herbarinput')]
 class Specimens
 {
@@ -78,40 +79,40 @@ class Specimens
     private ?string $taxonAlternative;
 
     #[ORM\Column(name: 'Coord_S')]
-    private(set) ?int $degreeS;
+    private ?int $degreeS;
 
     #[ORM\Column(name: 'S_Min')]
-    private(set) ?int $minuteS;
+    private ?int $minuteS;
 
     #[ORM\Column(name: 'S_Sec')]
-    private(set) ?float $secondS;
+    private ?float $secondS;
 
     #[ORM\Column(name: 'Coord_N')]
-    private(set) ?int $degreeN;
+    private ?int $degreeN;
 
     #[ORM\Column(name: 'N_Min')]
-    private(set) ?int $minuteN;
+    private ?int $minuteN;
 
     #[ORM\Column(name: 'N_Sec')]
-    private(set) ?float $secondN;
+    private ?float $secondN;
 
     #[ORM\Column(name: 'Coord_W')]
-    private(set) ?int $degreeW;
+    private ?int $degreeW;
 
     #[ORM\Column(name: 'W_Min')]
-    private(set) ?int $minuteW;
+    private ?int $minuteW;
 
     #[ORM\Column(name: 'W_Sec')]
-    private(set) ?float $secondW;
+    private ?float $secondW;
 
     #[ORM\Column(name: 'Coord_E')]
-    private(set) ?int $degreeE;
+    private ?int $degreeE;
 
     #[ORM\Column(name: 'E_Min')]
-    private(set) ?int $minuteE;
+    private ?int $minuteE;
 
     #[ORM\Column(name: 'E_Sec')]
-    private(set) ?float $secondE;
+    private ?float $secondE;
 
     #[ORM\Column(name: 'ncbi_accession')]
     private ?string $ncbiAccession;
@@ -126,13 +127,13 @@ class Specimens
     private ?string $region;
 
     #[ORM\Column(name: 'quadrant')]
-    private(set) ?int $quadrant;
+    private ?int $quadrant;
 
     #[ORM\Column(name: 'quadrant_sub')]
-    private(set) ?int $quadrantSub;
+    private ?int $quadrantSub;
 
     #[ORM\Column(name: 'exactness')]
-    private(set) ?float $exactness;
+    private ?float $exactness;
 
     #[ORM\ManyToOne(targetEntity: HerbCollection::class)]
     #[ORM\JoinColumn(name: 'collectionID', referencedColumnName: 'collectionID')]
@@ -157,7 +158,7 @@ class Specimens
      * @note https://github.com/jacq-system/jacq-legacy/issues/4, this col should be removed in favor of 1:M relation
      */
     #[ORM\Column(name: 'typusID')]
-    private(set) ?bool $isTypus;
+    private ?bool $isTypus;
 
     #[ORM\OneToMany(targetEntity: StableIdentifier::class, mappedBy: 'specimen')]
     #[ORM\OrderBy(['timestamp' => 'DESC'])]
@@ -189,11 +190,19 @@ class Specimens
     #[ORM\JoinColumn(name: 'voucherID', referencedColumnName: 'voucherID')]
     private ?SpecimenVoucherType $voucher;
 
+    #[ORM\OneToMany(targetEntity: SpecimenLink::class, mappedBy: 'specimen1')]
+    private Collection $outgoingRelations;
+
+    #[ORM\OneToMany(targetEntity: SpecimenLink::class, mappedBy: 'specimen2')]
+    private Collection $incomingRelations;
+
 
     public function __construct()
     {
         $this->typus = new ArrayCollection();
         $this->stableIdentifiers = new ArrayCollection();
+        $this->outgoingRelations = new ArrayCollection();
+        $this->incomingRelations = new ArrayCollection();
     }
 
 
@@ -420,7 +429,10 @@ class Specimens
         return $this->stableIdentifiers;
     }
 
-    //TODO should be raplace by \App\Service\SpecimenService::constructStableIdentifier everywhere?
+    /**
+     * @todo
+     * problematic, as the PID could be assigned later - do not use this function untile necessary
+     */
     public function getMainStableIdentifier(): ?StableIdentifier
     {
         if (count($this->stableIdentifiers) > 0) {
@@ -543,4 +555,23 @@ class Specimens
         return $this->region;
     }
 
+    public function hasRelatedSpecimens(): bool
+    {
+        if ($this->getAllRelations()->isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @return Collection|SpecimenLink[]
+     */
+    public function getAllRelations(): Collection
+    {
+        $merged = array_merge($this->outgoingRelations->toArray(), $this->incomingRelations->toArray());
+
+        usort($merged, fn(SpecimenLink $a, SpecimenLink $b) => $a->getLinkQualifier()?->getName() ?? 1 <=> $b->getLinkQualifier()?->getName() ?? 1);
+
+        return new ArrayCollection($merged);
+    }
 }
