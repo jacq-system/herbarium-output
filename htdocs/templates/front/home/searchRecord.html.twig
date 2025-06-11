@@ -18,7 +18,7 @@
                         <img height='15' width='15' alt='' src='{{ asset('recordIcons') }}/logo-iiif.png'>
                     </a>
                 {% else %}
-                    <a href='{{ path('app_front_image_endpoint', { 'filename': specimen.getId() }) }}'
+                    <a href='{{ path('app_front_image_endpoint', { 'filename': specimen.getId() }) }}&method=show'
                        target='imgBrowser'><img height='15' width="15" alt=''
                                                 src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}"></a>
                 {% endif %}

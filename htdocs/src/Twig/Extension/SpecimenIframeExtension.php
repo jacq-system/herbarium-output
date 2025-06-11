@@ -65,7 +65,7 @@ class SpecimenIframeExtension extends AbstractExtension
             $djatokaTransferOutput = null;
             if ($transfer) {
                 if (!empty($transfer['error'])) {
-                    $djatokaError = "Picture server list error. Falling back to original image name";
+                    $djatokaError = "Picture server list error. Falling back to original image name.";
                     $djatokaOptions[] = 'filename=' . rawurlencode(basename($picdetails['filename'])) . '&sid=' . $specimen->getId();
                     $this->logger->info('Specimen {id} had transfer error {e}.', [
                         'id' => $specimen->getId(),
