@@ -176,7 +176,7 @@ class SearchFormController extends AbstractController
                     "verify_peer_name" => false]
             ]);
 
-            $imageStream = fopen($url, 'rb', false, $streamContext);
+            $imageStream = @fopen($url, 'rb', false, $streamContext);
             if ($imageStream === false) {
                 $this->appLogger->warning('Image [{filename}] not found.', [
                     'url' => $url,

@@ -90,7 +90,7 @@ readonly class IiifFacade extends BaseFacade
                 $result['label'] = $this->specimenService->getScientificName($specimen);
                 $result['attribution'] = $specimen->getHerbCollection()->getInstitution()->getLicenseUri();
                 $result['logo'] = array('@id' => $specimen->getHerbCollection()->getInstitution()->getOwnerLogoUri());
-                $rdfLink = array('@id' => $specimen->getMainStableIdentifier()->getIdentifier(),
+                $rdfLink = array('@id' => $this->specimenService->getStableIdentifier($specimen),
                     'label' => 'RDF',
                     'format' => 'application/rdf+xml',
                     'profile' => 'https://cetafidentifiers.biowikifarm.net/wiki/CSPP');
@@ -135,7 +135,7 @@ readonly class IiifFacade extends BaseFacade
                         $uri .= $specimen->getId();
                         break;
                     case 'stableIdentifier':    // use stable identifier, options are either :last or :https
-                        $stableIdentifier = $specimen->getMainStableIdentifier()->getIdentifier();
+                        $stableIdentifier = $this->specimenService->getStableIdentifier($specimen);
 
                         if (!empty($stableIdentifier)) {
                             switch ($subtoken) {
@@ -173,7 +173,7 @@ readonly class IiifFacade extends BaseFacade
                         // first subtoken must be the table name in db "herbar_pictures", second subtoken must be the column name to use for the result.
                         // where-clause is always the stable identifier and its column must be named "stableIdentifier".
                         if ($subtoken && !empty($tokenParts[2])) {
-                            $stableIdentifier = $specimen->getMainStableIdentifier()->getIdentifier();
+                            $stableIdentifier = $this->specimenService->getStableIdentifier($specimen);
 
                             // SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(manifest, '/', -2), '/', 1) AS derivate_ID FROM `stblid_manifest` WHERE 1
                             $sql = "SELECT " . $tokenParts[2] . "
@@ -496,7 +496,7 @@ readonly class IiifFacade extends BaseFacade
         }
 
         $collector =$specimenEntity->getCollector();
-        $metadata[] = array('label' => 'CETAF_ID', 'value' => $specimenEntity->getMainStableIdentifier()->getIdentifier());
+        $metadata[] = array('label' => 'CETAF_ID', 'value' => $this->specimenService->getStableIdentifier($specimenEntity));
         $metadata[] = array('label' => 'dwciri:recordedBy', 'value' => $collector->getWikidataId());
         if (!empty($collector->getHuhId())) {
             $metadata[] = array('label' => 'owl:sameAs', 'value' => $collector->getHuhId());
