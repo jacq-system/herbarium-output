@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Exception\InvalidStateException;
 use App\Service\Rest\ImageLinkMapper;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -431,7 +432,8 @@ readonly class ImageService
                         ],
                         'id'     => 1
                     ],
-                    'verify' => false
+                    'verify_peer' => false,
+                    'verify_host' => false
                 ]);
                 $data = json_decode($response1->getContent(), true);
                 if (!empty($data['result'])) {
@@ -442,58 +444,10 @@ readonly class ImageService
                 } elseif (empty($data['result'][0])) {
                     throw new \Exception("FAIL: '{$picdetails['filename']}' returned empty result");
                 }
-                // since the error-response is JSON-RPC v.1 instead ov v.2.0 we can't use this client
-//            $service = new JsonRPC\Client($url);
-//            $return['pics'] = $service->execute('listResources',
-//                                                [
-//                                                    $picdetails['key'],
-//                                                    [
-//                                                        $picdetails['filename'],
-//                                                        $picdetails['filename'] . "_%",
-//                                                        $picdetails['filename'] . "A",
-//                                                        $picdetails['filename'] . "B",
-//                                                        "tab_" . $picdetails['specimenID'],
-//                                                        "obs_" . $picdetails['specimenID'],
-//                                                        "tab_" . $picdetails['specimenID'] . "_%",
-//                                                        "obs_" . $picdetails['specimenID'] . "_%"
-//                                                    ]
-//                                                ]);
             }
             catch( \Exception $e ) {
                 $return['error'] = 'Unable to connect to ' . $url . " with Error: " . $e->getMessage();
             }
-
-            /*
-            // Prepare json-rpc conform request structure
-            $jsonrpc_request = json_encode(array(
-                'id' => 1234,
-                'method' => 'listSpecimenImages',
-                'params' => array($picdetails['key'], $picdetails['specimenID'], $picdetails['filename'])
-            ));
-
-            // Prepare the context for the HTTP request
-            $opts = array(
-                'http' => array(
-                    'method' => 'POST',
-                    'header' => 'Content-type: application/json',
-                    'content' => $jsonrpc_request
-                )
-            );
-            $context = stream_context_create($opts);
-
-            // Finally try to reach the djatoka server and ask for details
-            if (($fp = fopen($url, 'r', false, $context))) {
-                $response = '';
-                while ($row = fgets($fp)) {
-                    $response .= trim($row) . "\n";
-                }
-                $response_decoded = json_decode($response, true);
-
-                $return['pics'] = $response_decoded['result'];
-            } else {
-                $return['error'] = 'Unable to connect to ' . $url;
-            }
-            */
 
             // finally add any old filenames which are in "herbar_pictures.djatoka_images" but not already in the list
             if (!empty($return['pics'])) {
@@ -501,7 +455,10 @@ readonly class ImageService
                                     FROM herbar_pictures.djatoka_images
                                     WHERE specimen_ID = :specimen
                                      AND filename NOT IN (:excluded)";
-                $rows = $this->entityManager->getConnection()->executeQuery($sql, ['specimen' => $picdetails['specimenID'], 'excluded' => $return['pics']])->fetchAllAssociative();
+                $rows = $this->entityManager->getConnection()->executeQuery($sql, ['specimen' => $picdetails['specimenID'], 'excluded' => $return['pics']],
+                    [
+                        'excluded' => ArrayParameterType::STRING
+                    ])->fetchAllAssociative();
             } else {
                 $sql = "SELECT filename
                                     FROM herbar_pictures.djatoka_images
@@ -509,6 +466,7 @@ readonly class ImageService
                 $rows = $this->entityManager->getConnection()->executeQuery($sql, ['specimen' => $picdetails['specimenID']])->fetchAllAssociative();
             }
             if (!empty($rows)) {
+
                 foreach($rows as $row) {
                     $return['pics'][] = $row['filename'];
                 }
