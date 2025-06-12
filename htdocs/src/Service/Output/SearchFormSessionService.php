@@ -14,7 +14,16 @@ class SearchFormSessionService
     private ?SessionInterface $session = null;
 
     public function __construct(private readonly RequestStack $requestStack)
-    {}
+    {
+    }
+
+    public function hasFilters(): bool
+    {
+        if ($this->getSession()->get(self::SESSION_FILTERS) === null) {
+            return false;
+        }
+        return true;
+    }
 
     protected function getSession(): SessionInterface
     {
@@ -27,14 +36,6 @@ class SearchFormSessionService
         }
 
         return $this->session;
-    }
-
-    public function hasFilters(): bool
-    {
-        if ($this->getSession()->get(self::SESSION_FILTERS) === null) {
-            return false;
-        }
-        return true;
     }
 
     public function getFilter(string $key, $default = null)

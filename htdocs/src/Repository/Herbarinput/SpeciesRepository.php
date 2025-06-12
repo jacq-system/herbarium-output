@@ -31,13 +31,13 @@ class SpeciesRepository extends ServiceEntityRepository
             ->orderBy('scientificName');
 
         if (count($words) === 2) {
-            $result =  $baseQueryBuilder
+            $result = $baseQueryBuilder
                 ->leftJoin('s.epithetSpecies', 'epithet')
                 ->andWhere('epithet.name like :epithet')
                 ->setParameter('epithet', $words[1] . '%')
                 ->getQuery()->getResult();
-            if(empty($result)){
-                $result =  $baseQueryBuilder
+            if (empty($result)) {
+                $result = $baseQueryBuilder
                     ->leftJoin('s.epithetSubspecies', 'epithetSubspecies')
                     ->leftJoin('s.epithetVariety', 'epithetVariety')
                     ->leftJoin('s.epithetSubvariety', 'epithetSubvariety')
@@ -59,7 +59,7 @@ class SpeciesRepository extends ServiceEntityRepository
         } else {
             return $baseQueryBuilder
                 ->andWhere('s.epithetSpecies IS NULL')
-            ->getQuery()->getResult();
+                ->getQuery()->getResult();
         }
 
     }
