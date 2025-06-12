@@ -19,7 +19,7 @@ class DevelopersService
     {
         $results = [];
 //        $symfonySwaggerPath = $this->router->generate("app.swagger", [], UrlGeneratorInterface::ABSOLUTE_URL);
-        $responseSwagger = $this->client->request('GET', 'https://jacq.dyn.cloud.e-infra.cz/services/doc.json');
+        $responseSwagger = $this->client->request('GET', 'https://jacqtest.dyn.cloud.e-infra.cz/services/doc.json');
         $apiDoc = json_decode($responseSwagger->getContent(), true);
         $i=0;
         foreach ($apiDoc['paths'] as $path => $methods) {
