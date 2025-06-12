@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'metadata', schema: 'herbarinput')]
 class Institution
 {
+    public const int WU = 1;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'MetadataID')]

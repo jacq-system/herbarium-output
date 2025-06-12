@@ -19,11 +19,11 @@ class DevelopersController extends AbstractController
     {
     }
 
-    #[Route('/tools/checkDjatokaServers', name: 'app_tools_checkDjatokaServers', defaults: ['source' => null])]
-    public function checkDjatokaServers(#[MapQueryParameter] ?string $source): Response
+    #[Route('/tools/checkDjatokaServers', name: 'app_tools_checkDjatokaServers', defaults: ['sourceId' => null])]
+    public function checkDjatokaServers(#[MapQueryParameter] ?int $sourceId): Response
     {
         try {
-            $data = $this->djatokaService->getData($source);
+            $data = $this->djatokaService->getData($sourceId);
         } catch (EntityNotFoundException $exception) {
             $noRowError = $exception->getMessage();
             return $this->render('output/developers/djatokaCheck.html.twig', ["noRowError" => $noRowError]);
