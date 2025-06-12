@@ -4,9 +4,9 @@ namespace App\Controller\Output;
 
 use App\Exception\InvalidStateException;
 use App\Facade\SearchFormFacade;
+use App\Repository\Herbarinput\InstitutionRepository;
 use App\Service\CollectionService;
 use App\Service\ImageService;
-use App\Service\InstitutionService;
 use App\Service\Output\ExcelService;
 use App\Service\Output\SearchFormSessionService;
 use App\Service\SpecimenService;
@@ -28,10 +28,7 @@ class SearchFormController extends AbstractController
 
     public const array RECORDS_PER_PAGE = array(10, 30, 50, 100);
 
-    //TODO the name of taxon is not part of the query now, hard to sort
-    public const array SORT = ["taxon" => '', 'collector' => 's.collector'];
-
-    public function __construct(protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly ImageService $imageService, protected readonly SpecimenService $specimenService, protected readonly ExcelService $excelService, protected LoggerInterface $statisticsLogger, protected LoggerInterface $appLogger)
+    public function __construct(protected readonly CollectionService $collectionService, protected readonly InstitutionRepository $institutionRepository, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly ImageService $imageService, protected readonly SpecimenService $specimenService, protected readonly ExcelService $excelService, protected LoggerInterface $statisticsLogger, protected LoggerInterface $appLogger)
     {
     }
 
@@ -48,7 +45,7 @@ class SearchFormController extends AbstractController
             $this->sessionService->setFilters($getData);
         }
 
-        $institutions = $this->herbariumService->getAllPairsCodeName();
+        $institutions = $this->institutionRepository->getAllPairsCodeName();
         $collections = $this->collectionService->getAllAsPairs();
         return $this->render('front/home/database.html.twig', ["institutions" => $institutions, 'collections' => $collections, 'sessionService' => $this->sessionService]);
     }

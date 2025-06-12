@@ -21,7 +21,7 @@ class SearchFormFacade
     public const int PAGINATION_RANGE = 3;
     protected QueryBuilder $queryBuilder;
 
-    public function __construct(protected readonly EntityManagerInterface $entityManager, protected readonly InstitutionService $institutionService, protected  SearchFormSessionService $searchFormSessionService, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService, protected readonly KmlService $kmlService, protected readonly GeoService $geoService)
+    public function __construct(protected readonly EntityManagerInterface $entityManager, protected  SearchFormSessionService $searchFormSessionService, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService, protected readonly KmlService $kmlService, protected readonly GeoService $geoService)
     {
     }
 
@@ -549,20 +549,20 @@ class SearchFormFacade
             $specimen->getLatitude() ? number_format(round($specimen->getLatitude(), 9), 9) . '°' : '',
             $latDMS,
             $specimen->getHemisphereLatitude(),
-            ($specimen->getHemisphereLatitude() === 'N') ? $specimen->degreeN : $specimen->degreeS,
-            ($specimen->getHemisphereLatitude() === 'N') ? $specimen->minuteN : $specimen->minuteS,
-            ($specimen->getHemisphereLatitude() === 'N') ? $specimen->secondN : $specimen->secondS,
+            ($specimen->getHemisphereLatitude() === 'N') ? $specimen->getDegreeN() : $specimen->getDegreeS(),
+            ($specimen->getHemisphereLatitude() === 'N') ? $specimen->getMinuteN() : $specimen->getMinuteS(),
+            ($specimen->getHemisphereLatitude() === 'N') ? $specimen->getSecondN() : $specimen->getSecondS(),
             $specimen->getLongitude() ? number_format(round($specimen->getLongitude(), 9), 9) . '°' : '',
             $lonDMS,
             $specimen->getHemisphereLongitude(),
-            ($specimen->getHemisphereLongitude() === 'E') ? $specimen->degreeE : $specimen->degreeW,
-            ($specimen->getHemisphereLongitude() === 'E') ? $specimen->degreeE : $specimen->degreeW,
-            ($specimen->getHemisphereLongitude() === 'E') ? $specimen->degreeE : $specimen->degreeW,
-            $specimen->exactness,
+            ($specimen->getHemisphereLongitude() === 'E') ? $specimen->getDegreeE() : $specimen->getDegreeW(),
+            ($specimen->getHemisphereLongitude() === 'E') ? $specimen->getMinuteE() : $specimen->getMinuteW(),
+            ($specimen->getHemisphereLongitude() === 'E') ? $specimen->getSecondE() : $specimen->getSecondW(),
+            $specimen->getExactness(),
             $specimen->getAltitudeMin(),
             $specimen->getAltitudeMax(),
-            $specimen->quadrant,
-            $specimen->quadrantSub,
+            $specimen->getQuadrant(),
+            $specimen->getQuadrantSub(),
             $specimen->getLocality(),
             $specimen->getDetermination(),
             $specimen->getTaxonAlternative(),

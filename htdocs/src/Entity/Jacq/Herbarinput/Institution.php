@@ -3,9 +3,10 @@
 namespace App\Entity\Jacq\Herbarinput;
 
 
+use App\Repository\Herbarinput\InstitutionRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity()]
+#[ORM\Entity(repositoryClass: InstitutionRepository::class)]
 #[ORM\Table(name: 'metadata', schema: 'herbarinput')]
 class Institution
 {

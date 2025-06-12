@@ -1,11 +1,18 @@
 <?php declare(strict_types=1);
 
-namespace App\Service;
+namespace App\Repository\Herbarinput;
+
+use App\Entity\Jacq\Herbarinput\Institution;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 
 
-readonly class InstitutionService extends BaseService
+class InstitutionRepository extends ServiceEntityRepository
 {
-
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, Institution::class);
+    }
 
     public function getAllPairsCodeName(): array
     {
@@ -25,6 +32,5 @@ readonly class InstitutionService extends BaseService
 
         return $this->query($sql)->fetchAllKeyValue();
     }
-
 
 }

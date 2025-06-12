@@ -574,4 +574,96 @@ class Specimens
 
         return new ArrayCollection($merged);
     }
+
+    public function getDegreeS(): ?int
+    {
+        return $this->degreeS;
+    }
+
+    public function getMinuteS(): ?int
+    {
+        return $this->minuteS;
+    }
+
+    public function getSecondS(): ?float
+    {
+        return $this->secondS;
+    }
+
+    public function getDegreeN(): ?int
+    {
+        return $this->degreeN;
+    }
+
+    public function getMinuteN(): ?int
+    {
+        return $this->minuteN;
+    }
+
+    public function getSecondN(): ?float
+    {
+        return $this->secondN;
+    }
+
+    public function getDegreeW(): ?int
+    {
+        return $this->degreeW;
+    }
+
+    public function getMinuteW(): ?int
+    {
+        return $this->minuteW;
+    }
+
+    public function getSecondW(): ?float
+    {
+        return $this->secondW;
+    }
+
+    public function getDegreeE(): ?int
+    {
+        return $this->degreeE;
+    }
+
+    public function getMinuteE(): ?int
+    {
+        return $this->minuteE;
+    }
+
+    public function getSecondE(): ?float
+    {
+        return $this->secondE;
+    }
+
+    public function getQuadrant(): ?int
+    {
+        return $this->quadrant;
+    }
+
+    public function getQuadrantSub(): ?int
+    {
+        return $this->quadrantSub;
+    }
+
+    public function getExactness(): ?float
+    {
+        return $this->exactness;
+    }
+
+    public function getIsTypus(): ?bool
+    {
+        return $this->isTypus;
+    }
+
+    public function getOutgoingRelations(): Collection
+    {
+        return $this->outgoingRelations;
+    }
+
+    public function getIncomingRelations(): Collection
+    {
+        return $this->incomingRelations;
+    }
+
+
 }
