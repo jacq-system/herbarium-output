@@ -24,10 +24,10 @@ class ToolsController extends AbstractController
     #[Route('/tools/statistics', name: 'app_tools_statistics')]
     public function jacqStatistics(): Response
     {
-        return $this->render('front/tools/statistics.html.twig');
+        return $this->render('output/tools/statistics.html.twig');
     }
 
-    #[Route('/tools/jacqStatisticsResults', name: 'app_front_jacqStatistics_results')]
+    #[Route('/tools/jacqStatisticsResults', name: 'output_jacqStatistics_results')]
     public function jacqStatisticsResults(#[MapQueryParameter] string $periodStart, #[MapQueryParameter] string $periodEnd, #[MapQueryParameter] int $updated, #[MapQueryParameter] CoreObjectsEnum $type, #[MapQueryParameter] TimeIntervalEnum $interval): Response
     {
         $data = $this->statisticsService->getResults($periodStart, $periodEnd, $updated, $type, $interval);
@@ -43,13 +43,13 @@ class ToolsController extends AbstractController
                 $periodSum[$i] += $institution['stat'][$i];
             }
         }
-        return $this->render('front/tools/statistics_results.html.twig', ["results" => $data['results'], "periodMin" => $periodMin, "periodMax" => $periodMax, 'suma' => $periodSum]);
+        return $this->render('output/tools/statistics_results.html.twig', ["results" => $data['results'], "periodMin" => $periodMin, "periodMax" => $periodMax, 'suma' => $periodSum]);
     }
 
     #[Route('/tools', name: 'tools_overview')]
     public function indexTools(): Response
     {
-        return $this->render('front/tools/default.html.twig');
+        return $this->render('output/tools/default.html.twig');
     }
 
 }

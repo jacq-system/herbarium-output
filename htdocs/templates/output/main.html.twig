@@ -17,29 +17,29 @@
       })();
     </script>
     <!-- End Matomo Code -->
-    
+
     <div class="navbar-fixed">
         <nav class="nav-extended white">
             <div class="nav-wrapper">
-                <div style="height: 45px"><a href="{{ path('app_front_index') }}">
+                <div style="height: 45px"><a href="{{ path('output_index') }}">
                         <img class="main-logo" src="{{ asset('logo/jacq/jacq.png') }}" alt="JACQ Logo"></a></div>
                 <ul>
-                    <li {% if app.request.attributes.get('_route') == 'app_front_index' %}class="active"{% endif %}">
-                        <a href="{{ path('app_front_index') }}">Home</a>
+                    <li {% if app.request.attributes.get('_route') == 'output_index' %}class="active"{% endif %}">
+                        <a href="{{ path('output_index') }}">Home</a>
                     </li>
-                    <li {% if app.request.attributes.get('_route') == 'app_front_database' %}class="active"{% endif %}>
-                        <a href="{{ path('app_front_database') }}">Database</a>
+                    <li {% if app.request.attributes.get('_route') == 'output_database' %}class="active"{% endif %}>
+                        <a href="{{ path('output_database') }}">Database</a>
                     </li>
-                    {% if app.request.attributes.get('_route') == 'app_front_specimenDetail' %}
+                    {% if app.request.attributes.get('_route') == 'output_specimenDetail' %}
                     <li class="active">
                         <a href="#">Specimen detail</a>
                     </li>
                     {% endif %}
-                    <li {% if app.request.attributes.get('_route') == 'app_front_collections' %}class="active"{% endif %}>
-                        <a href="{{ path('app_front_collections') }}">Collections</a>
+                    <li {% if app.request.attributes.get('_route') == 'output_collections' %}class="active"{% endif %}>
+                        <a href="{{ path('output_collections') }}">Collections</a>
                     </li>
-                    <li {% if app.request.attributes.get('_route') == 'app_front_systems' %}class="active"{% endif %}>
-                        <a href="{{ path('app_front_systems') }}">Reference Systems</a>
+                    <li {% if app.request.attributes.get('_route') == 'output_systems' %}class="active"{% endif %}>
+                        <a href="{{ path('output_systems') }}">Reference Systems</a>
                     </li>
                     <li {% if app.request.attributes.get('_route') == 'tools_overview' %}class="active"{% endif %}>
                         <a href="{{ path('tools_overview') }}">Tools</a>
@@ -53,6 +53,6 @@
     </main>
     <footer class="page-footer center white">
         <hr>
-        <a href="{{ path('app_front_imprint') }}">Imprint | Citation | Privacy</a>
+        <a href="{{ path('output_imprint') }}">Imprint | Citation | Privacy</a>
     </footer>
 {% endblock %}

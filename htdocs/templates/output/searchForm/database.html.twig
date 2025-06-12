@@ -1,4 +1,4 @@
-{% extends 'front/main.html.twig' %}
+{% extends 'output/main.html.twig' %}
 
 {% block main %}
     <!-- head -->
@@ -36,7 +36,7 @@
     </div>
     <!-- form -->
     <div class="container">
-        <form id="searchForm" action="{{ path('app_front_databaseSearch') }}" method="POST" data-prefilled="{% if sessionService.hasFilters() %}1{% else %}0{% endif %}">
+        <form id="searchForm" action="{{ path('output_databaseSearch') }}" method="POST" data-prefilled="{% if sessionService.hasFilters() %}1{% else %}0{% endif %}">
             <div class="row">
                 <!-- Taxon -->
                 <div class="col s12 m6">
@@ -46,7 +46,7 @@
                     </div>
                     <!-- Institution -->
                     <div class="input-field ">
-                        <select id="institution" name="institution" data-source="{{ path('app_front_collectionsSelectOptions') }}">
+                        <select id="institution" name="institution" data-source="{{ path('output_collectionsSelectOptions') }}">
                             <option value="">all herbaria</option>
                             {% for id, name in institutions %}
                                 <option value="{{ id }}" {% if sessionService.getFilter('institution') == id %}selected{% endif %}>{{ name }}</option>
@@ -218,7 +218,7 @@
                         <button class="btn waves-effect" type="submit">
                             Search
                         </button>
-                        <button class="btn waves-effect"><a href="{{ path('app_front_database', {'reset': 'true'})}}" id="reset">Reset</a></button>
+                        <button class="btn waves-effect"><a href="{{ path('output_database', {'reset': 'true'})}}" id="reset">Reset</a></button>
                     </div>
                 </div>
             </div>

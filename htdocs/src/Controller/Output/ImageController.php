@@ -32,7 +32,7 @@ class ImageController extends AbstractController
     {
     }
 
-    #[Route('/image', name: 'app_front_image_endpoint', methods: ['GET'])]
+    #[Route('/image', name: 'output_image_endpoint', methods: ['GET'])]
     public function showImage(#[MapQueryParameter] string $filename, #[MapQueryParameter] ?string $sid, #[MapQueryParameter] string $method, #[MapQueryParameter] ?string $format): Response
     {
         if ($_SERVER['REMOTE_ADDR'] == '94.177.9.139' && !empty($sid) && $method == 'download' && strrpos($filename, '_') == strpos($filename, '_')) {

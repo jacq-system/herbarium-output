@@ -32,13 +32,13 @@ class SearchFormController extends AbstractController
     {
     }
 
-    #[Route('/database', name: 'app_front_database')]
+    #[Route('/database', name: 'output_database')]
     public function database(Request $request, #[MapQueryParameter] bool $reset = false): Response
     {
         $this->sessionService->setSetting('page', 1);
         if ($reset) {
             $this->sessionService->reset();
-            return $this->redirectToRoute('app_front_database');
+            return $this->redirectToRoute('output_database');
         }
         $getData = $request->query->all();
         if (!empty($getData)) {
@@ -47,10 +47,10 @@ class SearchFormController extends AbstractController
 
         $institutions = $this->institutionRepository->getAllPairsCodeName();
         $collections = $this->collectionService->getAllAsPairs();
-        return $this->render('front/home/database.html.twig', ["institutions" => $institutions, 'collections' => $collections, 'sessionService' => $this->sessionService]);
+        return $this->render('output/searchForm/database.html.twig', ["institutions" => $institutions, 'collections' => $collections, 'sessionService' => $this->sessionService]);
     }
 
-    #[Route('/databaseSearch', name: 'app_front_databaseSearch', methods: ['POST'])]
+    #[Route('/databaseSearch', name: 'output_databaseSearch', methods: ['POST'])]
     public function databaseSearch(Request $request): Response
     {
         $postData = $request->request->all();
@@ -62,13 +62,13 @@ class SearchFormController extends AbstractController
             }
         }
         if ($allEmpty) {
-            return $this->render('front/home/databaseSearchEmpty.html.twig');
+            return $this->render('output/searchForm/databaseSearchEmpty.html.twig');
         }
         $this->sessionService->setFilters($postData);
 
         $pagination = $this->searchFormFacade->providePaginationInfo();
 
-        return $this->render('front/home/databaseSearch.html.twig', [
+        return $this->render('output/searchForm/databaseSearch.html.twig', [
             'records' => $this->searchFormFacade->search(),
             'recordsCount' => $pagination["totalRecords"],
             'totalPages' => $pagination['totalPages'],
@@ -77,7 +77,7 @@ class SearchFormController extends AbstractController
             'sessionService' => $this->sessionService]);
     }
 
-    #[Route('/databaseSearchSettings', name: 'app_front_databaseSearchSettings', methods: ['GET'])]
+    #[Route('/databaseSearchSettings', name: 'output_databaseSearchSettings', methods: ['GET'])]
     public function databaseSearchSettings(#[MapQueryParameter] string $feature, #[MapQueryParameter] string $value): Response
     {
         switch ($feature) {
@@ -97,7 +97,7 @@ class SearchFormController extends AbstractController
         return new Response();
     }
 
-    #[Route('/collectionsSelectOptions', name: 'app_front_collectionsSelectOptions', methods: ['GET'])]
+    #[Route('/collectionsSelectOptions', name: 'output_collectionsSelectOptions', methods: ['GET'])]
     public function collectionsSelectOptions(#[MapQueryParameter] string $herbariumID): Response
     {
         $result = $this->collectionService->getAllFromHerbariumAsPairsByAbbrev($herbariumID);
@@ -105,7 +105,7 @@ class SearchFormController extends AbstractController
         return new JsonResponse($result);
     }
 
-    #[Route('/detail/{specimenId}', name: 'app_front_specimenDetail', requirements: ['specimenId' => '\d+'], methods: ['GET'])]
+    #[Route('/detail/{specimenId}', name: 'output_specimenDetail', requirements: ['specimenId' => '\d+'], methods: ['GET'])]
     public function detail(int $specimenId): Response
     {
         $specimen = $this->specimenService->findAccessibleForPublic($specimenId);
@@ -113,13 +113,13 @@ class SearchFormController extends AbstractController
             'id' => $specimen->getId(),
             'institution' => $specimen->getHerbCollection()->getInstitution()->getAbbreviation()
         ]);
-        return $this->render('front/home/detail.html.twig', [
+        return $this->render('output/searchForm/detail.html.twig', [
             'specimen' => $specimen,
             'pid' => $this->specimenService->getStableIdentifier($specimen)
         ]);
     }
 
-    #[Route('/exportKml', name: 'app_front_exportKml', methods: ['GET'])]
+    #[Route('/exportKml', name: 'output_exportKml', methods: ['GET'])]
     public function exportKml(): Response
     {
         $kmlContent = $this->searchFormFacade->getKmlExport();
@@ -130,7 +130,7 @@ class SearchFormController extends AbstractController
         return $response;
     }
 
-    #[Route('/exportExcel', name: 'app_front_exportExcel', methods: ['GET'])]
+    #[Route('/exportExcel', name: 'output_exportExcel', methods: ['GET'])]
     public function exportExcel(): Response
     {
         $spreadsheet = $this->excelService->prepareExcel();
@@ -148,7 +148,7 @@ class SearchFormController extends AbstractController
         return $response;
     }
 
-    #[Route('/exportCsv', name: 'app_front_exportCsv', methods: ['GET'])]
+    #[Route('/exportCsv', name: 'output_exportCsv', methods: ['GET'])]
     public function exportCsv(): Response
     {
         $spreadsheet = $this->excelService->prepareExcel();
@@ -166,7 +166,7 @@ class SearchFormController extends AbstractController
         return $response;
     }
 
-    #[Route('/exportOds', name: 'app_front_exportOds', methods: ['GET'])]
+    #[Route('/exportOds', name: 'output_exportOds', methods: ['GET'])]
     public function exportOds(): Response
     {
         $spreadsheet = $this->excelService->prepareExcel();
