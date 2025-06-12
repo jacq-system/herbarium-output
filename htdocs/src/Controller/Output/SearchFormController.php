@@ -4,6 +4,7 @@ namespace App\Controller\Output;
 
 use App\Exception\InvalidStateException;
 use App\Facade\SearchFormFacade;
+use App\Repository\Herbarinput\HerbCollectionRepository;
 use App\Repository\Herbarinput\InstitutionRepository;
 use App\Service\CollectionService;
 use App\Service\ImageService;
@@ -28,7 +29,7 @@ class SearchFormController extends AbstractController
 
     public const array RECORDS_PER_PAGE = array(10, 30, 50, 100);
 
-    public function __construct(protected readonly CollectionService $collectionService, protected readonly InstitutionRepository $institutionRepository, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly SpecimenService $specimenService, protected readonly ExcelService $excelService, protected LoggerInterface $statisticsLogger, protected LoggerInterface $appLogger)
+    public function __construct(protected readonly HerbCollectionRepository $herbCollectionRepository, protected readonly InstitutionRepository $institutionRepository, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly SpecimenService $specimenService, protected readonly ExcelService $excelService, protected LoggerInterface $statisticsLogger, protected LoggerInterface $appLogger)
     {
     }
 
@@ -46,7 +47,7 @@ class SearchFormController extends AbstractController
         }
 
         $institutions = $this->institutionRepository->getAllPairsCodeName();
-        $collections = $this->collectionService->getAllAsPairs();
+        $collections = $this->herbCollectionRepository->getAllAsPairs();
         return $this->render('output/searchForm/database.html.twig', ["institutions" => $institutions, 'collections' => $collections, 'sessionService' => $this->sessionService]);
     }
 
@@ -98,9 +99,9 @@ class SearchFormController extends AbstractController
     }
 
     #[Route('/collectionsSelectOptions', name: 'output_collectionsSelectOptions', methods: ['GET'])]
-    public function collectionsSelectOptions(#[MapQueryParameter] string $herbariumID): Response
+    public function collectionsSelectOptions(#[MapQueryParameter] ?int $herbariumID): Response
     {
-        $result = $this->collectionService->getAllFromHerbariumAsPairsByAbbrev($herbariumID);
+        $result = $this->herbCollectionRepository->getAllFromHerbariumAsPairs($herbariumID);
 
         return new JsonResponse($result);
     }

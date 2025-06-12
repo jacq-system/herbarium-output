@@ -3,11 +3,12 @@
 namespace App\Entity\Jacq\Herbarinput;
 
 use App\Entity\Jacq\HerbarPictures\IiifDefinition;
+use App\Repository\Herbarinput\HerbCollectionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity()]
+#[ORM\Entity(repositoryClass: HerbCollectionRepository::class)]
 #[ORM\Table(name: 'tbl_management_collections', schema: 'herbarinput')]
 class HerbCollection
 {
