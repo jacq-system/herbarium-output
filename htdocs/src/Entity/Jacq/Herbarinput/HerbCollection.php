@@ -1,8 +1,10 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace App\Entity\Jacq\Herbarinput;
 
 use App\Entity\Jacq\HerbarPictures\IiifDefinition;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity()]
@@ -34,6 +36,13 @@ class HerbCollection
     #[ORM\OneToOne(targetEntity: IiifDefinition::class, mappedBy: 'herbCollection')]
     private ?IiifDefinition $iiifDefinition = null;
 
+    #[ORM\OneToMany(targetEntity: Specimens::class, mappedBy: "herbCollection")]
+    private Collection $specimens;
+
+    public function __construct()
+    {
+        $this->specimens = new ArrayCollection();
+    }
 
     public function getInstitution(): Institution
     {
@@ -70,7 +79,6 @@ class HerbCollection
     {
         return $this->collShort;
     }
-
 
 
 }

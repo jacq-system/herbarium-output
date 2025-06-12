@@ -16,21 +16,15 @@ class InstitutionRepository extends ServiceEntityRepository
 
     public function getAllPairsCodeName(): array
     {
-        $sql = "SELECT MetadataID as id, CONCAT(SourceInstitutionID,' - ',SourceID) as name
-                FROM metadata
-                WHERE MetadataID
-                IN (
-                  SELECT `source_id`
-                  FROM `tbl_management_collections`
-                  WHERE `collectionID`
-                  IN (
-                    SELECT DISTINCT `collectionID`
-                    FROM `tbl_specimens`
-                  )
-                )
-                ORDER BY name";
 
-        return $this->query($sql)->fetchAllKeyValue();
+        $qb = $this->createQueryBuilder('i')
+            ->select('DISTINCT i.id AS id, CONCAT(i.code, \' - \', i.name2) AS name')
+            ->join('i.collections', 'c')
+            ->join('c.specimens', 's')
+            ->orderBy('name');
+        $results = $qb->getQuery()->getArrayResult();
+        return array_column($results, 'name', 'id');
+
     }
 
 }

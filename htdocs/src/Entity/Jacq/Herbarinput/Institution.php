@@ -4,6 +4,8 @@ namespace App\Entity\Jacq\Herbarinput;
 
 
 use App\Repository\Herbarinput\InstitutionRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: InstitutionRepository::class)]
@@ -30,14 +32,24 @@ class Institution
     #[ORM\Column(name: 'OwnerOrganizationName')]
     private ?string $name;
 
+    #[ORM\Column(name: 'SourceID')]
+    private string $name2;
+
+    #[ORM\OneToOne(targetEntity: ImageDefinition::class, mappedBy: 'institution')]
+    private ?ImageDefinition $imageDefinition = null;
+
+    #[ORM\OneToMany(targetEntity: HerbCollection::class, mappedBy: "institution")]
+    private Collection $collections;
+
+    public function __construct()
+    {
+        $this->collections = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
-
-    #[ORM\OneToOne(targetEntity: ImageDefinition::class, mappedBy: 'institution')]
-    private ?ImageDefinition $imageDefinition = null;
 
     public function getImageDefinition(): ?ImageDefinition
     {
@@ -68,5 +80,16 @@ class Institution
     {
         return $this->name;
     }
+
+    public function getName2(): string
+    {
+        return $this->name2;
+    }
+
+    public function getCollections(): Collection
+    {
+        return $this->collections;
+    }
+
 
 }
