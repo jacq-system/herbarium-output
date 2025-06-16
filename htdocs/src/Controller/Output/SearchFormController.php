@@ -2,12 +2,9 @@
 
 namespace App\Controller\Output;
 
-use App\Exception\InvalidStateException;
 use App\Facade\SearchFormFacade;
 use App\Repository\Herbarinput\HerbCollectionRepository;
 use App\Repository\Herbarinput\InstitutionRepository;
-use App\Service\CollectionService;
-use App\Service\ImageService;
 use App\Service\Output\ExcelService;
 use App\Service\Output\SearchFormSessionService;
 use App\Service\SpecimenService;
@@ -17,11 +14,9 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\HttpKernel\Attribute\Cache;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -54,10 +49,15 @@ class SearchFormController extends AbstractController
             return $this->institutionRepository->getAllPairsCodeName();
         });
 
-        $collections = $this->cache->get('herb_collections_pairs', function (ItemInterface $item) {
-            $item->expiresAfter(36000);
-            return $this->herbCollectionRepository->getAllAsPairs();
-        });
+        if (empty($this->sessionService->getFilter('institution'))) {
+            $collections = $this->cache->get('herb_collections_pairs', function (ItemInterface $item) {
+                $item->expiresAfter(36000);
+                return $this->herbCollectionRepository->getAllAsPairs();
+            });
+        } else {
+            $collections = $this->herbCollectionRepository->getAllAsPairs((int) $this->sessionService->getFilter('institution'));
+        }
+
 
         return $this->render('output/searchForm/database.html.twig', ["institutions" => $institutions, 'collections' => $collections, 'sessionService' => $this->sessionService]);
     }
@@ -112,7 +112,7 @@ class SearchFormController extends AbstractController
     #[Route('/collectionsSelectOptions', name: 'output_collectionsSelectOptions', methods: ['GET'])]
     public function collectionsSelectOptions(#[MapQueryParameter] ?int $herbariumID): Response
     {
-        $result = $this->herbCollectionRepository->getAllFromHerbariumAsPairs($herbariumID);
+        $result = $this->herbCollectionRepository->getAllAsObjectPairs($herbariumID);
 
         return new JsonResponse($result);
     }

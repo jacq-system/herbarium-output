@@ -4,6 +4,7 @@ namespace App\Repository\Herbarinput;
 
 use App\Entity\Jacq\Herbarinput\HerbCollection;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
 
 
@@ -14,35 +15,26 @@ class HerbCollectionRepository extends ServiceEntityRepository
         parent::__construct($registry, HerbCollection::class);
     }
 
-    public function getAllAsPairs(): array
+    public function getAllAsPairs(?int $herbariumAbbreviation = null): array
     {
-        $results = $this->createQueryBuilder('h')
-            ->select('h.id, h.name')
-            ->join('h.specimens', 's')
-            ->groupBy('h.id')
-            ->orderBy('h.name')
-            ->getQuery()->getArrayResult();
 
-        return array_column($results, 'name', 'id');
+        return array_column($this->queryByHerbarium($herbariumAbbreviation)->getArrayResult(), 'name', 'id');
 
     }
 
-    public function getAllFromHerbariumAsPairs(?int $herbariumAbbreviation): array
+    private function queryByHerbarium(?int $herbariumAbbreviation = null): Query
     {
-        $qb = $this->createQueryBuilder('h')
-            ->select('h.id, h.name')
-            ->join('h.specimens', 's')
-            ->groupBy('h.id')
-            ->orderBy('h.name');
+        $qb = $this->createQueryBuilder('h')->select('h.id, h.name')->join('h.specimens', 's')->groupBy('h.id')->orderBy('h.name');
 
         if ($herbariumAbbreviation !== null) {
-            $qb->join('h.institution', 'i')
-                ->where('i.id = :herbarium')
-                ->setParameter(':herbarium', $herbariumAbbreviation);
+            $qb->join('h.institution', 'i')->where('i.id = :herbarium')->setParameter(':herbarium', $herbariumAbbreviation);
         }
-
-        return $qb->getQuery()->getResult();
+        return $qb->getQuery();
     }
 
+    public function getAllAsObjectPairs(?int $herbariumAbbreviation = null): array
+    {
+        return $this->queryByHerbarium($herbariumAbbreviation)->getResult();
+    }
 
 }
