@@ -220,15 +220,15 @@ class ImageLinkMapper
                 $europeanaParams = array_merge($image, ['method'=>'europeana']);
                 $thumbParams = array_merge($image, ['method'=>'thumb']);
 
-                $this->imageLinks[] = $this->router->generate('app_front_image_endpoint', $showParams, UrlGeneratorInterface::ABSOLUTE_URL);
-                $this->fileLinks['full'][] = $this->router->generate('app_front_image_endpoint', $downloadParams, UrlGeneratorInterface::ABSOLUTE_URL);
+                $this->imageLinks[] = $this->router->generate('output_image_endpoint', $showParams, UrlGeneratorInterface::ABSOLUTE_URL);
+                $this->fileLinks['full'][] = $this->router->generate('output_image_endpoint', $downloadParams, UrlGeneratorInterface::ABSOLUTE_URL);
                 if ($firstImage && ($firstImageFilesize ?? null) > 1500) {  // use europeana-cache only for images without errors and only for the first image
                     $sourceCode = $this->specimen->getHerbCollection()->getInstitution()->getCode();
                     $this->fileLinks['europeana'][] = "https://object.jacq.org/europeana/$sourceCode/$this->specimen->getId().jpg";
                 } else {
-                    $this->fileLinks['europeana'][] = $this->router->generate('app_front_image_endpoint', $europeanaParams, UrlGeneratorInterface::ABSOLUTE_URL);
+                    $this->fileLinks['europeana'][] = $this->router->generate('output_image_endpoint', $europeanaParams, UrlGeneratorInterface::ABSOLUTE_URL);
                 }
-                $this->fileLinks['thumb'][] = $this->router->generate('app_front_image_endpoint', $thumbParams, UrlGeneratorInterface::ABSOLUTE_URL);
+                $this->fileLinks['thumb'][] = $this->router->generate('output_image_endpoint', $thumbParams, UrlGeneratorInterface::ABSOLUTE_URL);
                 $firstImage = false;
             }
         }

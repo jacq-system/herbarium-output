@@ -1,4 +1,5 @@
 import {searchResults} from './searchFormSubmit';
+
 export default function searchFormUI() {
 
     const element = document.getElementById('institution');
@@ -18,8 +19,11 @@ function subsetCollections(element) {
     element.addEventListener('change', function (event) {
         const selectedValue = this.value;
         const path = this.dataset.source;
-
-        fetch(path + `?herbariumID=${encodeURIComponent(selectedValue)}`, {
+        let url = path;
+        if (selectedValue !== '') {
+            url = path + `?herbariumID=${encodeURIComponent(selectedValue)}`;
+        }
+        fetch(url, {
             method: 'GET',
         })
             .then((response) => response.json())
@@ -31,7 +35,7 @@ function subsetCollections(element) {
                 defaultOption.textContent = 'all subcollections';
                 secondSelect.appendChild(defaultOption);
 
-                data.forEach(({ id, name }) => {
+                data.forEach(({id, name}) => {
                     const option = document.createElement('option');
                     option.value = id;
                     option.textContent = name;

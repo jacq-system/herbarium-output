@@ -68,7 +68,7 @@ readonly class SpecimenService extends BaseService
         $specimens = $this->specimensWithErrors($sourceID);
         $data['total'] = count($specimens);
         foreach ($specimens as $line => $specimen) {
-            $data['result'][$line] = ['specimenID' => $specimen->getId(), 'link' => $this->router->generate('app_front_specimenDetail', ['specimenId' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL)];
+            $data['result'][$line] = ['specimenID' => $specimen->getId(), 'link' => $this->router->generate('output_specimenDetail', ['specimenId' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL)];
             $data['result'][$line]['errorList'] = $this->sids2array($specimen);
         }
 
@@ -99,7 +99,7 @@ readonly class SpecimenService extends BaseService
 
                 preg_match("/already exists \((?P<number>\d+)\)$/", $stableIdentifier->getError(), $parts);
 
-                $ret[$key]['link'] = (!empty($parts['number'])) ? $this->router->generate('app_front_specimenDetail', ['specimenId' => $parts['number']], UrlGeneratorInterface::ABSOLUTE_URL) : '';
+                $ret[$key]['link'] = (!empty($parts['number'])) ? $this->router->generate('output_specimenDetail', ['specimenId' => $parts['number']], UrlGeneratorInterface::ABSOLUTE_URL) : '';
 
             }
         }
@@ -152,7 +152,7 @@ readonly class SpecimenService extends BaseService
         /**
          * SID is assigned asynchron, could happen it does not exists (and the timestamp is not clear))
          */
-        return ['stableIdentifier' => $this->getStableIdentifier($specimen), 'timestamp' => $specimen->getMainStableIdentifier()?->getTimestamp()->format('Y-m-d H:i:s'), 'link' => $this->router->generate('app_front_specimenDetail', ['specimenId' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL)
+        return ['stableIdentifier' => $this->getStableIdentifier($specimen), 'timestamp' => $specimen->getMainStableIdentifier()?->getTimestamp()->format('Y-m-d H:i:s'), 'link' => $this->router->generate('output_specimenDetail', ['specimenId' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL)
 
         ];
     }

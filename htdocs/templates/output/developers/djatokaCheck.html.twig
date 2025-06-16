@@ -1,4 +1,4 @@
-{% extends 'front/main.html.twig' %}
+{% extends 'output/main.html.twig' %}
 
 {% block main %}
 
@@ -20,7 +20,7 @@
             <tbody>
             {% for server in fail %}
                 <tr>
-                    <td>{{ server['source'] }}({{ server['source_id'] }})</td>
+                    <td><a href="{{ path('app_tools_checkDjatokaServers', { sourceId: server['source_id'] }) }}">{{ server['source'] }}({{ server['source_id'] }})</a></td>
                     <td>{{ server['specimenID'] }}</td>
                     {% if server['errorRPC'] is not empty %}
                         <td class="red-text">{{ server['errorRPC']}}</td>
@@ -53,7 +53,7 @@
                 <tbody>
                 {% for server in warn %}
                     <tr>
-                        <td>{{ server['source'] }}({{ server['source_id'] }})</td>
+                        <td><a href="{{ path('app_tools_checkDjatokaServers', { sourceId: server['source_id'] }) }}">{{ server['source'] }}({{ server['source_id'] }})</a></td>
                         <td>{{ server['specimenID'] }}</td>
                         {% if server['warningRPC'] is not empty %}
                             <td class="red-text">{{ server['warningRPC']}}</td>
@@ -86,7 +86,7 @@
                 <tbody>
                 {% for server in ok %}
                     <tr>
-                        <td>{{ server['source'] }}({{ server['source_id'] }})</td>
+                        <td><a href="{{ path('app_tools_checkDjatokaServers', { sourceId: server['source_id'] }) }}">{{ server['source'] }}({{ server['source_id'] }})</a></td>
                         <td>{{ server['specimenID'] }}</td>
                         <td class="green-text">OK</td>
                         <td class="green-text">OK</td>
@@ -108,13 +108,13 @@
                 <tbody>
                 {% for server in noPicture %}
                     <tr>
-                        <td>{{ server['source'] }}({{ server['source_id'] }})</td>
+                        <td><a href="{{ path('app_tools_checkDjatokaServers', { sourceId: server['source_id'] }) }}">{{ server['source'] }}({{ server['source_id'] }})</a></td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
         {% endif %}
-        <p>To scan just a single source, add either the parameter "?source=&lt;id&gt;" or "?source=&lt;source&gt;" to
+        <p>To scan just a single source, add the parameter "?sourceId=&lt;id&gt;" to
             the URL.</p>
         {% if noRowError is defined and noRowError is not empty %}
              {{ noRowError }}

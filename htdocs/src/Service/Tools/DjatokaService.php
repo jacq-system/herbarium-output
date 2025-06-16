@@ -2,75 +2,36 @@
 
 namespace App\Service\Tools;
 
+use App\Repository\Herbarinput\ImageDefinitionRepository;
+use App\Repository\Herbarinput\SpecimensRepository;
 use App\Service\ImageService;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityNotFoundException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 readonly class DjatokaService
 {
-     public function __construct(protected EntityManagerInterface $entityManager, protected ImageService $imageService,  protected HttpClientInterface $client)
+     public function __construct(protected ImageService $imageService,  protected HttpClientInterface $client, protected SpecimensRepository $specimensRepository, protected ImageDefinitionRepository $imageDefinitionRepository)
     {
     }
 
-    protected function getAllDjatokaServers(?string $source): array
-    { //TODO conditinioal build of constraint is hard to read
-        $constraint = ' AND source_id_fk != 1 AND iiif_capable != 1';   // wu need special treatment, iiif-servers are not checked
-        if ($source!==null) {
-            if (is_numeric($source)) {
-                $constraint .= " AND source_ID_fk = " . intval($source);
-            } else {
-                $sql = "SELECT source_id
-                                  FROM meta
-                                  WHERE source_code LIKE :source";
-                $row = $this->entityManager->getConnection()->executeQuery($sql, ['source' => $source])->fetchAssociative();
-                if (!empty($row['source_id'])) {
-                    $constraint = " AND source_ID_fk = " . $row['source_id'];
-                }
-            }
-        }
-
-        $sql = "SELECT source_id_fk, img_coll_short
-                        FROM tbl_img_definition
-                        WHERE imgserver_type = 'djatoka'
-                         $constraint
-                        ORDER BY img_coll_short";
-
-        return $this->entityManager->getConnection()->executeQuery($sql)->fetchAllAssociative();
-    }
-
-    protected function getExampleImage(int $sourceId): int|false
+    public function getData(?int $source): array
     {
-        $sql = "SELECT s.specimen_ID
-                              FROM tbl_specimens s, tbl_management_collections mc
-                              WHERE s.collectionID = mc.collectionID
-                               AND s.accessible = 1
-                               AND s.digital_image = 1
-                               AND mc.source_id = :sourceId
-                              ORDER BY s.specimen_ID
-                              LIMIT 1";
-        return $this->entityManager->getConnection()->executeQuery($sql, ["sourceId"=>$sourceId])->fetchOne();
-    }
-
-    public function getData(?string $source): array
-    {
-
         $checks = [
             'ok' => [],
             'fail' => [],
             'noPicture' => []
         ];
 
-        $rows = $this->getAllDjatokaServers($source);
-        if(empty($rows)) {throw new EntityNotFoundException('No eligible server available.');}
-        foreach ($rows as $row) {
+        $imageServers = $this->imageDefinitionRepository->getDjatokaServers($source);
+        if(empty($imageServers)) {throw new EntityNotFoundException('No eligible server available.');}
+        foreach ($imageServers as $server) {
 
             $ok = true;
             $errorRPC = $warningRPC = $errorImage = "";
 
-            $specimenID = $this->getExampleImage($row['source_id_fk']);
-            if ($specimenID !== false) {
-                $picdetails = $this->imageService->getPicDetails((string) $specimenID);
+            $specimen = $this->specimensRepository->getExampleSpecimenWithImage($server->getInstitution());
+            if ($specimen !== null) {
+                $picdetails = $this->imageService->getPicDetails((string) $specimen->getId());
                 $filename   = $picdetails['originalFilename'];
 
                 try{
@@ -89,7 +50,7 @@ readonly class DjatokaService
                             ],
                             'id'     => 1
                         ],
-                        'verify_host' => false, //TODO https://symfony.com/doc/current/http_client.html#https-certificates
+                        'verify_host' => false,
                         'verify_peer' => false
                     ]);
                     $data = json_decode($response1->getContent(), true);
@@ -145,28 +106,28 @@ readonly class DjatokaService
                     $errorImage = htmlentities($e->getMessage());
                 }
                 if ($ok) {
-                    $checks['ok'][] = ['source_id'  => $row['source_id_fk'],
-                        'source'     => $row['img_coll_short'],
-                        'specimenID' => $specimenID
+                    $checks['ok'][] = ['source_id'  => $server->getInstitution()->getId(),
+                        'source'     => $server->getAbbreviation(),
+                        'specimenID' => $specimen->getId()
                     ];
                 } elseif ($warningRPC) {
-                    $checks['warn'][] = ['source_id'  => $row['source_id_fk'],
-                        'source'     => $row['img_coll_short'],
-                        'specimenID' => $specimenID,
+                    $checks['warn'][] = ['source_id'  => $server->getInstitution()->getId(),
+                        'source'     => $server->getAbbreviation(),
+                        'specimenID' => $specimen->getId(),
                         'warningRPC' => $warningRPC,
                         'errorImage' => $errorImage
                     ];
                 } else {
-                    $checks['fail'][] = ['source_id'  => $row['source_id_fk'],
-                        'source'     => $row['img_coll_short'],
-                        'specimenID' => $specimenID,
+                    $checks['fail'][] = ['source_id'  => $server->getInstitution()->getId(),
+                        'source'     => $server->getAbbreviation(),
+                        'specimenID' => $specimen->getId(),
                         'errorRPC'   => $errorRPC,
                         'errorImage' => $errorImage
                     ];
                 }
             } else {
-                $checks['noPicture'][] = ['source_id' => $row['source_id_fk'],
-                    'source'    => $row['img_coll_short']
+                $checks['noPicture'][] = ['source_id' => $server->getInstitution()->getId(),
+                    'source'    => $server->getAbbreviation()
                 ];
             }
         }

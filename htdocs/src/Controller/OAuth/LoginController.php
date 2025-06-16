@@ -27,7 +27,7 @@ class LoginController extends AbstractController
         }
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
-        return $this->render('login/index.html.twig', [
+        return $this->render('oauth/index.html.twig', [
             'controller_name' => 'LoginController',
             'error' => $error,
             'last_username' => $lastUsername,
@@ -121,7 +121,7 @@ class LoginController extends AbstractController
             }
             return $this->redirectToRoute('oauth2_authorize', $request->query->all());
         }
-        return $this->render('login/consent.html.twig', [
+        return $this->render('oauth/consent.html.twig', [
             'app_name' => $appName,
             'scopes' => $requestedScopeNames,
             'has_existing_scopes' => $hasExistingScopes,

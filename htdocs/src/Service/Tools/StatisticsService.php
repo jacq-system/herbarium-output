@@ -4,20 +4,14 @@ namespace App\Service\Tools;
 
 use App\Enum\CoreObjectsEnum;
 use App\Enum\TimeIntervalEnum;
+use App\Repository\Herbarinput\InstitutionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 
 readonly class StatisticsService
 {
-    public function __construct(protected EntityManagerInterface $entityManager)
+    public function __construct(protected EntityManagerInterface $entityManager, protected InstitutionRepository $institutionRepository)
     {
-    }
-
-    protected function getInstitutionsOrdered(): array
-    {
-        $sql  = "SELECT MetadataID as source_id, SourceInstitutionID as source_code FROM metadata ORDER BY source_code";
-
-        return $this->entityManager->getConnection()->executeQuery($sql)->fetchAllAssociative();
     }
 
     protected function getNames(TimeIntervalEnum $interval, string $periodStart, string $periodEnd, int $updated): array
@@ -155,8 +149,8 @@ readonly class StatisticsService
      * @param string $periodStart start of period (yyyy-mm-dd)
      * @param string $periodEnd end of period (yyyy-mm-dd)
      * @param int $updated new (0) or updated (1) types only
-     * @param string $type type of statistics analysis (names, citations, names_citations, specimens, type_specimens, names_type_specimens, types_name, synonyms)
-     * @param string $interval resolution of statistics analysis (day, week, month, year)
+     * @param CoreObjectsEnum $type type of statistics analysis (names, citations, names_citations, specimens, type_specimens, names_type_specimens, types_name, synonyms)
+     * @param TimeIntervalEnum $interval resolution of statistics analysis (day, week, month, year)
      * @return array found results
      */
     public function getResults($periodStart, $periodEnd, int $updated, CoreObjectsEnum $type, TimeIntervalEnum $interval)
@@ -175,11 +169,12 @@ readonly class StatisticsService
 
         if (count($dbRows) > 0) {
             $result = array();
-            $institutionOrder = $this->getInstitutionsOrdered();
+//        $sql  = "SELECT MetadataID as source_id, SourceInstitutionID as source_code FROM metadata ORDER BY source_code";
+            $institutions = $this->institutionRepository->findBy([],['code' => 'ASC']);
 
             // save source_codes of all institutions
-            foreach ($institutionOrder as $institution) {
-                $result['results'][$institution['source_id']]['source_code'] = $institution['source_code'];
+            foreach ($institutions as $institution) {
+                $result['results'][$institution->getId()]['source_code'] = $institution->getCode();
             }
 
             $periodMin = $periodMax = $dbRows[0]['period'];
@@ -192,15 +187,15 @@ readonly class StatisticsService
             }
             // set the remaining stats of every institution in every given interval with 0
             for ($i = $periodMin; $i <= $periodMax; $i++) {
-                foreach ($institutionOrder as $institution) {
-                    if (empty($result['results'][$institution['source_id']]['stat'][$i])) {
-                        $result['results'][$institution['source_id']]['stat'][$i] = 0;
+                foreach ($institutions as $institution) {
+                    if (empty($result['results'][$institution->getId()]['stat'][$i])) {
+                        $result['results'][$institution->getId()]['stat'][$i] = 0;
                     }
                 }
             }
             // calculate totals
-            foreach ($institutionOrder as $institution) {
-                $result['results'][$institution['source_id']]['total'] = array_sum($result['results'][$institution['source_id']]['stat']);
+            foreach ($institutions as $institution) {
+                $result['results'][$institution->getId()]['total'] = array_sum($result['results'][$institution->getId()]['stat']);
             }
             $result['periodMin'] = $periodMin;
             $result['periodMax'] = $periodMax;
