@@ -25,6 +25,7 @@
     "php-coord/php-coord": "^v5",
     "phpoffice/phpspreadsheet": "^3.6",
     "symfony/asset": "^7.1",
+    "symfony/cache": "7.1.*",
     "symfony/console": "^7.1",
     "symfony/dotenv": "^7.1",
     "symfony/flex": "^2",

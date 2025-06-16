@@ -21,15 +21,18 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpKernel\Attribute\Cache;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 class SearchFormController extends AbstractController
 {
 
     public const array RECORDS_PER_PAGE = array(10, 30, 50, 100);
 
-    public function __construct(protected readonly HerbCollectionRepository $herbCollectionRepository, protected readonly InstitutionRepository $institutionRepository, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly SpecimenService $specimenService, protected readonly ExcelService $excelService, protected LoggerInterface $statisticsLogger, protected LoggerInterface $appLogger)
+    public function __construct(protected readonly HerbCollectionRepository $herbCollectionRepository, protected readonly InstitutionRepository $institutionRepository, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly SpecimenService $specimenService, protected readonly ExcelService $excelService, protected LoggerInterface $statisticsLogger, protected LoggerInterface $appLogger, private CacheInterface $cache)
     {
     }
 
@@ -46,8 +49,16 @@ class SearchFormController extends AbstractController
             $this->sessionService->setFilters($getData);
         }
 
-        $institutions = $this->institutionRepository->getAllPairsCodeName();
-        $collections = $this->herbCollectionRepository->getAllAsPairs();
+        $institutions = $this->cache->get('institutions_pairs_code_name', function (ItemInterface $item) {
+            $item->expiresAfter(36000);
+            return $this->institutionRepository->getAllPairsCodeName();
+        });
+
+        $collections = $this->cache->get('herb_collections_pairs', function (ItemInterface $item) {
+            $item->expiresAfter(36000);
+            return $this->herbCollectionRepository->getAllAsPairs();
+        });
+
         return $this->render('output/searchForm/database.html.twig', ["institutions" => $institutions, 'collections' => $collections, 'sessionService' => $this->sessionService]);
     }
 
