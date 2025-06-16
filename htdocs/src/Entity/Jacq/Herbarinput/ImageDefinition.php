@@ -2,9 +2,10 @@
 
 namespace App\Entity\Jacq\Herbarinput;
 
+use App\Repository\Herbarinput\ImageDefinitionRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity()]
+#[ORM\Entity(repositoryClass: ImageDefinitionRepository::class)]
 #[ORM\Table(name: 'tbl_img_definition', schema: 'herbarinput')]
 class ImageDefinition
 {
@@ -16,6 +17,8 @@ class ImageDefinition
     #[ORM\Column(name: 'iiif_capable')]
     private bool $iiifCapable;
 
+    #[ORM\Column(name: 'img_coll_short')]
+    private string $abbreviation;
 
     #[ORM\Column(name: 'iiif_url')]
     private ?string $iiifUrl = null;
@@ -79,6 +82,11 @@ class ImageDefinition
     public function getApiKey(): string
     {
         return $this->apiKey;
+    }
+
+    public function getAbbreviation(): string
+    {
+        return $this->abbreviation;
     }
 
 

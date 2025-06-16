@@ -4,9 +4,10 @@ namespace App\Controller\Output;
 
 use App\Exception\InvalidStateException;
 use App\Facade\SearchFormFacade;
+use App\Repository\Herbarinput\HerbCollectionRepository;
+use App\Repository\Herbarinput\InstitutionRepository;
 use App\Service\CollectionService;
 use App\Service\ImageService;
-use App\Service\InstitutionService;
 use App\Service\Output\ExcelService;
 use App\Service\Output\SearchFormSessionService;
 use App\Service\SpecimenService;
@@ -28,32 +29,29 @@ class SearchFormController extends AbstractController
 
     public const array RECORDS_PER_PAGE = array(10, 30, 50, 100);
 
-    //TODO the name of taxon is not part of the query now, hard to sort
-    public const array SORT = ["taxon" => '', 'collector' => 's.collector'];
-
-    public function __construct(protected readonly CollectionService $collectionService, protected readonly InstitutionService $herbariumService, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly ImageService $imageService, protected readonly SpecimenService $specimenService, protected readonly ExcelService $excelService, protected LoggerInterface $statisticsLogger, protected LoggerInterface $appLogger)
+    public function __construct(protected readonly HerbCollectionRepository $herbCollectionRepository, protected readonly InstitutionRepository $institutionRepository, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly SpecimenService $specimenService, protected readonly ExcelService $excelService, protected LoggerInterface $statisticsLogger, protected LoggerInterface $appLogger)
     {
     }
 
-    #[Route('/database', name: 'app_front_database')]
+    #[Route('/database', name: 'output_database')]
     public function database(Request $request, #[MapQueryParameter] bool $reset = false): Response
     {
         $this->sessionService->setSetting('page', 1);
         if ($reset) {
             $this->sessionService->reset();
-            return $this->redirectToRoute('app_front_database');
+            return $this->redirectToRoute('output_database');
         }
         $getData = $request->query->all();
         if (!empty($getData)) {
             $this->sessionService->setFilters($getData);
         }
 
-        $institutions = $this->herbariumService->getAllPairsCodeName();
-        $collections = $this->collectionService->getAllAsPairs();
-        return $this->render('front/home/database.html.twig', ["institutions" => $institutions, 'collections' => $collections, 'sessionService' => $this->sessionService]);
+        $institutions = $this->institutionRepository->getAllPairsCodeName();
+        $collections = $this->herbCollectionRepository->getAllAsPairs();
+        return $this->render('output/searchForm/database.html.twig', ["institutions" => $institutions, 'collections' => $collections, 'sessionService' => $this->sessionService]);
     }
 
-    #[Route('/databaseSearch', name: 'app_front_databaseSearch', methods: ['POST'])]
+    #[Route('/databaseSearch', name: 'output_databaseSearch', methods: ['POST'])]
     public function databaseSearch(Request $request): Response
     {
         $postData = $request->request->all();
@@ -65,13 +63,13 @@ class SearchFormController extends AbstractController
             }
         }
         if ($allEmpty) {
-            return $this->render('front/home/databaseSearchEmpty.html.twig');
+            return $this->render('output/searchForm/databaseSearchEmpty.html.twig');
         }
         $this->sessionService->setFilters($postData);
 
         $pagination = $this->searchFormFacade->providePaginationInfo();
 
-        return $this->render('front/home/databaseSearch.html.twig', [
+        return $this->render('output/searchForm/databaseSearch.html.twig', [
             'records' => $this->searchFormFacade->search(),
             'recordsCount' => $pagination["totalRecords"],
             'totalPages' => $pagination['totalPages'],
@@ -80,7 +78,7 @@ class SearchFormController extends AbstractController
             'sessionService' => $this->sessionService]);
     }
 
-    #[Route('/databaseSearchSettings', name: 'app_front_databaseSearchSettings', methods: ['GET'])]
+    #[Route('/databaseSearchSettings', name: 'output_databaseSearchSettings', methods: ['GET'])]
     public function databaseSearchSettings(#[MapQueryParameter] string $feature, #[MapQueryParameter] string $value): Response
     {
         switch ($feature) {
@@ -100,135 +98,15 @@ class SearchFormController extends AbstractController
         return new Response();
     }
 
-    #[Route('/collectionsSelectOptions', name: 'app_front_collectionsSelectOptions', methods: ['GET'])]
-    public function collectionsSelectOptions(#[MapQueryParameter] string $herbariumID): Response
+    #[Route('/collectionsSelectOptions', name: 'output_collectionsSelectOptions', methods: ['GET'])]
+    public function collectionsSelectOptions(#[MapQueryParameter] ?int $herbariumID): Response
     {
-        $result = $this->collectionService->getAllFromHerbariumAsPairsByAbbrev($herbariumID);
+        $result = $this->herbCollectionRepository->getAllFromHerbariumAsPairs($herbariumID);
 
         return new JsonResponse($result);
     }
 
-    #[Route('/image', name: 'app_front_image_endpoint', methods: ['GET'])]
-    public function showImage(#[MapQueryParameter] string $filename, #[MapQueryParameter] ?string $sid, #[MapQueryParameter] string $method, #[MapQueryParameter] ?string $format): Response
-    {
-        if ($_SERVER['REMOTE_ADDR'] == '94.177.9.139' && !empty($sid) && $method == 'download' && strrpos($filename, '_') == strpos($filename, '_')) {
-            // kulturpool is calling...
-            // Redirect to new location
-            $this->redirectToRoute("services_rest_images_europeana", ["specimenID" => $sid], 303);
-        }
-
-        //TODO only due Djatoka in the getPicDetails() is needed to have this format, otherwise could be deriobed from the streamed response headers, see bellow
-        switch ($format) {
-            case 'jpeg2000':
-                $contentType = 'image/jp2';
-                break;
-            case'tiff':
-                $contentType = 'image/tiff';
-                break;
-            default:
-                $contentType = 'image/jpeg';
-                break;
-        }
-
-        $picDetails = $this->imageService->getPicDetails($filename, $contentType, $sid);
-
-        if (!empty($picDetails['url'])) {
-            switch ($method) {
-                default:
-                    $url = $this->imageService->getSourceUrl($picDetails, $contentType, 0);
-                    break;
-                case 'download':    // detail
-                    $url = $this->imageService->getSourceUrl($picDetails, $contentType, 0);
-                    break;
-                case 'thumb':       // detail
-                    $url = $this->imageService->getSourceUrl($picDetails, $contentType, 1);
-                    break;
-                case 'resized':     // create_xml.php
-                    $url = $this->imageService->getSourceUrl($picDetails, $contentType, 2);
-                    break;
-                case 'europeana':   // NOTE: not supported on non-djatoka servers (yet)
-                    if (strtolower(substr($picDetails['requestFileName'], 0, 3)) == 'wu_' && $this->imageService->checkPhaidra((int)$picDetails['specimenID'])) {
-                        // Phaidra (only WU)
-                        $picDetails['imgserver_type'] = 'phaidra';
-                    } else {
-                        // Djatoka
-                        $picinfo = $this->imageService->getPicInfo($picDetails);
-                        if (!empty($picinfo['pics'][0]) && !in_array($picDetails['originalFilename'], $picinfo['pics'])) {
-                            $picDetails['originalFilename'] = $picinfo['pics'][0];
-                        }
-                    }
-                    $url = $this->imageService->getSourceUrl($picDetails, $contentType, 3);
-                    break;
-                case 'nhmwthumb':   // NOTE: not supported on legacy image server scripts
-                    $url = $this->imageService->getSourceUrl($picDetails, $contentType, 4);
-                    break;
-                case 'thumbs':      // unused
-                    return $this->json($this->imageService->getPicInfo($picDetails));
-                case 'show':        // detail, ajax/results.php
-                    $url = $this->imageService->getExternalImageViewerUrl($picDetails);
-                    return new RedirectResponse($url, 303, ['X-Content-Type-Options' => 'nosniff']);
-            }
-
-            $streamContext = stream_context_create([
-                'http' => ['follow_location' => true,
-                    'timeout' => 60],
-                'ssl' => ["verify_peer" => false,
-                    "verify_peer_name" => false]
-            ]);
-
-            $imageStream = @fopen($url, 'rb', false, $streamContext);
-            if ($imageStream === false) {
-                $this->appLogger->warning('Image [{filename}] not found.', [
-                    'url' => $url,
-                    'filename' => $filename,
-                    'sid' => $sid,
-                    'method' => $method,
-                    'format' => $format
-                ]);
-                throw new InvalidStateException('Unable to open image stream from '.$url.' route');
-            }
-
-
-            $headers = get_headers($url, true);
-
-//                    $contentType = $headers['Content-Type'] ?? 'image/jpeg'; // Fallback na JPEG
-            $contentLength = $headers['Content-Length'] ?? null;
-            $response = new StreamedResponse(function () use ($imageStream) {
-                fpassthru($imageStream);
-                fclose($imageStream);
-            });
-
-            $response->headers->set('Content-Type', $contentType);
-            if ($contentLength) {
-                $response->headers->set('Content-Length', $contentLength);
-            }
-
-            return $response;
-
-        } else {
-            switch ($method) {
-                case 'download':
-                case 'thumb':
-                    $filePath = $this->getParameter('kernel.project_dir') . '/public/recordIcons/404.png';
-
-                    if (!file_exists($filePath) || mime_content_type($filePath) !== 'image/png') {
-                        throw $this->createNotFoundException('Sorry, this image does not exist.');
-                    }
-
-                    return new Response(file_get_contents($filePath), 200, [
-                        'Content-Type' => 'image/png',
-                        'Content-Length' => filesize($filePath),
-                    ]);
-                case 'thumbs':
-                    return new JsonResponse(['error' => 'not found'], 404);
-                default:
-                    return new Response('not found', 404);
-
-            }
-        }
-    }
-
-    #[Route('/detail/{specimenId}', name: 'app_front_specimenDetail', requirements: ['specimenId' => '\d+'], methods: ['GET'])]
+    #[Route('/detail/{specimenId}', name: 'output_specimenDetail', requirements: ['specimenId' => '\d+'], methods: ['GET'])]
     public function detail(int $specimenId): Response
     {
         $specimen = $this->specimenService->findAccessibleForPublic($specimenId);
@@ -236,13 +114,13 @@ class SearchFormController extends AbstractController
             'id' => $specimen->getId(),
             'institution' => $specimen->getHerbCollection()->getInstitution()->getAbbreviation()
         ]);
-        return $this->render('front/home/detail.html.twig', [
+        return $this->render('output/searchForm/detail.html.twig', [
             'specimen' => $specimen,
             'pid' => $this->specimenService->getStableIdentifier($specimen)
         ]);
     }
 
-    #[Route('/exportKml', name: 'app_front_exportKml', methods: ['GET'])]
+    #[Route('/exportKml', name: 'output_exportKml', methods: ['GET'])]
     public function exportKml(): Response
     {
         $kmlContent = $this->searchFormFacade->getKmlExport();
@@ -253,7 +131,7 @@ class SearchFormController extends AbstractController
         return $response;
     }
 
-    #[Route('/exportExcel', name: 'app_front_exportExcel', methods: ['GET'])]
+    #[Route('/exportExcel', name: 'output_exportExcel', methods: ['GET'])]
     public function exportExcel(): Response
     {
         $spreadsheet = $this->excelService->prepareExcel();
@@ -271,7 +149,7 @@ class SearchFormController extends AbstractController
         return $response;
     }
 
-    #[Route('/exportCsv', name: 'app_front_exportCsv', methods: ['GET'])]
+    #[Route('/exportCsv', name: 'output_exportCsv', methods: ['GET'])]
     public function exportCsv(): Response
     {
         $spreadsheet = $this->excelService->prepareExcel();
@@ -289,7 +167,7 @@ class SearchFormController extends AbstractController
         return $response;
     }
 
-    #[Route('/exportOds', name: 'app_front_exportOds', methods: ['GET'])]
+    #[Route('/exportOds', name: 'output_exportOds', methods: ['GET'])]
     public function exportOds(): Response
     {
         $spreadsheet = $this->excelService->prepareExcel();

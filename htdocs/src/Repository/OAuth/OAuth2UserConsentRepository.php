@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace App\Repository;
+namespace App\Repository\OAuth;
 
 use App\Entity\OAuth2UserConsent;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;

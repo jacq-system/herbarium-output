@@ -111,7 +111,7 @@ class SpecimenIframeExtension extends AbstractExtension
 
     protected function includeBgbm(string $param): string
     {
-        $baseUrl = $this->router->generate("app_front_image_endpoint");
+        $baseUrl = $this->router->generate("output_image_endpoint");
 
         return "<table>
           <tr>
@@ -134,7 +134,7 @@ class SpecimenIframeExtension extends AbstractExtension
         if (!empty($options)) {
             $text .= "<table><tr>";
 
-            $baseUrl = $this->router->generate("app_front_image_endpoint");
+            $baseUrl = $this->router->generate("output_image_endpoint");
             foreach ($options as $option) {
                 $text .= "<td>
                           <a href = '". $baseUrl."?". $option . "&method=show' target = 'imgBrowser'>

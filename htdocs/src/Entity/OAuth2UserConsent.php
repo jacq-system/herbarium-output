@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use App\Repository\OAuth2UserConsentRepository;
+use App\Repository\OAuth\OAuth2UserConsentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use League\Bundle\OAuth2ServerBundle\Model\Client;

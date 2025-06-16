@@ -7,17 +7,17 @@
 <div class="row">
     <div class="s12 m8 col offset-m2">
         <br>
-        <button id="specimensMapTrigger" class="btn waves-effect tooltipped" type="button"  value="Create map" data-position="bottom" data-tooltip="Map view is limited to {{ constant('App\\Service\\Output\\KmlService::EXPORT_LIMIT') }} rows, takes approx 5 sec." data-kmlsource="{{ path('app_front_exportKml') }}">Create map</button>
-        <a href="{{ path('app_front_exportKml') }}" download>
+        <button id="specimensMapTrigger" class="btn waves-effect tooltipped" type="button"  value="Create map" data-position="bottom" data-tooltip="Map view is limited to {{ constant('App\\Service\\Output\\KmlService::EXPORT_LIMIT') }} rows, takes approx 5 sec." data-kmlsource="{{ path('output_exportKml') }}">Create map</button>
+        <a href="{{ path('output_exportKml') }}" download>
             <button class="btn waves-effect tooltipped" data-position="bottom" data-tooltip="Download is limited to {{ constant('App\\Service\\Output\\KmlService::EXPORT_LIMIT') }} rows, takes approx 5 sec.">Download KML</button>
         </a>
-        <a href="{{ path('app_front_exportExcel') }}" download>
+        <a href="{{ path('output_exportExcel') }}" download>
             <button class="btn waves-effect tooltipped" data-position="bottom" data-tooltip="Download is limited to {{ constant('App\\Service\\Output\\ExcelService::EXPORT_LIMIT') }} rows, takes approx 5 sec.">Download XLSX</button>
         </a>
-        <a href="{{ path('app_front_exportOds') }}" download>
+        <a href="{{ path('output_exportOds') }}" download>
             <button class="btn waves-effect tooltipped" data-position="bottom" data-tooltip="Download is limited to {{ constant('App\\Service\\Output\\ExcelService::EXPORT_LIMIT') }} rows, takes approx 5 sec.">Download ODS</button>
         </a>
-        <a href="{{ path('app_front_exportCsv') }}" download>
+        <a href="{{ path('output_exportCsv') }}" download>
             <button class="btn waves-effect tooltipped" data-position="bottom" data-tooltip="Download is limited to {{ constant('App\\Service\\Output\\ExcelService::EXPORT_LIMIT') }} rows, takes approx 5 sec.">Download CSV</button>
         </a>
     </div>
@@ -31,7 +31,7 @@
             {# previous page #}
             {% if sessionService.getSetting('page',1) > 1 %}
                 <li class="page" data-number="{{ sessionService.getSetting('page',1) - 1 }}"
-                    data-path="{{ path('app_front_databaseSearchSettings') }}">
+                    data-path="{{ path('output_databaseSearchSettings') }}">
                     <button class="waves-effect btn">&lt;</button>
                 </li>
             {% endif %}
@@ -46,7 +46,7 @@
                     <li> ....</li>
                 {% else %}
                     <li class="page" data-number="{{ page }}"
-                        data-path="{{ path('app_front_databaseSearchSettings') }}">
+                        data-path="{{ path('output_databaseSearchSettings') }}">
                         <button class="waves-effect btn">{{ page }}</button>
                     </li>
                 {% endif %}
@@ -55,7 +55,7 @@
             {# Odkaz na následující stránku #}
             {% if sessionService.getSetting('page',1) < totalPages %}
                 <li class="page" data-number="{{ sessionService.getSetting('page',1) + 1 }}"
-                    data-path="{{ path('app_front_databaseSearchSettings') }}">
+                    data-path="{{ path('output_databaseSearchSettings') }}">
                     <button class="waves-effect btn">&gt;</button>
                 </li>
             {% endif %}
@@ -65,7 +65,7 @@
         <form>
             <div class="input-field">
                 <select id="recordsPerPage" name="recordsPerPage"
-                        data-path="{{ path('app_front_databaseSearchSettings') }}">
+                        data-path="{{ path('output_databaseSearchSettings') }}">
                     {% for value in recordsPerPage %}
                         <option value="{{ value }}"
                                 {% if value == sessionService.getSetting('recordsPerPage',10) %}selected{% endif %}>{{ value }}</option>
@@ -82,18 +82,18 @@
         <thead>
         <tr>
             <th></th>
-            <th class="resulttax sortable {% if sessionService.isSortedBy('taxon') %}sorted{% endif %}" data-sort="taxon" data-path="{{ path('app_front_databaseSearchSettings') }}">Taxon{{ 'taxon' | sortableChar }}</th>
-            <th class="resultcol sortable {% if sessionService.isSortedBy('collector') %}sorted{% endif %}" data-sort="collector" data-path="{{ path('app_front_databaseSearchSettings') }}">Collector{{ 'collector' | sortableChar }}</th>
-            <th class="result sortable {% if sessionService.isSortedBy('date') %}sorted{% endif %}" data-sort="date" data-path="{{ path('app_front_databaseSearchSettings') }}">Date{{ 'date' | sortableChar }}</th>
-            <th class="result sortable {% if sessionService.isSortedBy('location') %}sorted{% endif %}" data-sort="location" data-path="{{ path('app_front_databaseSearchSettings') }}">Location{{ 'location' | sortableChar }}</th>
-            <th class="result sortable {% if sessionService.isSortedBy('typus') %}sorted{% endif %}" data-sort="typus" data-path="{{ path('app_front_databaseSearchSettings') }}">Typus{{ 'typus' | sortableChar }}</th>
-            <th class="result sortable {% if sessionService.isSortedBy('collection') %}sorted{% endif %}" data-sort="collection" data-path="{{ path('app_front_databaseSearchSettings') }}">Collection Herb.#{{ 'collection' | sortableChar }}</th>
-            <th class="result sortable {% if sessionService.isSortedBy('coords') %}sorted{% endif %}" data-sort="coords" data-path="{{ path('app_front_databaseSearchSettings') }}">Lat/Lon{{ 'coords' | sortableChar }}</th>
+            <th class="resulttax sortable {% if sessionService.isSortedBy('taxon') %}sorted{% endif %}" data-sort="taxon" data-path="{{ path('output_databaseSearchSettings') }}">Taxon{{ 'taxon' | sortableChar }}</th>
+            <th class="resultcol sortable {% if sessionService.isSortedBy('collector') %}sorted{% endif %}" data-sort="collector" data-path="{{ path('output_databaseSearchSettings') }}">Collector{{ 'collector' | sortableChar }}</th>
+            <th class="result sortable {% if sessionService.isSortedBy('date') %}sorted{% endif %}" data-sort="date" data-path="{{ path('output_databaseSearchSettings') }}">Date{{ 'date' | sortableChar }}</th>
+            <th class="result sortable {% if sessionService.isSortedBy('location') %}sorted{% endif %}" data-sort="location" data-path="{{ path('output_databaseSearchSettings') }}">Location{{ 'location' | sortableChar }}</th>
+            <th class="result sortable {% if sessionService.isSortedBy('typus') %}sorted{% endif %}" data-sort="typus" data-path="{{ path('output_databaseSearchSettings') }}">Typus{{ 'typus' | sortableChar }}</th>
+            <th class="result sortable {% if sessionService.isSortedBy('collection') %}sorted{% endif %}" data-sort="collection" data-path="{{ path('output_databaseSearchSettings') }}">Collection Herb.#{{ 'collection' | sortableChar }}</th>
+            <th class="result sortable {% if sessionService.isSortedBy('coords') %}sorted{% endif %}" data-sort="coords" data-path="{{ path('output_databaseSearchSettings') }}">Lat/Lon{{ 'coords' | sortableChar }}</th>
         </tr>
         </thead>
         <tbody>
         {% for key, specimen in records %}
-            {% include 'front/home/searchRecord.html.twig' with {'specimen': specimen} only %}
+            {% include 'output/searchForm/searchRecord.html.twig' with {'specimen': specimen} only %}
         {% endfor %}
         </tbody>
     </table>

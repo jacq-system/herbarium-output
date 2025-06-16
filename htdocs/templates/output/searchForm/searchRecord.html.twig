@@ -18,7 +18,7 @@
                         <img height='15' width='15' alt='' src='{{ asset('recordIcons') }}/logo-iiif.png'>
                     </a>
                 {% else %}
-                    <a href='{{ path('app_front_image_endpoint', { 'filename': specimen.getId() }) }}&method=show'
+                    <a href='{{ path('output_image_endpoint', { 'filename': specimen.getId() }) }}&method=show'
                        target='imgBrowser'><img height='15' width="15" alt=''
                                                 src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}"></a>
                 {% endif %}
@@ -26,10 +26,10 @@
         {% endif %}
     </td>
     <td>
-        <a href='{{ path('app_front_specimenDetail', {'specimenId': specimen.getId() }) }}'>{{ getScientificName(specimen) }}</a>
+        <a href='{{ path('output_specimenDetail', {'specimenId': specimen.getId() }) }}'>{{ getScientificName(specimen) }}</a>
         {{ specimen.getSpecies() | taxonAuthority | raw }}
     </td>
-    <td>{% include 'front/specimen/collector_links.html.twig' with { 'specimen': specimen } %}</td>
+    <td>{% include 'output/searchForm/collector_links.html.twig' with { 'specimen': specimen } %}</td>
     <td>{{ specimen.getDate() }}</td>
     <td>{{ specimen | locality | raw }}</td>
     <td>{% set first = true %}
