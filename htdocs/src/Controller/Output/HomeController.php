@@ -34,4 +34,10 @@ class HomeController extends AbstractController
         return $this->render('output/home/imprint.html.twig');
     }
 
+    #[Route('/version', name: 'version')]
+    public function version(): Response
+    {
+        return $this->json($this->getParameter('app.version'));
+    }
+
 }

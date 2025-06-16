@@ -6,6 +6,7 @@
 parameters:
     uuid_endpoint_url: '%env(UUID_ENDPOINT_URL)%'
     uuid_endpoint_key: '%env(UUID_ENDPOINT_KEY)%'
+    app.version: '%env(GIT_TAG)%'
 
 services:
     # default configuration for services in *this* file
