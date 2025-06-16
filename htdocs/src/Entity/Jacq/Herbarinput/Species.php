@@ -71,6 +71,10 @@ class Species
     #[ORM\JoinColumn(name: "synID", referencedColumnName: "taxonID", nullable: true)]
     private ?Species $validName = null;
 
+    #[ORM\ManyToOne(targetEntity: Species::class)]
+    #[ORM\JoinColumn(name: "basID", referencedColumnName: "taxonID", nullable: true)]
+    private ?Species $basidionymName = null;
+
     #[ORM\ManyToOne(targetEntity: TaxonRank::class)]
     #[ORM\JoinColumn(name: "tax_rankID", referencedColumnName: "tax_rankID", nullable: true)]
     private TaxonRank $rank;

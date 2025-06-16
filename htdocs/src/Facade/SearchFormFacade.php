@@ -375,24 +375,24 @@ class SearchFormFacade
             if (!empty($taxonId)) {
                 $conditions[] = $this->queryBuilder->expr()->orX(
                     $this->queryBuilder->expr()->in('species.id', $taxonId),
-                    $this->queryBuilder->expr()->in('species.basID', $taxonId),
-                    $this->queryBuilder->expr()->in('species.synID', $taxonId)
+                    $this->queryBuilder->expr()->in('species.basidionymName', $taxonId),
+                    $this->queryBuilder->expr()->in('species.validName', $taxonId)
                 );
             }
 
             if (!empty($basID)) {
                 $conditions[] = $this->queryBuilder->expr()->orX(
                     $this->queryBuilder->expr()->in('species.id', $basID),
-                    $this->queryBuilder->expr()->in('species.basID', $basID),
-                    $this->queryBuilder->expr()->in('species.synID', $basID)
+                    $this->queryBuilder->expr()->in('species.basidionymName', $basID),
+                    $this->queryBuilder->expr()->in('species.validName', $basID)
                 );
             }
 
             if (!empty($synID)) {
                 $conditions[] = $this->queryBuilder->expr()->orX(
                     $this->queryBuilder->expr()->in('species.id', $synID),
-                    $this->queryBuilder->expr()->in('species.basID', $synID),
-                    $this->queryBuilder->expr()->in('species.synID', $synID)
+                    $this->queryBuilder->expr()->in('species.basidionymName', $synID),
+                    $this->queryBuilder->expr()->in('species.validName', $synID)
                 );
             }
         } else {
