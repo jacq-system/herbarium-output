@@ -1,4 +1,6 @@
 import L from 'leaflet';
+import 'leaflet.markercluster/dist/leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet/dist/leaflet.css';
 import markerIcon from 'leaflet/dist/images/marker-icon-2x.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -82,6 +84,8 @@ export default function popupMap() {
             attribution: '© OpenStreetMap contributors',
         }).addTo(mapInstance);
 
+        let markerCluster = L.markerClusterGroup();
+
         let kmlUrl = document.getElementById('specimensMapTrigger').dataset.kmlsource;
         omnivore.kml(kmlUrl)
             .on('ready', function () {
@@ -95,10 +99,11 @@ export default function popupMap() {
                     <b>${name || 'specimen'}</b><br>
                     ${description || ''}
                 `);
+                        markerCluster.addLayer(layer);
                     }
                 });
+                mapInstance.addLayer(markerCluster);
             })
-            .addTo(mapInstance)
             .on('error', function () {
                 mapContainer.innerHTML = '<p style="text-align: center; color: red; font-size: 18px; padding-top: 200px;">Error during data loading.</p>';
             });

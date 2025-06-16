@@ -4,6 +4,7 @@
     "chart.js": "^4",
     "leaflet": "^1.9.4",
     "leaflet-omnivore": "^0.3",
+    "leaflet.markercluster": "^1.5.3",
     "materialize-css": "^1"
   },
   "devDependencies": {
