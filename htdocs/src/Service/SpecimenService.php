@@ -4,60 +4,51 @@ namespace App\Service;
 
 
 use App\Entity\Jacq\Herbarinput\Specimens;
+use App\Entity\Jacq\Herbarinput\StableIdentifier;
 use App\Repository\Herbarinput\SpecimensRepository;
 use Doctrine\DBAL\ParameterType;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Routing\RouterInterface;
 
 readonly class SpecimenService extends BaseService
 {
     public const string JACQID_PREFIX = "JACQID";
 
+    public function __construct(EntityManagerInterface $entityManager, RouterInterface $router, protected SpecimensRepository $specimensRepository)
+    {
+        parent::__construct($entityManager, $router);
+    }
+
     /**
      * get specimen-id of a given stable identifier
      */
-    public function findSpecimenIdUsingSid(string $sid): ?int
+    public function findSpecimenUsingSid(string $sid): ?Specimens
     {
         $pos = strpos($sid, self::JACQID_PREFIX);
         if ($pos !== false) {  // we've found a sid with JACQID in it, so check the attached specimen-ID and return it, if valid
             $specimenID = intval(substr($sid, $pos + strlen(self::JACQID_PREFIX)));
-            $id = $this->findAccessibleForPublic($specimenID)->getId();
-        } else {
-            $id = $this->findBySid($sid);
+            return $this->findAccessibleForPublic($specimenID);
         }
-        return $id === 0 ? null : $id;
+        return $this->findBySid($sid);
+
     }
 
     public function findAccessibleForPublic(int $id): Specimens
     {
-        $specimen = $this->entityManager->getRepository(Specimens::class)->findOneBy(["id" => $id, 'accessibleForPublic' => true]);
+        $specimen = $this->specimensRepository->findAccessibleForPublic($id);
         if ($specimen === null) {
             throw new EntityNotFoundException('Specimen not found');
         }
         return $specimen;
     }
 
-    public function getRepository(): SpecimensRepository
+    public function findBySid(string $sid): Specimens
     {
-        return $this->entityManager->getRepository(Specimens::class);
+        return $this->entityManager->getRepository(StableIdentifier::class)->findOneBy(['identifier' => $sid]);
     }
 
-    public function findBySid(string $sid): int
-    {
-        $sql = "SELECT specimen_ID
-                     FROM tbl_specimens_stblid
-                     WHERE stableIdentifier = :sid";
-        return $this->query($sql, ['sid' => $sid])->fetchOne();
-    }
-
-    public function find(int $id): Specimens
-    {
-        $specimen = $this->entityManager->getRepository(Specimens::class)->find($id);
-        if ($specimen === null) {
-            throw new EntityNotFoundException('Specimen not found');
-        }
-        return $specimen;
-    }
 
     /**
      * get a list of all errors which prevent the generation of stable identifier
@@ -65,7 +56,7 @@ readonly class SpecimenService extends BaseService
     public function getEntriesWithErrors(?int $sourceID): array
     {
         $data = [];
-        $specimens = $this->specimensWithErrors($sourceID);
+        $specimens = $this->specimensRepository->specimensWithErrors($sourceID);
         $data['total'] = count($specimens);
         foreach ($specimens as $line => $specimen) {
             $data['result'][$line] = ['specimenID' => $specimen->getId(), 'link' => $this->router->generate('output_specimenDetail', ['specimenId' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL)];
@@ -73,17 +64,6 @@ readonly class SpecimenService extends BaseService
         }
 
         return $data;
-    }
-
-    protected function specimensWithErrors(?int $sourceID): array
-    {
-        $queryBuilder = $this->entityManager->createQueryBuilder();
-        $queryBuilder = $queryBuilder->select('DISTINCT s')->from(Specimens::class, 's')->join('s.stableIdentifiers', 'sid')->where('sid.identifier IS NULL');
-
-        if ($sourceID !== null) {
-            $queryBuilder = $queryBuilder->join('s.herbCollection', 'col')->andWhere('col.institution = :sourceID')->setParameter('sourceID', $sourceID);
-        }
-        return $queryBuilder->getQuery()->getResult();
     }
 
     public function sids2array(Specimens $specimen): array
@@ -251,25 +231,6 @@ readonly class SpecimenService extends BaseService
     protected function urlHelperRouteMulti(int $page, int $entriesPerPage): string
     {
         return $this->router->generate('services_rest_sid_multi', ['page' => $page, 'entriesPerPage' => $entriesPerPage], UrlGeneratorInterface::ABSOLUTE_URL);
-    }
-
-    /**
-     * get the specimen-ID of a given HerbNumber and source-id
-     */
-    public function getSpecimenIdFromHerbNummer(string $herbNummer, int $source_id): ?int
-    {
-        $sql = "SELECT specimen_ID
-                             FROM tbl_specimens s
-                              LEFT JOIN tbl_management_collections mc on s.collectionID = mc.collectionID
-                             WHERE s.HerbNummer = :herbNummer
-                              AND mc.source_id = :source_id";
-        $id = $this->query($sql, ["herbNummer" => $herbNummer, "source_id" => $source_id])->fetchOne();
-
-        if ($id !== false) {
-            return $id;
-        }
-        return null;
-
     }
 
     public function getCollectionText(Specimens $specimen): string

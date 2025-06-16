@@ -4,9 +4,8 @@ namespace App\Facade\Rest;
 
 
 use App\Entity\Jacq\Herbarinput\Specimens;
-use App\Service\Rest\HerbNumberScan;
 use App\Service\SpecimenService;
-use App\Service\TaxonService;
+use App\Service\SpeciesService;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -15,7 +14,7 @@ use Symfony\Component\Routing\RouterInterface;
 readonly class ObjectsFacade
 {
     //TODO refactored a little, but no much happy with the result :(
-    public function __construct(protected  EntityManagerInterface $entityManager, protected RouterInterface $router, protected  TaxonService $taxonService, protected HerbNumberScan $herbNumberScan, protected SpecimenService  $specimenService)
+    public function __construct(protected  EntityManagerInterface $entityManager, protected RouterInterface $router, protected  SpeciesService $taxonService, protected SpecimenService $specimenService)
     {
     }
 

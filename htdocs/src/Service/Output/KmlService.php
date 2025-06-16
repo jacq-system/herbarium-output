@@ -4,7 +4,7 @@ namespace App\Service\Output;
 
 use App\Entity\Jacq\Herbarinput\Specimens;
 use App\Service\SpecimenService;
-use App\Service\TaxonService;
+use App\Service\SpeciesService;
 
 class KmlService
 {
@@ -13,7 +13,7 @@ class KmlService
     protected string $head = '<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><description>search results Virtual Herbaria</description>';
     protected string $foot = '</Document></kml>';
 
-    public function __construct(protected readonly SpecimenService $specimenService, protected readonly TaxonService $taxonService)
+    public function __construct(protected readonly SpecimenService $specimenService, protected readonly SpeciesService $taxonService)
     {
     }
 

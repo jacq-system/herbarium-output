@@ -2,6 +2,8 @@
 
 namespace App\Service\Rest;
 
+use App\Entity\Jacq\Herbarinput\GeoNationBoundaries;
+use App\Entity\Jacq\Herbarinput\GeoProvinceBoundaries;
 use Doctrine\ORM\EntityManagerInterface;
 
 
@@ -22,13 +24,14 @@ readonly class CoordinateBoundaryService
      */
     public function nationBoundaries(int $nationID, float $lat, float $lon): array
     {
-         $sql = "SELECT bound_south, bound_north, bound_east, bound_west
-                                    FROM tbl_geo_nation_geonames_boundaries
-                                    WHERE nationID = :nationID";
-        $boundaries = $this->entityManager->getConnection()->executeQuery($sql, ['nationID' => $nationID])->fetchAllAssociative();
+        $qb = $this->entityManager->getRepository(GeoNationBoundaries::class)->createQueryBuilder('b')
+            ->select('b')
+            ->where('b.nationID = :nationID')
+            ->setParameter('nationID', $nationID);
+        $boundaries = $qb->getQuery()->getResult();
 
         return array("nrBoundaries" => count($boundaries),
-            "inside"       => $this->checkBoundingBox(floatval($lat), floatval($lon), $boundaries));
+            "inside"       => $this->checkBoundingBox($lat, $lon, $boundaries));
     }
 
 
@@ -41,10 +44,11 @@ readonly class CoordinateBoundaryService
      * @return array nr of checked boundaries and true if inside, false if outside and null if not checked     */
     public function provinceBoundaries(int $provinceID, float $lat, float $lon): array
     {
-       $sql = "SELECT bound_south, bound_north, bound_east, bound_west
-                                    FROM tbl_geo_province_boundaries
-                                    WHERE provinceID = :provinceID";
-        $boundaries = $this->entityManager->getConnection()->executeQuery($sql, ['provinceID' => $provinceID])->fetchAllAssociative();
+        $qb = $this->entityManager->getRepository(GeoProvinceBoundaries::class)->createQueryBuilder('b')
+            ->select('b')
+            ->where('b.provinceID = :provinceID')
+            ->setParameter('provinceID', $provinceID);
+        $boundaries = $qb->getQuery()->getResult();
 
         return array("nrBoundaries" => count($boundaries),
             "inside"       => $this->checkBoundingBox($lat, $lon, $boundaries));
@@ -56,16 +60,16 @@ readonly class CoordinateBoundaryService
      *
      * @param float $lat latitude
      * @param float $lon longitude
-     * @param array $boundaries list of boundaries (if any)
+     * @param GeoNationBoundaries[] | GeoProvinceBoundaries[] $boundaries list of boundaries (if any)
      * @return bool|null true if inside, false if outside, null if list of boundaries is empty
      */
     protected function checkBoundingBox(float $lat, float $lon, array $boundaries): ?bool
     {
         if (!empty($boundaries)) {
             foreach ($boundaries as $boundary) {
-                if ($lat >= $boundary['bound_south'] && $lat <= $boundary['bound_north']
-                    && (($boundary['bound_east'] > $boundary['bound_west'] && ($lon >= $boundary['bound_west'] && $lon <= $boundary['bound_east']))
-                        || ($boundary['bound_east'] < $boundary['bound_west'] && ($lon >= $boundary['bound_west'] || $lon <= $boundary['bound_east'])))) {
+                if ($lat >= $boundary->getBoundSouth() && $lat <= $boundary->getBoundNorth()
+                    && ((($boundary->getBoundEast() > $boundary->getBoundWest()) && ($lon >= $boundary->getBoundWest() && $lon <= $boundary->getBoundEast()))
+                        || ($boundary->getBoundEast() < $boundary->getBoundWest() && ($lon >= $boundary->getBoundWest() || $lon <= $boundary->getBoundEast())))) {
                     return true;
                 }
             }

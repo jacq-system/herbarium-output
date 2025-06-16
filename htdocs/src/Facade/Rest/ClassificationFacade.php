@@ -4,16 +4,17 @@ namespace App\Facade\Rest;
 
 
 use App\Repository\Herbarinput\LiteratureRepository;
+use App\Repository\Herbarinput\SpeciesRepository;
 use App\Repository\Herbarinput\SynonymyRepository;
 use App\Service\ReferenceService;
-use App\Service\TaxonService;
+use App\Service\SpeciesService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 
 readonly class ClassificationFacade
 {
-    public function __construct(protected ReferenceService $referenceService, protected EntityManagerInterface $entityManager, protected TaxonService $taxonService, protected RouterInterface $router, protected LiteratureRepository $literatureRepository, protected SynonymyRepository $synonymyRepository)
+    public function __construct(protected ReferenceService $referenceService, protected EntityManagerInterface $entityManager, protected SpeciesService $taxonService, protected RouterInterface $router, protected LiteratureRepository $literatureRepository, protected SynonymyRepository $synonymyRepository, protected SpeciesRepository $speciesRepository)
     {
     }
 
@@ -280,7 +281,7 @@ readonly class ClassificationFacade
                         "referenceType" => "citation",
                         "hasChildren" => ($dbRow['hasChildren'] > 0 || $dbRow['hasSynonyms'] > 0 || $dbRow['hasBasionym']),
                         "hasType" => $this->taxonService->hasType($dbRow['taxonID']),
-                        "hasSpecimen" => $this->taxonService->hasSpecimen($dbRow['taxonID']),
+                        "hasSpecimen" => $this->speciesRepository->hasSpecimen($dbRow['taxonID']),
                         "insertedCitation" => false,
                         "referenceInfo" => array(
                             "number" => $dbRow['number'],
@@ -326,7 +327,7 @@ readonly class ClassificationFacade
         $basID = 0;
         $basionymResult = null;
 
-        $basionym = $this->taxonService->getBasionym($taxonID);
+        $basionym = $this->speciesRepository->getBasionym($taxonID);
 
         if ($basionym !== null) {
             $basionymID = $basionym['basID'];
@@ -337,7 +338,7 @@ readonly class ClassificationFacade
                 "referenceId" => $referenceID,
                 "referenceType" => $referenceType,
                 "hasType" => $this->taxonService->hasType($basionymID),
-                "hasSpecimen" => $this->taxonService->hasSpecimen($basionymID),
+                "hasSpecimen" => $this->speciesRepository->hasSpecimen($basionymID),
                 "insertedCitation" => false,
                 "referenceInfo" => array(
                     "type" => "homotype",
@@ -362,7 +363,7 @@ readonly class ClassificationFacade
                             "referenceId" => $referenceID,
                             "referenceType" => $referenceType,
                             "hasType" => $this->taxonService->hasType($synonym['taxonID']),
-                            "hasSpecimen" => $this->taxonService->hasSpecimen($synonym['taxonID']),
+                            "hasSpecimen" => $this->speciesRepository->hasSpecimen($synonym['taxonID']),
                             "insertedCitation" => false,
                             "referenceInfo" => array(
                                 "type" => ($synonym['homotype'] > 0) ? "homotype" : "heterotype",
@@ -451,7 +452,7 @@ readonly class ClassificationFacade
                             "referenceName" => $dbRow['referenceName'],
                             "referenceType" => "citation",
                             "hasType" => $this->taxonService->hasType($dbRow['taxonID']),
-                            "hasSpecimen" => $this->taxonService->hasSpecimen($dbRow['taxonID']),
+                            "hasSpecimen" => $this->speciesRepository->hasSpecimen($dbRow['taxonID']),
                             "referenceInfo" => array(
                                 "number" => $dbRow['number'],
                                 "order" => $dbRow['order']
@@ -474,7 +475,7 @@ readonly class ClassificationFacade
                                 "referenceName" => $accTaxon['referenceName'],
                                 "referenceType" => "citation",
                                 "hasType" => $this->taxonService->hasType($accTaxon['acc_taxon_ID']),
-                                "hasSpecimen" => $this->taxonService->hasSpecimen($accTaxon['acc_taxon_ID'])
+                                "hasSpecimen" => $this->speciesRepository->hasSpecimen($accTaxon['acc_taxon_ID'])
                             );
                         } // if not we have to return the citation entry
                         else {

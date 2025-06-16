@@ -9,7 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 readonly class TypusService
 {
-    public function __construct(protected EntityManagerInterface $entityManager, protected TaxonService $taxonService)
+    public function __construct(protected EntityManagerInterface $entityManager, protected SpeciesService $taxonService)
     {
     }
 

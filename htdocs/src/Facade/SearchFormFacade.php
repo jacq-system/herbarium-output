@@ -5,7 +5,6 @@ namespace App\Facade;
 use App\Controller\Output\SearchFormController;
 use App\Entity\Jacq\Herbarinput\Specimens;
 use App\Service\GeoService;
-use App\Service\InstitutionService;
 use App\Service\Output\ExcelService;
 use App\Service\Output\KmlService;
 use App\Service\Output\SearchFormSessionService;

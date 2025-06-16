@@ -64,5 +64,46 @@ class SpeciesRepository extends ServiceEntityRepository
 
     }
 
+    public function getBasionym(int $taxonID): ?array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->select('GetScientificName(s.basionym, 0) AS scientificName, s.basionym')
+            ->where('s.basionym IS NOT NULL')
+            ->andWhere('s.id = :taxonID')
+            ->setParameter('taxonID', $taxonID);
+        return $qb->getQuery()->getOneOrNullResult();
+
+    }
+
+    public function getTaxonName(int $taxonID): ?string
+    {
+        return $this->createQueryBuilder('s')
+            ->select('GetTaxonName(:taxonId) AS taxonName ')
+            ->setParameter('taxonId', $taxonID)
+            ->getQuery()->getOneOrNullResult();
+
+    }
+
+    public function getScientificName(Species $species): ?string
+    {
+        return $this->createQueryBuilder('s')
+            ->select('GetScientificName(:taxonId, 0) as scientificName')
+            ->setParameter('taxonId', $species->getId())
+            ->getQuery()->getSingleResult();
+
+    }
+
+    public function hasSpecimen(int $taxonID): bool
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->select('s.id')
+            ->where('s.taxonID = :taxonID')
+            ->setParameter('taxonID', $taxonID)
+            ->setMaxResults(1);
+
+        return (bool)$qb->getQuery()->getOneOrNullResult();
+    }
+
+
 
 }

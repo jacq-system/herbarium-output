@@ -8,7 +8,7 @@ use App\Entity\Jacq\Herbarinput\Specimens;
 use App\Facade\Rest\IiifFacade;
 use App\Repository\Herbarinput\CollectorRepository;
 use App\Service\SpecimenService;
-use App\Service\TaxonService;
+use App\Service\SpeciesService;
 use App\Service\TypusService;
 use Doctrine\ORM\EntityManagerInterface;
 use Twig\Extension\AbstractExtension;
@@ -17,7 +17,7 @@ use Twig\TwigFunction;
 
 class SpecimenExtension extends AbstractExtension
 {
-    public function __construct(protected readonly IiifFacade $iiifFacade, protected readonly EntityManagerInterface $entityManager, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService, protected readonly TaxonService $taxonService, protected readonly CollectorRepository $collectorRepository)
+    public function __construct(protected readonly IiifFacade $iiifFacade, protected readonly EntityManagerInterface $entityManager, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService, protected readonly SpeciesService $taxonService, protected readonly CollectorRepository $collectorRepository)
     {
     }
 

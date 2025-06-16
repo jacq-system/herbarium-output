@@ -2,7 +2,8 @@
 
 namespace App\Controller\Services\Rest;
 
-use App\Service\TaxonService;
+use App\Repository\Herbarinput\SpeciesRepository;
+use App\Service\SpeciesService;
 use App\Service\UuidService;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use OpenApi\Attributes\Get;
@@ -16,7 +17,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ScinamesController extends AbstractFOSRestController
 {
-    public function __construct(protected readonly TaxonService $taxaNamesService, protected readonly UuidService $uuidService)
+    public function __construct(protected readonly SpeciesService $taxaNamesService, protected readonly UuidService $uuidService, protected readonly SpeciesRepository $speciesRepository)
     {
     }
 
@@ -71,7 +72,7 @@ class ScinamesController extends AbstractFOSRestController
             'url' => $this->uuidService->getResolvableUri($uuid),
             'taxonID' => $taxonID,
             'scientificName' => $this->taxaNamesService->getScientificName($taxonID),
-            'taxonName' => $this->taxaNamesService->getTaxonName($taxonID));
+            'taxonName' => $this->speciesRepository->getTaxonName($taxonID));
         $view = $this->view($data, 200);
         return $this->handleView($view);
     }
@@ -225,7 +226,7 @@ class ScinamesController extends AbstractFOSRestController
             'url' => $this->uuidService->getResolvableUri($uuid),
             'taxonID' => $taxonID,
             'scientificName' => $this->taxaNamesService->getScientificName($taxonID),
-            'taxonName' => $this->taxaNamesService->getTaxonName($taxonID));
+            'taxonName' => $this->speciesRepository->getTaxonName($taxonID));
         $view = $this->view($data, 200);
         return $this->handleView($view);
     }

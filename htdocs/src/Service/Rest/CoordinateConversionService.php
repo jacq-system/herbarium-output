@@ -22,7 +22,7 @@ readonly class CoordinateConversionService
 {
 
 
-    public function utm2latlon($utm): array
+    public function utm2latlon(string $utm): array
     {
         $parts = explode(' ', preg_replace('/\s+/', ' ', trim($utm)));
         if (is_numeric($parts[1])) {
@@ -49,7 +49,7 @@ readonly class CoordinateConversionService
         );
     }
 
-    public function latlon2utm($lat, $lon): array
+    public function latlon2utm(float $lat, float $lon): array
     {
         $lat = floatval($lat);
         $from = GeographicPoint::create(
@@ -79,7 +79,7 @@ readonly class CoordinateConversionService
      * @param $mgrs
      * @return array|string[]
      */
-    public function mgrs2utm($mgrs): array
+    public function mgrs2utm(string $mgrs): array
     {
         $parts = $this->parseMGRSstring($mgrs);
         if ($parts['error']) {

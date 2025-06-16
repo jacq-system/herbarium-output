@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace App\Service;
 
@@ -6,7 +6,7 @@ namespace App\Service;
 use App\Entity\Jacq\Herbarinput\Species;
 use Doctrine\ORM\EntityManagerInterface;
 
-readonly class TaxonService
+readonly class SpeciesService
 {
 
     public function __construct(protected EntityManagerInterface $entityManager)
@@ -54,19 +54,6 @@ readonly class TaxonService
         return false;
     }
 
-    public function getBasionym(int $taxonID): ?array
-    {
-        $sql = "SELECT `herbar_view`.GetScientificName(`ts`.`basID`, 0) AS `scientificName`, ts.basID
-            FROM tbl_tax_species ts
-            WHERE ts.taxonID = :taxonID
-             AND ts.basID IS NOT NULL";
-        $basionym = $this->entityManager->getConnection()->executeQuery($sql, ['taxonID' => $taxonID])->fetchAssociative();
-        if ($basionym === false) {
-            return null;
-        }
-        return $basionym;
-    }
-
     /**
      * Are there any type records of a given taxonID?
      *
@@ -79,18 +66,6 @@ readonly class TaxonService
                  LEFT JOIN tbl_specimens_types tst ON tst.specimenID = s.specimen_ID
                 WHERE tst.typusID IS NOT NULL
                  AND tst.taxonID = :taxonID";
-        return (bool)$this->entityManager->getConnection()->executeQuery($sql, ['taxonID' => $taxonID])->fetchAssociative();
-    }
-
-    /**
-     * Are there any specimen records of a given taxonID?
-     *
-     * @param int $taxonID ID of taxon
-     * @return bool specimen record(s) present?
-     */
-    public function hasSpecimen(int $taxonID): bool
-    {
-        $sql = "SELECT specimen_ID FROM tbl_specimens WHERE taxonID = :taxonID";
         return (bool)$this->entityManager->getConnection()->executeQuery($sql, ['taxonID' => $taxonID])->fetchAssociative();
     }
 
@@ -121,7 +96,6 @@ readonly class TaxonService
 
     }
 
-
     /**
      * get scientific name from database
      */
@@ -143,18 +117,5 @@ readonly class TaxonService
         return $scientificName;
     }
 
-    /**
-     * get scientific name without hybrids from database for a given taxon-ID
-     */
-    public function getTaxonName(int $taxonID): ?string
-    {
-        $sql = ("SELECT `herbar_view`.GetTaxonName($taxonID) AS taxname");
-        $name = $this->entityManager->getConnection()->executeQuery($sql)->fetchOne();
-        if ($name) {
-            return trim($name);
-        } else {
-            return null;
-        }
 
-    }
 }

@@ -3,7 +3,7 @@
 namespace App\Controller\Services\Rest;
 
 use App\Repository\Herbarinput\SpeciesRepository;
-use App\Service\TaxonService;
+use App\Service\SpeciesService;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\Items;
