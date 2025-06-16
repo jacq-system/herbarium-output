@@ -374,7 +374,7 @@ class SearchFormFacade
             if (!empty($taxonId)) {
                 $conditions[] = $this->queryBuilder->expr()->orX(
                     $this->queryBuilder->expr()->in('species.id', $taxonId),
-                    $this->queryBuilder->expr()->in('species.basidionymName', $taxonId),
+                    $this->queryBuilder->expr()->in('species.basionym', $taxonId),
                     $this->queryBuilder->expr()->in('species.validName', $taxonId)
                 );
             }
@@ -382,7 +382,7 @@ class SearchFormFacade
             if (!empty($basID)) {
                 $conditions[] = $this->queryBuilder->expr()->orX(
                     $this->queryBuilder->expr()->in('species.id', $basID),
-                    $this->queryBuilder->expr()->in('species.basidionymName', $basID),
+                    $this->queryBuilder->expr()->in('species.basionym', $basID),
                     $this->queryBuilder->expr()->in('species.validName', $basID)
                 );
             }
@@ -390,7 +390,7 @@ class SearchFormFacade
             if (!empty($synID)) {
                 $conditions[] = $this->queryBuilder->expr()->orX(
                     $this->queryBuilder->expr()->in('species.id', $synID),
-                    $this->queryBuilder->expr()->in('species.basidionymName', $synID),
+                    $this->queryBuilder->expr()->in('species.basionym', $synID),
                     $this->queryBuilder->expr()->in('species.validName', $synID)
                 );
             }
