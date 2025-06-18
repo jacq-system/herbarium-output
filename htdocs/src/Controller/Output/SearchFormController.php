@@ -196,4 +196,14 @@ class SearchFormController extends AbstractController
         return $response;
     }
 
+    #[Route('/specimenLinks/{specimenId}', name: 'output_specimenLinksD3', requirements: ['specimenId' => '\d+'], methods: ['GET'])]
+    public function specimenLinks(int $specimenId): Response
+    {
+        $startSpecimen = $this->specimenService->findAccessibleForPublic($specimenId);
+        $specimens = $this->specimenService->collectSpecimenLinksTree($startSpecimen);
+        $d3Data = $this->specimenService->buildD3GraphData($specimens, $startSpecimen);
+
+        return $this->json($d3Data);
+    }
+
 }

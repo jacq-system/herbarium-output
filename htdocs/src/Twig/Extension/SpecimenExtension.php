@@ -181,7 +181,7 @@ class SpecimenExtension extends AbstractExtension
     public function getRelatedSpecimenRelations(Specimens $specimen): array
     {
         $relations = [];
-        foreach ($specimen->getAllRelations() as $relation) {
+        foreach ($specimen->getAllDirectRelations() as $relation) {
             if ($relation->getSpecimen1()->getId() === $specimen->getId()) {
                 $relations[] = ["relation"=>$relation->getLinkQualifier()?->getName(), "specimen"=>$relation->getSpecimen2()];
             } else {

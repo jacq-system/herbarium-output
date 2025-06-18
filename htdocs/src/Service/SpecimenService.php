@@ -376,4 +376,70 @@ readonly class SpecimenService extends BaseService
 
         ];
     }
+
+    public function collectSpecimenLinksTree(Specimens $start): array
+    {
+        $visited = [];
+        $queue = [$start->getId() => $start];
+
+        while (!empty($queue)) {
+            /** @var Specimens $specimen */
+            $specimen = array_shift($queue);
+            $id = $specimen->getId();
+
+            if (isset($visited[$id])) {
+                continue;
+            }
+
+            $visited[$id] = $specimen;
+
+            foreach ($specimen->getAllDirectRelations() as $relation) {
+                $related = $relation->getSpecimen1()->getId() === $id
+                    ? $relation->getSpecimen2()
+                    : $relation->getSpecimen1();
+
+                if (!isset($visited[$related->getId()]) && !isset($queue[$related->getId()])) {
+                    $queue[$related->getId()] = $related;
+                }
+            }
+        }
+
+        return $visited; // [specimenId => Specimens]
+    }
+
+    public function buildD3GraphData(array $specimens, Specimens $start): array
+    {
+        $nodes = [];
+        $links = [];
+        $seenLinks = [];
+
+        foreach ($specimens as $id => $specimen) {
+            $nodes[] = [
+                'id' => $id,
+                'label' => $specimen->getHerbNumber() ?? ('Specimen #' . $id),
+            ];
+
+            foreach ($specimen->getAllDirectRelations() as $relation) {
+                $s1 = $relation->getSpecimen1()->getId();
+                $s2 = $relation->getSpecimen2()->getId();
+                $key = $s1 < $s2 ? "$s1-$s2" : "$s2-$s1";
+
+                if (!isset($seenLinks[$key])) {
+                    $links[] = [
+                        'source' => $s1,
+                        'target' => $s2,
+                        'relation' => $relation->getLinkQualifier()?->getName() ?? 'related',
+                    ];
+                    $seenLinks[$key] = true;
+                }
+            }
+        }
+
+        return [
+            'nodes' => $nodes,
+            'links' => $links,
+            'startId' => $start->getId(),
+        ];
+    }
+
 }
