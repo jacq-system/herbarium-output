@@ -7,7 +7,7 @@ use App\Entity\Jacq\Herbarinput\Synonymy;
 use App\Repository\Herbarinput\LiteratureRepository;
 use App\Repository\Herbarinput\SynonymyRepository;
 use App\Repository\Herbarinput\TaxonRankRepository;
-use App\Service\TaxonService;
+use App\Service\SpeciesService;
 use App\Service\UuidService;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Routing\RouterInterface;
@@ -31,7 +31,7 @@ class ClassificationDownloadService
     protected array $rankKeys = [];
     private array $outputBody = [];
 
-    public function __construct(protected RouterInterface $router, protected UuidService $uuidService, protected TaxonRankRepository $taxonRankRepository, protected readonly TaxonService $taxonService, protected readonly LiteratureRepository $literatureRepository, protected readonly SynonymyRepository $synonymyRepository)
+    public function __construct(protected RouterInterface $router, protected UuidService $uuidService, protected TaxonRankRepository $taxonRankRepository, protected readonly SpeciesService $taxonService, protected readonly LiteratureRepository $literatureRepository, protected readonly SynonymyRepository $synonymyRepository)
     {
     }
 

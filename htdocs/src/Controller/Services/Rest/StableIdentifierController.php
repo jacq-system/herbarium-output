@@ -161,7 +161,7 @@ class StableIdentifierController extends AbstractFOSRestController
     {
         //TODO removed the "withRedirect" option in OPenApi, solving by "nonvisible" forward inside the framework
         $sid = urldecode($sid);
-        return $this->forward(self::class . '::sid', ['specimenID' => $this->specimenService->findSpecimenIdUsingSid($sid)]);
+        return $this->forward(self::class . '::sid', ['specimenID' => $this->specimenService->findSpecimenUsingSid($sid)?->getId()]);
     }
 
     #[Get(

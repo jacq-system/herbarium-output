@@ -7,7 +7,7 @@ use App\Entity\Jacq\Herbarinput\Specimens;
 use App\Service\JacqNetworkService;
 use App\Service\ReferenceService;
 use App\Service\SpecimenService;
-use App\Service\TaxonService;
+use App\Service\SpeciesService;
 use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Exception\GuzzleException;
@@ -20,7 +20,7 @@ use function PHPUnit\Framework\isEmpty;
 
 readonly class IiifFacade extends BaseFacade
 {
-    public function __construct(EntityManagerInterface $entityManager, RouterInterface $router, protected TaxonService $taxonService, protected ReferenceService $referenceService, protected SpecimenService $specimenService, protected ClientInterface $client, protected JacqNetworkService $jacqNetworkService)
+    public function __construct(EntityManagerInterface $entityManager, RouterInterface $router, protected SpeciesService $taxonService, protected ReferenceService $referenceService, protected SpecimenService $specimenService, protected ClientInterface $client, protected JacqNetworkService $jacqNetworkService)
     {
         parent::__construct($entityManager, $router);
     }

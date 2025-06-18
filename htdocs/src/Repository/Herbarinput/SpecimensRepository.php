@@ -15,27 +15,6 @@ class SpecimensRepository extends ServiceEntityRepository
         parent::__construct($registry, Specimens::class);
     }
 
-
-    public function findSpecimenWithEagerLoadedRelations(int $id): ?Specimens
-    {
-        $qb = $this->getEntityManager()->createQueryBuilder();
-
-        $qb->select('s', 'r1', 'r2', 'lq1', 'lq2')
-            ->from(Specimens::class, 's')
-            ->leftJoin('s.outgoingRelations', 'r1')
-            ->leftJoin('s.incomingRelations', 'r2')
-            ->leftJoin('r1.specimen2', 's1')
-            ->leftJoin('r2.specimen1', 's2')
-            ->leftJoin('r1.linkQualifier', 'lq1')
-            ->leftJoin('r2.linkQualifier', 'lq2')
-            ->where('s.id = :id')
-            ->andWhere('s.accessibleForPublic = true')
-            ->setParameter('id', $id);
-
-        return $qb->getQuery()->getOneOrNullResult();
-    }
-
-
     public function getExampleSpecimenWithImage(Institution $institution): ?Specimens
     {
         $qb = $this->createQueryBuilder('s')
@@ -50,6 +29,28 @@ class SpecimensRepository extends ServiceEntityRepository
             ->setMaxResults(1);
         return $qb->getQuery()->getOneOrNullResult();
 
+    }
+
+    public function findAccessibleForPublic(int $id): ?Specimens
+    {
+        return $this->findOneBy(["id" => $id, 'accessibleForPublic' => true]);
+    }
+
+    public function specimensWithErrors(?int $sourceID): array
+    {
+
+        $queryBuilder = $this->createQueryBuilder('s')
+            ->select('DISTINCT s')
+            ->join('s.stableIdentifiers', 'sid')
+            ->where('sid.identifier IS NULL');
+
+        if ($sourceID !== null) {
+            $queryBuilder = $queryBuilder
+                ->join('s.herbCollection', 'col')
+                ->andWhere('col.institution = :sourceID')
+                ->setParameter('sourceID', $sourceID);
+        }
+        return $queryBuilder->getQuery()->getResult();
     }
 
 }

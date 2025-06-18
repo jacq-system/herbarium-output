@@ -557,7 +557,7 @@ class Specimens
 
     public function hasRelatedSpecimens(): bool
     {
-        if ($this->getAllRelations()->isEmpty()) {
+        if ($this->getAllDirectRelations()->isEmpty()) {
             return false;
         }
         return true;
@@ -566,7 +566,7 @@ class Specimens
     /**
      * @return Collection|SpecimenLink[]
      */
-    public function getAllRelations(): Collection
+    public function getAllDirectRelations(): Collection
     {
         $merged = array_merge($this->outgoingRelations->toArray(), $this->incomingRelations->toArray());
 
