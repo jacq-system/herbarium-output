@@ -109,7 +109,6 @@ function drawGraph(container, data) {
         .data(data.nodes)
         .join('a')
         .attr('xlink:href', d => `/detail/${d.id}`)
-        .attr('target', '_blank')
         .append('text')
         .text(d => d.label)
         .attr('x', 12)
