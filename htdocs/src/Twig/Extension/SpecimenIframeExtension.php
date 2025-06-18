@@ -3,6 +3,7 @@
 namespace App\Twig\Extension;
 
 use App\Entity\Jacq\Herbarinput\ImageDefinition;
+use App\Entity\Jacq\Herbarinput\Institution;
 use App\Entity\Jacq\Herbarinput\Specimens;
 use App\Facade\Rest\IiifFacade;
 use App\Service\ImageService;
@@ -31,10 +32,10 @@ class SpecimenIframeExtension extends AbstractExtension
         if (!$specimen->hasImageObservation() && !$specimen->hasImage()) {
             return '';
         }
-        $sourceId = $specimen->getHerbCollection()->getId();
+        $sourceId = $specimen->getHerbCollection()->getInstitution()->getId();
         $imageDefinition = $specimen->getHerbCollection()->getInstitution()->getImageDefinition();
         $phaidra = false;
-        if ($sourceId === 1) {
+        if ($sourceId === Institution::WU) {
             // ask phaidra server if it has the desired picture. If not, use old method
             $picname = sprintf("WU%0" . $imageDefinition->getHerbNummerNrDigits() . ".0f", str_replace('-', '', $specimen->getHerbNumber()));
             $ch = curl_init("https://app05a.phaidra.org/viewer/" . $picname);
