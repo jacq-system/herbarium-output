@@ -1,8 +1,14 @@
 {
   "type": "project",
   "license": "proprietary",
-  "minimum-stability": "stable",
+  "minimum-stability": "dev",
   "prefer-stable": true,
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/jacq-system/orm-model.git"
+    }
+  ],
   "require": {
     "php": ">=8.4",
     "ext-ctype": "*",
@@ -17,6 +23,7 @@
     "doctrine/orm": "^3",
     "friendsofsymfony/rest-bundle": "^3.7",
     "guzzlehttp/guzzle": "^7.9",
+    "jacq-system/orm-model": "^1.0",
     "jms/serializer-bundle": "^5.5",
     "league/oauth2-server-bundle": "^0.9",
     "nelmio/api-doc-bundle": "^4.33",

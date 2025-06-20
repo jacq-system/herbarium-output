@@ -22,15 +22,15 @@ doctrine:
             App:
                 type: attribute
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Entity'
-                prefix: 'App\Entity'
+                dir: '%kernel.project_dir%/vendor/jacq-system/orm-model/src/Entity'
+                prefix: 'JACQ\Entity'
                 alias: App
         controller_resolver:
             auto_mapping: false
         dql:
             string_functions:
-                GetScientificName: App\Doctrine\Functions\GetScientificNameFunction
-                GetProtolog: App\Doctrine\Functions\GetProtologFunction
+                GetScientificName: JACQ\Doctrine\Functions\GetScientificNameFunction
+                GetProtolog: JACQ\Doctrine\Functions\GetProtologFunction
 
 when@test:
     doctrine:
