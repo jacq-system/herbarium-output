@@ -526,7 +526,7 @@ class SearchFormFacade
             $specimen->getIdentificationStatus()?->getName(),
             $specimen->getSpecies()->getGenus()->getName(),
             $specimen->getSpecies()->getEpithetSpecies()?->getName(),
-            $specimen->getSpecies()->getAuthorSpecies()->getName(),
+            $specimen->getSpecies()->getAuthorSpecies()?->getName(),
             $specimen->getSpecies()->getRank()->getAbbreviation(),
             $infraInfo['epithet'],
             $infraInfo['author'],

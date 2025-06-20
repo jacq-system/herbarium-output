@@ -37,7 +37,7 @@ class SpecimenIframeExtension extends AbstractExtension
         $phaidra = false;
         if ($sourceId === Institution::WU) {
             // ask phaidra server if it has the desired picture. If not, use old method
-            $picname = sprintf("WU%0" . $imageDefinition->getHerbNummerNrDigits() . ".0f", str_replace('-', '', $specimen->getHerbNumber()));
+            $picname = sprintf("WU%0" . $imageDefinition->getHerbNummerNrDigits() . ".0f", str_replace('-', '', $specimen->getHerbNumber() ?? ''));
             $ch = curl_init("https://app05a.phaidra.org/viewer/" . $picname);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             $curl_response = curl_exec($ch);
