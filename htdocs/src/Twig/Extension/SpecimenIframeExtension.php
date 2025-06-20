@@ -2,9 +2,9 @@
 
 namespace App\Twig\Extension;
 
-use App\Entity\Jacq\Herbarinput\ImageDefinition;
-use App\Entity\Jacq\Herbarinput\Institution;
-use App\Entity\Jacq\Herbarinput\Specimens;
+use JACQ\Entity\Jacq\Herbarinput\ImageDefinition;
+use JACQ\Entity\Jacq\Herbarinput\Institution;
+use JACQ\Entity\Jacq\Herbarinput\Specimens;
 use App\Facade\Rest\IiifFacade;
 use App\Service\ImageService;
 use App\Service\JacqNetworkService;

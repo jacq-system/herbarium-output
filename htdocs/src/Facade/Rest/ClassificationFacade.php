@@ -3,11 +3,11 @@
 namespace App\Facade\Rest;
 
 
-use App\Repository\Herbarinput\LiteratureRepository;
-use App\Repository\Herbarinput\SpeciesRepository;
-use App\Repository\Herbarinput\SynonymyRepository;
-use App\Service\ReferenceService;
-use App\Service\SpeciesService;
+use JACQ\Repository\Herbarinput\LiteratureRepository;
+use JACQ\Repository\Herbarinput\SpeciesRepository;
+use JACQ\Repository\Herbarinput\SynonymyRepository;
+use JACQ\Service\ReferenceService;
+use JACQ\Service\SpeciesService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;

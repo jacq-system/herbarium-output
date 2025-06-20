@@ -3,8 +3,8 @@
 namespace App\Service\Rest;
 
 
-use App\Entity\Jacq\Herbarinput\ExternalServices;
-use App\Repository\Herbarinput\ExternalServicesRepository;
+use JACQ\Entity\Jacq\Herbarinput\ExternalServices;
+use JACQ\Repository\Herbarinput\ExternalServicesRepository;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 

@@ -2,9 +2,9 @@
 
 namespace App\Service\Tools;
 
-use App\Repository\Herbarinput\ImageDefinitionRepository;
-use App\Repository\Herbarinput\SpecimensRepository;
-use App\Service\ImageService;
+use JACQ\Repository\Herbarinput\ImageDefinitionRepository;
+use JACQ\Repository\Herbarinput\SpecimensRepository;
+use JACQ\Service\ImageService;
 use Doctrine\ORM\EntityNotFoundException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 

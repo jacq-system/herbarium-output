@@ -2,9 +2,9 @@
 
 namespace App\Service\Tools;
 
-use App\Enum\CoreObjectsEnum;
-use App\Enum\TimeIntervalEnum;
-use App\Repository\Herbarinput\InstitutionRepository;
+use JACQ\Enum\CoreObjectsEnum;
+use JACQ\Enum\TimeIntervalEnum;
+use JACQ\Repository\Herbarinput\InstitutionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 

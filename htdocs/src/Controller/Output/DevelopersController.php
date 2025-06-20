@@ -2,7 +2,7 @@
 
 namespace App\Controller\Output;
 
-use App\Entity\User;
+use JACQ\Entity\User;
 use App\Service\Rest\DevelopersService;
 use App\Service\Tools\DjatokaService;
 use App\Service\Tools\StatisticsService;

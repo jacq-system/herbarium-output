@@ -2,10 +2,10 @@
 
 namespace App\Service\Rest;
 
-use App\Entity\Jacq\Herbarinput\Specimens;
+use JACQ\Entity\Jacq\Herbarinput\Specimens;
 use App\Facade\Rest\IiifFacade;
-use App\Service\JacqNetworkService;
-use App\Service\SpecimenService;
+use JACQ\Service\JacqNetworkService;
+use JACQ\Service\SpecimenService;
 use Doctrine\DBAL\Connection;
 use Exception;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;

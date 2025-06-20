@@ -2,8 +2,8 @@
 
 namespace App\Service\Rest;
 
-use App\Entity\Jacq\Herbarinput\GeoNationBoundaries;
-use App\Entity\Jacq\Herbarinput\GeoProvinceBoundaries;
+use JACQ\Entity\Jacq\Herbarinput\GeoNationBoundaries;
+use JACQ\Entity\Jacq\Herbarinput\GeoProvinceBoundaries;
 use Doctrine\ORM\EntityManagerInterface;
 
 

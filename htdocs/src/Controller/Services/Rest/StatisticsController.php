@@ -2,8 +2,8 @@
 
 namespace App\Controller\Services\Rest;
 
-use App\Enum\CoreObjectsEnum;
-use App\Enum\TimeIntervalEnum;
+use JACQ\Enum\CoreObjectsEnum;
+use JACQ\Enum\TimeIntervalEnum;
 use App\Service\Tools\StatisticsService;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use OpenApi\Attributes\Get;

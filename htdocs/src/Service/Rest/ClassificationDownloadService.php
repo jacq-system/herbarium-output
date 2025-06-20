@@ -3,12 +3,12 @@
 namespace App\Service\Rest;
 
 
-use App\Entity\Jacq\Herbarinput\Synonymy;
-use App\Repository\Herbarinput\LiteratureRepository;
-use App\Repository\Herbarinput\SynonymyRepository;
-use App\Repository\Herbarinput\TaxonRankRepository;
-use App\Service\SpeciesService;
-use App\Service\UuidService;
+use JACQ\Entity\Jacq\Herbarinput\Synonymy;
+use JACQ\Repository\Herbarinput\LiteratureRepository;
+use JACQ\Repository\Herbarinput\SynonymyRepository;
+use JACQ\Repository\Herbarinput\TaxonRankRepository;
+use JACQ\Service\SpeciesService;
+use JACQ\Service\UuidService;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Routing\RouterInterface;
 

@@ -3,7 +3,7 @@
 namespace App\Facade;
 
 use App\Controller\Output\SearchFormController;
-use App\Entity\Jacq\Herbarinput\Specimens;
+use JACQ\Entity\Jacq\Herbarinput\Specimens;
 use App\Service\GeoService;
 use App\Service\Output\ExcelService;
 use App\Service\Output\KmlService;

@@ -2,14 +2,14 @@
 
 namespace App\Twig\Extension;
 
-use App\Entity\Jacq\Herbarinput\Collector;
-use App\Entity\Jacq\Herbarinput\Species;
-use App\Entity\Jacq\Herbarinput\Specimens;
+use JACQ\Entity\Jacq\Herbarinput\Collector;
+use JACQ\Entity\Jacq\Herbarinput\Species;
+use JACQ\Entity\Jacq\Herbarinput\Specimens;
 use App\Facade\Rest\IiifFacade;
-use App\Repository\Herbarinput\CollectorRepository;
-use App\Service\SpecimenService;
-use App\Service\SpeciesService;
-use App\Service\TypusService;
+use JACQ\Repository\Herbarinput\CollectorRepository;
+use JACQ\Service\SpecimenService;
+use JACQ\Service\SpeciesService;
+use JACQ\Service\TypusService;
 use Doctrine\ORM\EntityManagerInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;

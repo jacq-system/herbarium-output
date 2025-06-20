@@ -3,21 +3,11 @@
 namespace App\Controller\Output;
 
 use App\Exception\InvalidStateException;
-use App\Facade\SearchFormFacade;
-use App\Repository\Herbarinput\InstitutionRepository;
-use App\Service\CollectionService;
-use App\Service\ImageService;
-use App\Service\Output\ExcelService;
-use App\Service\Output\SearchFormSessionService;
-use App\Service\SpecimenService;
-use PhpOffice\PhpSpreadsheet\Writer\Csv;
-use PhpOffice\PhpSpreadsheet\Writer\Ods;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use JACQ\Service\ImageService;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;

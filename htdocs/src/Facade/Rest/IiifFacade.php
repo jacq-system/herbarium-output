@@ -3,7 +3,7 @@
 namespace App\Facade\Rest;
 
 
-use App\Entity\Jacq\Herbarinput\Specimens;
+use JACQ\Entity\Jacq\Herbarinput\Specimens;
 use App\Service\JacqNetworkService;
 use App\Service\ReferenceService;
 use App\Service\SpecimenService;

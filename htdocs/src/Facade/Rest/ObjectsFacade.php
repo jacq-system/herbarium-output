@@ -3,7 +3,7 @@
 namespace App\Facade\Rest;
 
 
-use App\Entity\Jacq\Herbarinput\Specimens;
+use JACQ\Entity\Jacq\Herbarinput\Specimens;
 use App\Service\SpecimenService;
 use App\Service\SpeciesService;
 use Doctrine\DBAL\ArrayParameterType;

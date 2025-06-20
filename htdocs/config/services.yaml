@@ -23,7 +23,7 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
-    App\Service\UuidConfiguration:
+    JACQ\Service\UuidConfiguration:
         arguments:
             $endpoint: '%uuid_endpoint_url%'
             $secret: '%uuid_endpoint_key%'

@@ -2,9 +2,9 @@
 
 namespace App\Controller\Services\Rest;
 
-use App\Repository\Herbarinput\SpeciesRepository;
-use App\Service\SpeciesService;
-use App\Service\UuidService;
+use JACQ\Repository\Herbarinput\SpeciesRepository;
+use JACQ\Service\SpeciesService;
+use JACQ\Service\UuidService;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\Items;
