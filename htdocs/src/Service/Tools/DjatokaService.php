@@ -7,7 +7,7 @@ use JACQ\Repository\Herbarinput\SpecimensRepository;
 use JACQ\Service\ImageService;
 use Doctrine\ORM\EntityNotFoundException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use \Exception;
+use Exception;
 
 readonly class DjatokaService
 {
