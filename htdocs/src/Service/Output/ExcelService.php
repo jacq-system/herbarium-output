@@ -11,7 +11,7 @@ class ExcelService
 
     public const array HEADER = ['Specimen ID', 'observation', 'dig_image', 'dig_img_obs', 'Institution_Code', 'Herbarium-Number/BarCode', 'institution_subcollection', 'Collection Number', 'Type information', 'Typified by', 'Taxon', 'status', 'Genus', 'Species', 'Author', 'Rank', 'Infra_spec', 'Infra_author', 'Family', 'Garden', 'voucher', 'Collection', 'First_collector', 'First_collectors_number', 'Add_collectors', 'Alt_number', 'Series', 'Series_number', 'Coll_Date', 'Coll_Date_2', 'Country', 'Province', 'geonames', 'Latitude', 'Latitude_DMS', 'Lat_Hemisphere', 'Lat_degree', 'Lat_minute', 'Lat_second', 'Longitude', 'Longitude_DMS', 'Long_Hemisphere', 'Long_degree', 'Long_minute', 'Long_second', 'exactness', 'Altitude lower', 'Altitude higher', 'Quadrant', 'Quadrant_sub', 'Location', 'det./rev./conf./assigned', 'ident. history', 'annotations', 'habitat', 'habitus', 'stable identifier'];
 
-    public function prepareExcel($title = "specimens_download")
+    public function prepareExcel($title = "specimens_download"): Spreadsheet
     {
         $spreadsheet = new Spreadsheet();
         $spreadsheet->setActiveSheetIndex(0);
@@ -29,7 +29,7 @@ class ExcelService
     public function easyFillExcel(Spreadsheet $spreadsheet, array $header, array $body): Spreadsheet
     {
         try {
-            $spreadsheet->getActiveSheet()->fromArray($header, NULL, 'A1');
+            $spreadsheet->getActiveSheet()->fromArray($header);
             $spreadsheet->getActiveSheet()->fromArray($body, NULL, 'A2');
         } catch (Exception $exception) {
         }

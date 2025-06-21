@@ -1,23 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace App\Controller\Output;
+namespace App\Controller;
 
-use App\Exception\InvalidStateException;
-use App\Facade\SearchFormFacade;
-use App\Repository\Herbarinput\InstitutionRepository;
-use App\Service\CollectionService;
-use App\Service\ImageService;
-use App\Service\Output\ExcelService;
-use App\Service\Output\SearchFormSessionService;
-use App\Service\SpecimenService;
-use PhpOffice\PhpSpreadsheet\Writer\Csv;
-use PhpOffice\PhpSpreadsheet\Writer\Ods;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use JACQ\Exception\InvalidStateException;
+use JACQ\Service\ImageService;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
@@ -28,7 +18,7 @@ class ImageController extends AbstractController
 
     public const array RECORDS_PER_PAGE = array(10, 30, 50, 100);
 
-    public function __construct(protected readonly ImageService $imageService, protected LoggerInterface $appLogger)
+    public function __construct(protected ImageService $imageService, protected LoggerInterface $appLogger)
     {
     }
 
@@ -42,27 +32,21 @@ class ImageController extends AbstractController
         }
 
         //TODO only due Djatoka in the getPicDetails() is needed to have this format, otherwise could be derived from the streamed response headers, see bellow
-        switch ($format) {
-            case 'jpeg2000':
-                $contentType = 'image/jp2';
-                break;
-            case'tiff':
-                $contentType = 'image/tiff';
-                break;
-            default:
-                $contentType = 'image/jpeg';
-                break;
-        }
+        $contentType = match ($format) {
+            'jpeg2000' => 'image/jp2',
+            'tiff' => 'image/tiff',
+            default => 'image/jpeg',
+        };
 
-        $picDetails = $this->imageService->getPicDetails($filename, $contentType, $sid);
+        $picDetails = $this->imageService->getPicDetails($filename, $sid);
 
         if (!empty($picDetails['url'])) {
             switch ($method) {
                 default:
-                    $url = $this->imageService->getSourceUrl($picDetails, $contentType, 0);
+                    $url = $this->imageService->getSourceUrl($picDetails, $contentType);
                     break;
                 case 'download':    // detail
-                    $url = $this->imageService->getSourceUrl($picDetails, $contentType, 0);
+                    $url = $this->imageService->getSourceUrl($picDetails, $contentType);
                     break;
                 case 'thumb':       // detail
                     $url = $this->imageService->getSourceUrl($picDetails, $contentType, 1);

@@ -2,12 +2,12 @@
 
 namespace App\Twig\Extension;
 
-use App\Entity\Jacq\Herbarinput\ImageDefinition;
-use App\Entity\Jacq\Herbarinput\Institution;
-use App\Entity\Jacq\Herbarinput\Specimens;
-use App\Facade\Rest\IiifFacade;
-use App\Service\ImageService;
-use App\Service\JacqNetworkService;
+use JACQ\Entity\Jacq\Herbarinput\ImageDefinition;
+use JACQ\Entity\Jacq\Herbarinput\Institution;
+use JACQ\Entity\Jacq\Herbarinput\Specimens;
+use JACQ\Service\Legacy\IiifFacade;
+use JACQ\Service\ImageService;
+use JACQ\Service\JacqNetworkService;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;

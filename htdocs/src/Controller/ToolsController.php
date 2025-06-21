@@ -1,14 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace App\Controller\Output;
+namespace App\Controller;
 
-use App\Entity\User;
-use App\Enum\CoreObjectsEnum;
-use App\Enum\TimeIntervalEnum;
-use App\Service\Rest\DevelopersService;
+use JACQ\Service\Legacy\DevelopersService;
 use App\Service\Tools\DjatokaService;
 use App\Service\Tools\StatisticsService;
-use Doctrine\ORM\EntityNotFoundException;
+use JACQ\Enum\CoreObjectsEnum;
+use JACQ\Enum\TimeIntervalEnum;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
