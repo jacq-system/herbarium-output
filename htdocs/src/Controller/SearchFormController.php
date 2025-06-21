@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace App\Controller\Output;
+namespace App\Controller;
 
 use App\Facade\SearchFormFacade;
-use App\Repository\Herbarinput\HerbCollectionRepository;
-use App\Repository\Herbarinput\InstitutionRepository;
 use App\Service\Output\ExcelService;
 use App\Service\Output\SearchFormSessionService;
-use App\Service\SpecimenService;
+use JACQ\Repository\Herbarinput\HerbCollectionRepository;
+use JACQ\Repository\Herbarinput\InstitutionRepository;
+use JACQ\Service\SpecimenService;
 use PhpOffice\PhpSpreadsheet\Writer\Csv;
 use PhpOffice\PhpSpreadsheet\Writer\Ods;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;

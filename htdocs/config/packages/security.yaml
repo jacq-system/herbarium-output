@@ -13,11 +13,6 @@ security:
         api_token:
             pattern: ^/token$
             security: false
-        api:
-            pattern: ^/api
-            security: true
-            stateless: true
-            oauth2: true
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
@@ -46,14 +41,6 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/authorize, roles: IS_AUTHENTICATED_REMEMBERED } #OAuthBundle
-        - { path: ^/token, role: PUBLIC_ACCESS } #OAuthBundle
-        - { path: ^/login, role: PUBLIC_ACCESS }
-        - { path: ^/services, role: PUBLIC_ACCESS }
-        - { path: ^/.well-known, roles: PUBLIC_ACCESS }
-        - { path: ^/api, role: ROLE_OAUTH2_PROFILE }
-        - { path: ^/develop, role: PUBLIC_ACCESS }
-        - { path: ^/admin, role: ROLE_USER }
         - { path: ^/, role: PUBLIC_ACCESS }
 
 when@test:

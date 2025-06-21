@@ -2,9 +2,9 @@
 
 namespace App\Service\Tools;
 
-use App\Enum\CoreObjectsEnum;
-use App\Enum\TimeIntervalEnum;
-use App\Repository\Herbarinput\InstitutionRepository;
+use JACQ\Enum\CoreObjectsEnum;
+use JACQ\Enum\TimeIntervalEnum;
+use JACQ\Repository\Herbarinput\InstitutionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 
@@ -30,16 +30,12 @@ readonly class StatisticsService
 
     protected function getPeriodColumn(TimeIntervalEnum $interval): string
     {
-        switch ($interval) {
-            case TimeIntervalEnum::Day:
-                return "dayofyear(l.timestamp) AS period";
-            case TimeIntervalEnum::Year:
-                return "year(l.timestamp) AS period";
-            case TimeIntervalEnum::Month:
-                return "month(l.timestamp) AS period";
-            default :
-                return "week(l.timestamp, 1) AS period";
-        }
+        return match ($interval) {
+            TimeIntervalEnum::Day => "dayofyear(l.timestamp) AS period",
+            TimeIntervalEnum::Year => "year(l.timestamp) AS period",
+            TimeIntervalEnum::Month => "month(l.timestamp) AS period",
+            default => "week(l.timestamp, 1) AS period",
+        };
     }
 
     protected function getCitations(TimeIntervalEnum $interval, string $periodStart, string $periodEnd, int $updated): array
@@ -153,7 +149,7 @@ readonly class StatisticsService
      * @param TimeIntervalEnum $interval resolution of statistics analysis (day, week, month, year)
      * @return array found results
      */
-    public function getResults($periodStart, $periodEnd, int $updated, CoreObjectsEnum $type, TimeIntervalEnum $interval)
+    public function getResults(string $periodStart, string $periodEnd, int $updated, CoreObjectsEnum $type, TimeIntervalEnum $interval): array
     {
         $dbRows = match ($type) {
             CoreObjectsEnum::Names => $this->getNames($interval, $periodStart, $periodEnd, $updated),

@@ -2,14 +2,14 @@
 
 namespace App\Twig\Extension;
 
-use App\Entity\Jacq\Herbarinput\Collector;
-use App\Entity\Jacq\Herbarinput\Species;
-use App\Entity\Jacq\Herbarinput\Specimens;
-use App\Facade\Rest\IiifFacade;
-use App\Repository\Herbarinput\CollectorRepository;
-use App\Service\SpecimenService;
-use App\Service\SpeciesService;
-use App\Service\TypusService;
+use JACQ\Entity\Jacq\Herbarinput\Collector;
+use JACQ\Entity\Jacq\Herbarinput\Species;
+use JACQ\Entity\Jacq\Herbarinput\Specimens;
+use JACQ\Service\Legacy\IiifFacade;
+use JACQ\Repository\Herbarinput\CollectorRepository;
+use JACQ\Service\SpecimenService;
+use JACQ\Service\SpeciesService;
+use JACQ\Service\TypusService;
 use Doctrine\ORM\EntityManagerInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
@@ -67,9 +67,8 @@ class SpecimenExtension extends AbstractExtension
                 $text .= $rowtax["hyper"];
             }
         }
-        $text = str_replace('assets/images', '/logo/services', $text);
 
-        return $text;
+        return str_replace('assets/images', '/logo/services', $text);
     }
 
     public function getBloodHoundId(Collector $collector): ?string
@@ -94,7 +93,7 @@ class SpecimenExtension extends AbstractExtension
     {
         $text = '';
         $switch = false;
-        if ($specimen?->getCountry()?->getNameEng() !== null) {
+        if ($specimen->getCountry()?->getNameEng() !== null) {
             $text .= "<img src='/flags/" . strtolower($specimen->getCountry()->getIsoCode2()) . ".png'> " . $specimen->getCountry()->getNameEng();
             $switch = true;
         }
@@ -122,7 +121,7 @@ class SpecimenExtension extends AbstractExtension
     {
         $text = '';
         $switch = false;
-        if ($specimen?->getCountry()?->getNameEng() !== null) {
+        if ($specimen->getCountry()?->getNameEng() !== null) {
             $text .= "<img src='/flags/" . strtolower($specimen->getCountry()->getIsoCode2()) . ".png'> " . $specimen->getCountry()->getNameEng();
             $switch = true;
         }
@@ -162,7 +161,7 @@ class SpecimenExtension extends AbstractExtension
     {
         $sourceId = $specimen->getHerbCollection()->getId();
         if ($sourceId == '35') {
-            return (preg_replace("#<a .*a>#", "", $specimen->getAnnotation(true)));
+            return (preg_replace("#<a .*a>#", "", $specimen->getAnnotation(true) ?? ''));
         }
         return $specimen->getAnnotation(true) ?? '';
 

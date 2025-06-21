@@ -2,18 +2,18 @@
 
 namespace App\Facade;
 
-use App\Controller\Output\SearchFormController;
-use App\Entity\Jacq\Herbarinput\Specimens;
-use App\Service\GeoService;
+use App\Controller\SearchFormController;
+use JACQ\Service\GeoService;
 use App\Service\Output\ExcelService;
 use App\Service\Output\KmlService;
 use App\Service\Output\SearchFormSessionService;
-use App\Service\SpecimenService;
-use App\Service\TypusService;
+use JACQ\Service\SpecimenService;
+use JACQ\Service\TypusService;
 use Doctrine\Common\Collections\Order;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
+use JACQ\Entity\Jacq\Herbarinput\Specimens;
 
 class SearchFormFacade
 {
@@ -52,7 +52,7 @@ class SearchFormFacade
         ->addOrderBy('author.name', $direction);
     }
 
-    protected function sort(array $sort)
+    protected function sort(array $sort):void
     {
         $column = key($sort);
         $direction = $sort[$column];
@@ -410,7 +410,7 @@ class SearchFormFacade
 
     }
 
-    protected function getTaxonIds(string $name)
+    protected function getTaxonIds(string $name): array
     {
         $pieces = explode(" ", trim($name));
         $part1 = array_shift($pieces);

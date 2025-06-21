@@ -23,7 +23,12 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
-    App\Service\UuidConfiguration:
+    JACQ\:
+        resource: '../vendor/jacq-system/orm-model/src/*'
+        exclude: '../vendor/jacq-system/orm-model/src/{Entity,Migrations,Tests}'
+
+
+    JACQ\Service\UuidConfiguration:
         arguments:
             $endpoint: '%uuid_endpoint_url%'
             $secret: '%uuid_endpoint_key%'
