@@ -1,4 +1,4 @@
-# Symfony based JACQ
+# JACQ/herbarium-output
 A short description of the app structure is provided here, following the alphabetically sorted subfolders of the repository. All code was transferred with effort minimalized, most refactoring is connected only to necessary changes (like db calls or Dependency Injection). I had a wish to split methods according to entities/domains, but struggle mostly on it - the priority is to get working copy now, refactor when deployed. E.g. Statistics or search of specimens represents a little bit more elaborated remake.
 
 when walking through the code, I had sometimes comments - all are kept inline with //TODO notation; but they do not need any immediate action, just kept for evidence and future use.
