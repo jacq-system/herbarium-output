@@ -3,8 +3,8 @@
 namespace App\Controller;
 
 use App\Facade\SearchFormFacade;
-use App\Service\Output\ExcelService;
-use App\Service\Output\SearchFormSessionService;
+use App\Service\ExcelService;
+use App\Service\SearchFormSessionService;
 use JACQ\Repository\Herbarinput\HerbCollectionRepository;
 use JACQ\Repository\Herbarinput\InstitutionRepository;
 use JACQ\Service\SpecimenService;

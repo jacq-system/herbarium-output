@@ -3,8 +3,7 @@
 namespace App\Controller;
 
 use JACQ\Service\Legacy\DevelopersService;
-use App\Service\Tools\DjatokaService;
-use App\Service\Tools\StatisticsService;
+use JACQ\Service\StatisticsService;
 use JACQ\Enum\CoreObjectsEnum;
 use JACQ\Enum\TimeIntervalEnum;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class ToolsController extends AbstractController
 {
 
-    public function __construct(protected DevelopersService $developersService, protected readonly DjatokaService $djatokaService, protected readonly StatisticsService $statisticsService)
+    public function __construct(protected DevelopersService $developersService,  protected readonly StatisticsService $statisticsService)
     {
     }
 
