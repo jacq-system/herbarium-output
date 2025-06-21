@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Service\Rest\DevelopersService;
+use JACQ\Service\Legacy\DevelopersService;
 use App\Service\Tools\DjatokaService;
 use App\Service\Tools\StatisticsService;
 use JACQ\Enum\CoreObjectsEnum;
