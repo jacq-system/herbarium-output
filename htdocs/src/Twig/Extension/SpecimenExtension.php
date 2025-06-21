@@ -161,7 +161,7 @@ class SpecimenExtension extends AbstractExtension
     {
         $sourceId = $specimen->getHerbCollection()->getId();
         if ($sourceId == '35') {
-            return (preg_replace("#<a .*a>#", "", $specimen->getAnnotation(true)));
+            return (preg_replace("#<a .*a>#", "", $specimen->getAnnotation(true) ?? ''));
         }
         return $specimen->getAnnotation(true) ?? '';
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "370137f958b7e74955068159c2540eca",
+    "content-hash": "402c431edb14e33386d173cfa0f687ee",
     "packages": [
         {
             "name": "composer/pcre",
@@ -1535,12 +1535,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/jacq-system/orm-model.git",
-                "reference": "7844b18e7c2d8eaa143552f52edc46286a93d099"
+                "reference": "757643512c36e01f80fa384603d8f5ae6c3026ec"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jacq-system/orm-model/zipball/7844b18e7c2d8eaa143552f52edc46286a93d099",
-                "reference": "7844b18e7c2d8eaa143552f52edc46286a93d099",
+                "url": "https://api.github.com/repos/jacq-system/orm-model/zipball/757643512c36e01f80fa384603d8f5ae6c3026ec",
+                "reference": "757643512c36e01f80fa384603d8f5ae6c3026ec",
                 "shasum": ""
             },
             "require": {
@@ -1568,7 +1568,7 @@
                 "source": "https://github.com/jacq-system/orm-model/tree/main",
                 "issues": "https://github.com/jacq-system/orm-model/issues"
             },
-            "time": "2025-06-21T07:58:01+00:00"
+            "time": "2025-06-21T08:56:33+00:00"
         },
         {
             "name": "jms/metadata",
@@ -9663,7 +9663,8 @@
         "ext-gd": "*",
         "ext-iconv": "*",
         "ext-openssl": "*",
-        "ext-simplexml": "*"
+        "ext-simplexml": "*",
+        "ext-fileinfo": "*"
     },
     "platform-dev": {},
     "plugin-api-version": "2.6.0"
