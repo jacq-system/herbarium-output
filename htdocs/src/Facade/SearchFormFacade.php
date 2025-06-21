@@ -2,8 +2,7 @@
 
 namespace App\Facade;
 
-use App\Controller\Output\SearchFormController;
-use JACQ\Entity\Jacq\Herbarinput\Specimens;
+use App\Controller\SearchFormController;
 use App\Service\GeoService;
 use App\Service\Output\ExcelService;
 use App\Service\Output\KmlService;
@@ -14,6 +13,7 @@ use Doctrine\Common\Collections\Order;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
+use JACQ\Entity\Jacq\Herbarinput\Specimens;
 
 class SearchFormFacade
 {

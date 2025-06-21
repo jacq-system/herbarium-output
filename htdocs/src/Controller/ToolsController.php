@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace App\Controller\Output;
+namespace App\Controller;
 
-use JACQ\Enum\CoreObjectsEnum;
-use JACQ\Enum\TimeIntervalEnum;
 use App\Service\Rest\DevelopersService;
 use App\Service\Tools\DjatokaService;
 use App\Service\Tools\StatisticsService;
+use JACQ\Enum\CoreObjectsEnum;
+use JACQ\Enum\TimeIntervalEnum;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;

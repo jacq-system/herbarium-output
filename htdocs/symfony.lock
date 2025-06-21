@@ -35,18 +35,6 @@
             "migrations/.gitignore"
         ]
     },
-    "friendsofsymfony/rest-bundle": {
-        "version": "3.7",
-        "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
-            "branch": "main",
-            "version": "3.0",
-            "ref": "3762cc4e4f2d6faabeca5a151b41c8c791bd96e5"
-        },
-        "files": [
-            "config/packages/fos_rest.yaml"
-        ]
-    },
     "jms/serializer-bundle": {
         "version": "5.5",
         "recipe": {
@@ -57,44 +45,6 @@
         },
         "files": [
             "config/packages/jms_serializer.yaml"
-        ]
-    },
-    "league/oauth2-server-bundle": {
-        "version": "0.9",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "main",
-            "version": "0.4",
-            "ref": "7f26963037fce3b69c1b3f6a75a3265edb1e1caa"
-        },
-        "files": [
-            "config/packages/league_oauth2_server.yaml",
-            "config/routes/league_oauth2_server.yaml"
-        ]
-    },
-    "nelmio/api-doc-bundle": {
-        "version": "4.33",
-        "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
-            "branch": "main",
-            "version": "3.0",
-            "ref": "c8e0c38e1a280ab9e37587a8fa32b251d5bc1c94"
-        },
-        "files": [
-            "config/packages/nelmio_api_doc.yaml",
-            "config/routes/nelmio_api_doc.yaml"
-        ]
-    },
-    "nelmio/cors-bundle": {
-        "version": "2.5",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "main",
-            "version": "1.5",
-            "ref": "6bea22e6c564fba3a1391615cada1437d0bde39c"
-        },
-        "files": [
-            "config/packages/nelmio_cors.yaml"
         ]
     },
     "nyholm/psr7": {

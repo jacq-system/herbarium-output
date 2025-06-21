@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace App\Controller\Output;
+namespace App\Controller;
 
 use App\Exception\InvalidStateException;
 use JACQ\Service\ImageService;
