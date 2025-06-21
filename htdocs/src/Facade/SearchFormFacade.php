@@ -52,7 +52,7 @@ class SearchFormFacade
         ->addOrderBy('author.name', $direction);
     }
 
-    protected function sort(array $sort)
+    protected function sort(array $sort):void
     {
         $column = key($sort);
         $direction = $sort[$column];
@@ -410,7 +410,7 @@ class SearchFormFacade
 
     }
 
-    protected function getTaxonIds(string $name)
+    protected function getTaxonIds(string $name): array
     {
         $pieces = explode(" ", trim($name));
         $part1 = array_shift($pieces);

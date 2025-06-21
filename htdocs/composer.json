@@ -17,6 +17,7 @@
     "ext-iconv": "*",
     "ext-openssl": "*",
     "ext-simplexml": "*",
+    "ext-fileinfo": "*",
     "doctrine/dbal": "^4",
     "doctrine/doctrine-bundle": "^2",
     "doctrine/doctrine-migrations-bundle": "^3",

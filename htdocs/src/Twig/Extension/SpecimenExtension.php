@@ -67,9 +67,8 @@ class SpecimenExtension extends AbstractExtension
                 $text .= $rowtax["hyper"];
             }
         }
-        $text = str_replace('assets/images', '/logo/services', $text);
 
-        return $text;
+        return str_replace('assets/images', '/logo/services', $text);
     }
 
     public function getBloodHoundId(Collector $collector): ?string
@@ -94,7 +93,7 @@ class SpecimenExtension extends AbstractExtension
     {
         $text = '';
         $switch = false;
-        if ($specimen?->getCountry()?->getNameEng() !== null) {
+        if ($specimen->getCountry()?->getNameEng() !== null) {
             $text .= "<img src='/flags/" . strtolower($specimen->getCountry()->getIsoCode2()) . ".png'> " . $specimen->getCountry()->getNameEng();
             $switch = true;
         }
@@ -122,7 +121,7 @@ class SpecimenExtension extends AbstractExtension
     {
         $text = '';
         $switch = false;
-        if ($specimen?->getCountry()?->getNameEng() !== null) {
+        if ($specimen->getCountry()?->getNameEng() !== null) {
             $text .= "<img src='/flags/" . strtolower($specimen->getCountry()->getIsoCode2()) . ".png'> " . $specimen->getCountry()->getNameEng();
             $switch = true;
         }

@@ -32,27 +32,21 @@ class ImageController extends AbstractController
         }
 
         //TODO only due Djatoka in the getPicDetails() is needed to have this format, otherwise could be derived from the streamed response headers, see bellow
-        switch ($format) {
-            case 'jpeg2000':
-                $contentType = 'image/jp2';
-                break;
-            case'tiff':
-                $contentType = 'image/tiff';
-                break;
-            default:
-                $contentType = 'image/jpeg';
-                break;
-        }
+        $contentType = match ($format) {
+            'jpeg2000' => 'image/jp2',
+            'tiff' => 'image/tiff',
+            default => 'image/jpeg',
+        };
 
-        $picDetails = $this->imageService->getPicDetails($filename, $contentType, $sid);
+        $picDetails = $this->imageService->getPicDetails($filename, $sid);
 
         if (!empty($picDetails['url'])) {
             switch ($method) {
                 default:
-                    $url = $this->imageService->getSourceUrl($picDetails, $contentType, 0);
+                    $url = $this->imageService->getSourceUrl($picDetails, $contentType);
                     break;
                 case 'download':    // detail
-                    $url = $this->imageService->getSourceUrl($picDetails, $contentType, 0);
+                    $url = $this->imageService->getSourceUrl($picDetails, $contentType);
                     break;
                 case 'thumb':       // detail
                     $url = $this->imageService->getSourceUrl($picDetails, $contentType, 1);

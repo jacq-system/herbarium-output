@@ -22,7 +22,7 @@ class KmlService
         return $this->head . $text. $this->foot;
     }
 
-    public function prepareRow(Specimens $specimen)
+    public function prepareRow(Specimens $specimen): string
     {
         $collectorText = $this->specimenService->getCollectionText($specimen);
 
@@ -56,7 +56,7 @@ class KmlService
         return '';
     }
 
-     protected function addLine(?string $value)
+     protected function addLine(?string $value):string
     {
         if(empty($value)) {
             return "";
