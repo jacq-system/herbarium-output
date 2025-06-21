@@ -3,12 +3,12 @@
 namespace App\Facade;
 
 use App\Controller\SearchFormController;
-use App\Service\GeoService;
+use JACQ\Service\GeoService;
 use App\Service\Output\ExcelService;
 use App\Service\Output\KmlService;
 use App\Service\Output\SearchFormSessionService;
-use App\Service\SpecimenService;
-use App\Service\TypusService;
+use JACQ\Service\SpecimenService;
+use JACQ\Service\TypusService;
 use Doctrine\Common\Collections\Order;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;

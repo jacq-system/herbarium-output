@@ -3,8 +3,8 @@
 namespace App\Service\Output;
 
 use JACQ\Entity\Jacq\Herbarinput\Specimens;
-use App\Service\SpecimenService;
-use App\Service\SpeciesService;
+use JACQ\Service\SpecimenService;
+use JACQ\Service\SpeciesService;
 
 class KmlService
 {

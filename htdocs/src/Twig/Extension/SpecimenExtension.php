@@ -5,7 +5,7 @@ namespace App\Twig\Extension;
 use JACQ\Entity\Jacq\Herbarinput\Collector;
 use JACQ\Entity\Jacq\Herbarinput\Species;
 use JACQ\Entity\Jacq\Herbarinput\Specimens;
-use App\Facade\Rest\IiifFacade;
+use JACQ\Service\Legacy\IiifFacade;
 use JACQ\Repository\Herbarinput\CollectorRepository;
 use JACQ\Service\SpecimenService;
 use JACQ\Service\SpeciesService;

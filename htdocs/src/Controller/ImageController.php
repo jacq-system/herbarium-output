@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Exception\InvalidStateException;
+use JACQ\Exception\InvalidStateException;
 use JACQ\Service\ImageService;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,7 +18,7 @@ class ImageController extends AbstractController
 
     public const array RECORDS_PER_PAGE = array(10, 30, 50, 100);
 
-    public function __construct(protected readonly ImageService $imageService, protected LoggerInterface $appLogger)
+    public function __construct(protected ImageService $imageService, protected LoggerInterface $appLogger)
     {
     }
 
