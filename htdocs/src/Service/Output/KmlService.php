@@ -10,7 +10,7 @@ class KmlService
 {
     public const int EXPORT_LIMIT = 1500;
 
-    protected string $head = '<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><description>search results Virtual Herbaria</description>';
+    protected string $head = '<?xml version="1.0" encoding="UTF-8"?><kml xmlns="https://www.opengis.net/kml/2.2"><Document><description>search results Virtual Herbaria</description>';
     protected string $foot = '</Document></kml>';
 
     public function __construct(protected readonly SpecimenService $specimenService, protected readonly SpeciesService $taxonService)

@@ -12,6 +12,7 @@
   "require": {
     "php": ">=8.4",
     "ext-ctype": "*",
+    "ext-curl": "*",
     "ext-gd": "*",
     "ext-iconv": "*",
     "ext-openssl": "*",
