@@ -1602,12 +1602,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/jacq-system/orm-model.git",
-                "reference": "e4e5b64a63f495606df8adf4cd9ba21a6ec12bdb"
+                "reference": "d536707edb102c2bb5512608babb3948085ec182"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jacq-system/orm-model/zipball/e4e5b64a63f495606df8adf4cd9ba21a6ec12bdb",
-                "reference": "e4e5b64a63f495606df8adf4cd9ba21a6ec12bdb",
+                "url": "https://api.github.com/repos/jacq-system/orm-model/zipball/d536707edb102c2bb5512608babb3948085ec182",
+                "reference": "d536707edb102c2bb5512608babb3948085ec182",
                 "shasum": ""
             },
             "require": {
@@ -1641,7 +1641,7 @@
                 "source": "https://github.com/jacq-system/orm-model/tree/main",
                 "issues": "https://github.com/jacq-system/orm-model/issues"
             },
-            "time": "2025-06-21T12:50:32+00:00"
+            "time": "2025-06-23T07:43:36+00:00"
         },
         {
             "name": "jms/metadata",
@@ -3150,16 +3150,16 @@
         },
         {
             "name": "phpoffice/phpspreadsheet",
-            "version": "3.9.1",
+            "version": "3.9.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPOffice/PhpSpreadsheet.git",
-                "reference": "56f334ace62fc8301c98d425272cbf0a00eb848d"
+                "reference": "3b07468e1fcc2501d85e60501977f8f7f53cfb4a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPOffice/PhpSpreadsheet/zipball/56f334ace62fc8301c98d425272cbf0a00eb848d",
-                "reference": "56f334ace62fc8301c98d425272cbf0a00eb848d",
+                "url": "https://api.github.com/repos/PHPOffice/PhpSpreadsheet/zipball/3b07468e1fcc2501d85e60501977f8f7f53cfb4a",
+                "reference": "3b07468e1fcc2501d85e60501977f8f7f53cfb4a",
                 "shasum": ""
             },
             "require": {
@@ -3249,9 +3249,9 @@
             ],
             "support": {
                 "issues": "https://github.com/PHPOffice/PhpSpreadsheet/issues",
-                "source": "https://github.com/PHPOffice/PhpSpreadsheet/tree/3.9.1"
+                "source": "https://github.com/PHPOffice/PhpSpreadsheet/tree/3.9.2"
             },
-            "time": "2025-02-08T03:04:52+00:00"
+            "time": "2025-06-23T01:19:20+00:00"
         },
         {
             "name": "phpstan/phpdoc-parser",
