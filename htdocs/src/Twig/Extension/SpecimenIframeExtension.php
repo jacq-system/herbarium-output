@@ -5,11 +5,11 @@ namespace App\Twig\Extension;
 use JACQ\Entity\Jacq\Herbarinput\ImageDefinition;
 use JACQ\Entity\Jacq\Herbarinput\Institution;
 use JACQ\Entity\Jacq\Herbarinput\Specimens;
+use JACQ\Enum\JacqRoutesNetwork;
 use JACQ\Service\Legacy\IiifFacade;
 use JACQ\Service\ImageService;
 use JACQ\Service\JacqNetworkService;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
@@ -45,7 +45,7 @@ class SpecimenIframeExtension extends AbstractExtension
                 $info = curl_getinfo($ch);
                 if ($info['http_code'] == 200) {
                     $phaidra = true;
-                    $phaidraManifest = $this->jacqNetworkService->translateSymfonyToRealServicePath($this->router->generate('services_rest_iiif_manifest', ['specimenID' => $specimen->getId()], UrlGeneratorInterface::ABSOLUTE_URL));
+                    $phaidraManifest = $this->jacqNetworkService->generateUrl(JacqRoutesNetwork::services_rest_iiif_manifest, (string) $specimen->getId());
                 }
             }
             curl_close($ch);

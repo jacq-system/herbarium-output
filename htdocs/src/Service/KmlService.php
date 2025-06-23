@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace App\Service\Output;
+namespace App\Service;
 
 use JACQ\Entity\Jacq\Herbarinput\Specimens;
-use JACQ\Service\SpecimenService;
 use JACQ\Service\SpeciesService;
+use JACQ\Service\SpecimenService;
 
 class KmlService
 {

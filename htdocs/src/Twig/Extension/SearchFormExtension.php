@@ -2,7 +2,7 @@
 
 namespace App\Twig\Extension;
 
-use App\Service\Output\SearchFormSessionService;
+use App\Service\SearchFormSessionService;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 

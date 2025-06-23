@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace App\Service\Output;
+namespace App\Service;
 
 use PhpOffice\PhpSpreadsheet\Exception;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
