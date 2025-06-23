@@ -31,6 +31,8 @@ doctrine:
             string_functions:
                 GetScientificName: JACQ\Doctrine\Functions\GetScientificNameFunction
                 GetProtolog: JACQ\Doctrine\Functions\GetProtologFunction
+                GetTaxonName: JACQ\Doctrine\Functions\GetTaxonNameFunction
+
 
 when@test:
     doctrine:
