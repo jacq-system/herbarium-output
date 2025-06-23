@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use JACQ\Service\Legacy\DevelopersService;
 use JACQ\Service\StatisticsService;
 use JACQ\Enum\CoreObjectsEnum;
 use JACQ\Enum\TimeIntervalEnum;
@@ -14,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class ToolsController extends AbstractController
 {
 
-    public function __construct(protected DevelopersService $developersService,  protected readonly StatisticsService $statisticsService)
+    public function __construct(protected readonly StatisticsService $statisticsService)
     {
     }
 
