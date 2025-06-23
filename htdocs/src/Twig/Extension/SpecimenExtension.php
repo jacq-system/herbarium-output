@@ -133,7 +133,7 @@ class SpecimenExtension extends AbstractExtension
         }
 
         if ($specimen->getLongitude() != null || $specimen->getLatitude() != null) {
-            $text .= " - " . $specimen->getCoords();
+            $text .= " | " . $specimen->getCoords();
         }
         return $text;
     }
