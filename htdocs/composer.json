@@ -21,7 +21,6 @@
     "doctrine/doctrine-migrations-bundle": "^3",
     "jacq-system/orm-model": "^1.0",
     "jms/serializer-bundle": "^5.5",
-    "php-coord/php-coord": "^v5",
     "phpoffice/phpspreadsheet": "^3.6",
     "symfony/asset": "^7.1",
     "symfony/cache": "7.1.*",
