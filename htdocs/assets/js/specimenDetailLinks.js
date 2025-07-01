@@ -4,7 +4,6 @@ export default function specimenLinks() {
     const linkContainer = document.getElementById('specimenLinks');
     const targetContainer = document.getElementById('linksPlot');
     if (!linkContainer || !linkContainer.dataset.source) {
-        console.log('pee');
         return;
     }
 

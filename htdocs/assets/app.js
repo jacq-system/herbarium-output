@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
     searchFormUI();
     searchFormSubmit();
     specimenMap();
-    specimenLinks();
+    // specimenLinks();
     dynamicReferences();
     materializeInit();
 });
