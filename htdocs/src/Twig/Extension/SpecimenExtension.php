@@ -186,7 +186,7 @@ class SpecimenExtension extends AbstractExtension
             if ($relation->getSpecimen1()->getId() === $specimen->getId()) {
                 $relations[] = ["relation"=>$relation->getLinkQualifier()?->getName(), "specimen"=>$relation->getSpecimen2()];
             } else {
-                $relations[] = ["relation"=>$relation->getLinkQualifier()?->getName(), "specimen"=>$relation->getSpecimen1()];
+                $relations[] = ["relation"=>$relation->getLinkQualifier()?->getNameReverse(), "specimen"=>$relation->getSpecimen1()];
             }
         }
         return $relations;
