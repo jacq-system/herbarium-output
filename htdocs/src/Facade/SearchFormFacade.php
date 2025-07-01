@@ -9,7 +9,7 @@ use App\Service\SearchFormSessionService;
 use Doctrine\Common\Collections\Order;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
-use Exception;
+use JACQ\Entity\Jacq\Herbarinput\Institution;
 use JACQ\Entity\Jacq\Herbarinput\Specimens;
 use JACQ\Service\GeoService;
 use JACQ\Service\SpecimenService;
@@ -20,7 +20,7 @@ class SearchFormFacade
     public const int PAGINATION_RANGE = 3;
     protected QueryBuilder $queryBuilder;
 
-    public function __construct(protected readonly EntityManagerInterface $entityManager, protected  SearchFormSessionService $searchFormSessionService, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService, protected readonly KmlService $kmlService, protected readonly GeoService $geoService)
+    public function __construct(protected readonly EntityManagerInterface $entityManager, protected SearchFormSessionService $searchFormSessionService, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService, protected readonly KmlService $kmlService, protected readonly GeoService $geoService)
     {
     }
 
@@ -28,14 +28,14 @@ class SearchFormFacade
     {
         $this->buildQuery();
 
-        $recordsPerPage = (int) $this->searchFormSessionService->getSetting('recordsPerPage', SearchFormController::RECORDS_PER_PAGE[0]);
-        $page = (int) $this->searchFormSessionService->getSetting('page', 3);
+        $recordsPerPage = (int)$this->searchFormSessionService->getSetting('recordsPerPage', SearchFormController::RECORDS_PER_PAGE[0]);
+        $page = (int)$this->searchFormSessionService->getSetting('page', 3);
         $offset = ($page - 1) * $recordsPerPage;
 
         $sort = $this->searchFormSessionService->getSort();
-        if($sort === null){
+        if ($sort === null) {
             $this->defaultSort();
-        }else{
+        } else {
             $this->sort($sort);
         }
 
@@ -43,54 +43,6 @@ class SearchFormFacade
             ->setFirstResult($offset)
             ->setMaxResults($recordsPerPage);
         return $this->queryBuilder->getQuery()->getResult();
-    }
-
-    protected function defaultSort(string $direction = Order::Ascending->value): void
-    {
-        $this->queryBuilder->orderBy('genus.name', $direction)
-        ->addOrderBy('epithet.name', $direction)
-        ->addOrderBy('author.name', $direction);
-    }
-
-    protected function sort(array $sort):void
-    {
-        $column = key($sort);
-        $direction = $sort[$column];
-        switch ($column) {
-            case 'collector':
-                $this->queryBuilder
-                    ->join('s.collector', 'collector')
-                    ->orderBy('collector.name', $direction);
-                break;
-            case 'date':
-                $this->queryBuilder->orderBy('s.date', $direction);
-                break;
-            case 'location':
-                $this->queryBuilder
-                    ->join('s.country', 'country')
-                    ->join('s.province', 'province')
-                    ->orderBy('country.nameEng', $direction)
-                    ->addOrderBy('province.name', $direction)
-                    ->addOrderBy('s.locality', $direction);
-                break;
-            case 'typus':
-                $this->queryBuilder
-                    ->join('s.typus', 'typus')
-                    ->join('typus.rank', 'rank')
-                    ->orderBy('rank.latinName', $direction);
-                break;
-            case 'collection':
-                $this->queryBuilder->orderBy('s.herbNumber', $direction);
-                break;
-            case 'coords':
-                $this->queryBuilder
-                    ->orderBy('s.degreeS', $direction)
-                    ->addOrderBy('s.degreeN', $direction);
-                break;
-            case 'taxon':
-                $this->defaultSort($direction);
-        }
-
     }
 
     protected function buildQuery(): void
@@ -105,7 +57,7 @@ class SearchFormFacade
             ->andWhere('s.accessibleForPublic = 1');
 
         if (!empty($this->searchFormSessionService->getFilter('institution'))) {
-            $this->queryInstitution($this->searchFormSessionService->getFilter('institution'));
+            $this->queryInstitution((int)$this->searchFormSessionService->getFilter('institution'));
         }
 
         if (!empty($this->searchFormSessionService->getFilter('herbNr'))) {
@@ -193,7 +145,7 @@ class SearchFormFacade
 
     }
 
-    protected function queryInstitution(string $code): void
+    protected function queryInstitution(int $code): void
     {
         $this->queryBuilder
             ->join('c.institution', 'i')
@@ -208,10 +160,10 @@ class SearchFormFacade
     {
         $pattern = '/^(?<code>[a-zA-Z]+)\s+(?<rest>.*)$/';
         $this->queryBuilder->andWhere('s.herbNumber LIKE :herbNr');
-        if (preg_match($pattern, $value, $matches) && empty($this->searchFormSessionService->getFilter('institution'))) {
-            try {
-                $this->queryInstitution($matches['code']);
-            } catch (Exception $exception) {
+        if (preg_match($pattern, $value, $matches)) {
+            if (empty($this->searchFormSessionService->getFilter('institution'))) {
+                $institution = $this->entityManager->getRepository(Institution::class)->findOneBy(['code' => $matches['code']]);
+                $this->queryInstitution($institution->getId());
             }
             $this->queryBuilder->setParameter('herbNr', '%' . $matches['rest']);
         } else {
@@ -326,17 +278,6 @@ class SearchFormFacade
 
     }
 
-    protected function queryCoords(): void
-    {
-        $this->queryBuilder
-            ->andWhere($this->queryBuilder->expr()->orX(
-                's.degreeS IS NOT NULL',
-                's.degreeN IS NOT NULL'
-                )
-            );
-
-    }
-
     protected function queryImages(): void
     {
         $this->queryBuilder
@@ -358,11 +299,22 @@ class SearchFormFacade
             ->setParameter('family', $id . '%');
     }
 
+    protected function queryCoords(): void
+    {
+        $this->queryBuilder
+            ->andWhere($this->queryBuilder->expr()->orX(
+                's.degreeS IS NOT NULL',
+                's.degreeN IS NOT NULL'
+            )
+            );
+
+    }
+
     protected function queryTaxon(string $id): void
     {
         $taxaIds = $this->getTaxonIds($id);
         $conditions = [];
-        if(empty($taxaIds)) {
+        if (empty($taxaIds)) {
             $this->queryBuilder->andWhere('1 = 0');
         }
 
@@ -445,11 +397,59 @@ class SearchFormFacade
         return $this->entityManager->getConnection()->executeQuery($sql, ['part1' => $part1 . '%', 'part2' => $part2 . '%'])->fetchAllAssociative();
     }
 
+    protected function defaultSort(string $direction = Order::Ascending->value): void
+    {
+        $this->queryBuilder->orderBy('genus.name', $direction)
+            ->addOrderBy('epithet.name', $direction)
+            ->addOrderBy('author.name', $direction);
+    }
+
+    protected function sort(array $sort): void
+    {
+        $column = key($sort);
+        $direction = $sort[$column];
+        switch ($column) {
+            case 'collector':
+                $this->queryBuilder
+                    ->join('s.collector', 'collector')
+                    ->orderBy('collector.name', $direction);
+                break;
+            case 'date':
+                $this->queryBuilder->orderBy('s.date', $direction);
+                break;
+            case 'location':
+                $this->queryBuilder
+                    ->join('s.country', 'country')
+                    ->join('s.province', 'province')
+                    ->orderBy('country.nameEng', $direction)
+                    ->addOrderBy('province.name', $direction)
+                    ->addOrderBy('s.locality', $direction);
+                break;
+            case 'typus':
+                $this->queryBuilder
+                    ->join('s.typus', 'typus')
+                    ->join('typus.rank', 'rank')
+                    ->orderBy('rank.latinName', $direction);
+                break;
+            case 'collection':
+                $this->queryBuilder->orderBy('s.herbNumber', $direction);
+                break;
+            case 'coords':
+                $this->queryBuilder
+                    ->orderBy('s.degreeS', $direction)
+                    ->addOrderBy('s.degreeN', $direction);
+                break;
+            case 'taxon':
+                $this->defaultSort($direction);
+        }
+
+    }
+
     public function providePaginationInfo(): array
     {
         $totalRecordCount = $this->countResults();
-        $recordsPerPage = (int) $this->searchFormSessionService->getSetting('recordsPerPage', SearchFormController::RECORDS_PER_PAGE[0]);
-        $currentPage = (int) $this->searchFormSessionService->getSetting('page', 1);
+        $recordsPerPage = (int)$this->searchFormSessionService->getSetting('recordsPerPage', SearchFormController::RECORDS_PER_PAGE[0]);
+        $currentPage = (int)$this->searchFormSessionService->getSetting('page', 1);
 
         $totalPages = ceil($totalRecordCount / $recordsPerPage);
 
