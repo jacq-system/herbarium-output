@@ -5,6 +5,7 @@ namespace App\Twig\Extension;
 use JACQ\Entity\Jacq\Herbarinput\Collector;
 use JACQ\Entity\Jacq\Herbarinput\Species;
 use JACQ\Entity\Jacq\Herbarinput\Specimens;
+use JACQ\Service\GeoService;
 use JACQ\Service\Legacy\IiifFacade;
 use JACQ\Repository\Herbarinput\CollectorRepository;
 use JACQ\Service\SpecimenService;
@@ -17,7 +18,7 @@ use Twig\TwigFunction;
 
 class SpecimenExtension extends AbstractExtension
 {
-    public function __construct(protected readonly IiifFacade $iiifFacade, protected readonly EntityManagerInterface $entityManager, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService, protected readonly SpeciesService $taxonService, protected readonly CollectorRepository $collectorRepository)
+    public function __construct(protected readonly IiifFacade $iiifFacade, protected readonly EntityManagerInterface $entityManager, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService, protected readonly SpeciesService $taxonService, protected readonly CollectorRepository $collectorRepository, readonly GeoService $geoService)
     {
     }
 
@@ -132,8 +133,9 @@ class SpecimenExtension extends AbstractExtension
             $text .= $specimen->getProvince()->getName();
         }
 
-        if ($specimen->getLongitude() != null || $specimen->getLatitude() != null) {
-            $text .= " | " . $specimen->getCoords();
+        if ($specimen->hasCoords()) {
+            $coords = $this->geoService->DMSToDecimal($specimen->getDMSCoords());
+            $text .= " | " . round($coords->getLat(),5) . ", " . round($coords->getLng(),5);
         }
         return $text;
     }
