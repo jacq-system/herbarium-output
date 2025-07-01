@@ -158,7 +158,7 @@ class SearchFormFacade
      */
     protected function queryHerbNr(string $value): void
     {
-        $pattern = '/^(?<code>[a-zA-Z]+)\s+(?<rest>.*)$/';
+        $pattern = '/^(?<code>[a-zA-Z]+)\s*(?<rest>.*)$/';
         $this->queryBuilder->andWhere('s.herbNumber LIKE :herbNr');
         if (preg_match($pattern, $value, $matches)) {
             if (empty($this->searchFormSessionService->getFilter('institution'))) {
