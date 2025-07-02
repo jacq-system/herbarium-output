@@ -165,9 +165,9 @@ class SearchFormFacade
                 $institution = $this->entityManager->getRepository(Institution::class)->findOneBy(['code' => $matches['code']]);
                 $this->queryInstitution($institution->getId());
             }
-            $this->queryBuilder->setParameter('herbNr', '%' . $matches['rest']);
+            $this->queryBuilder->setParameter('herbNr', $matches['rest'] . '%');
         } else {
-            $this->queryBuilder->setParameter('herbNr', '%' . $value);
+            $this->queryBuilder->setParameter('herbNr', $value . '%');
         }
 
     }
