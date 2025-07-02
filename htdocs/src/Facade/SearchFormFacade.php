@@ -158,16 +158,16 @@ class SearchFormFacade
      */
     protected function queryHerbNr(string $value): void
     {
-        $pattern = '/^(?<code>[a-zA-Z]+)\s+(?<rest>.*)$/';
+        $pattern = '/^(?<code>[a-zA-Z]+)\s*(?<rest>.*)$/';
         $this->queryBuilder->andWhere('s.herbNumber LIKE :herbNr');
         if (preg_match($pattern, $value, $matches)) {
             if (empty($this->searchFormSessionService->getFilter('institution'))) {
                 $institution = $this->entityManager->getRepository(Institution::class)->findOneBy(['code' => $matches['code']]);
                 $this->queryInstitution($institution->getId());
             }
-            $this->queryBuilder->setParameter('herbNr', '%' . $matches['rest']);
+            $this->queryBuilder->setParameter('herbNr', $matches['rest'] . '%');
         } else {
-            $this->queryBuilder->setParameter('herbNr', '%' . $value);
+            $this->queryBuilder->setParameter('herbNr', $value . '%');
         }
 
     }
