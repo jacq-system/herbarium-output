@@ -189,7 +189,7 @@ class SearchFormFacade
 
             $number = (strlen($rest) >= 6) ? $rest : sprintf('%06d', (int)$rest);
 
-            $like = $prefix . '%' . $number . $trailing . '%';
+            $like = $prefix . '%' . $number . $trailing;
 
             $this->queryBuilder->setParameter('herbNr', $like);
 
