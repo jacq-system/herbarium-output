@@ -154,20 +154,54 @@ class SearchFormFacade
     }
 
     /**
-     * simplified. Original code searched also in collectorNr for example. Let's use just trim the institution code and do simple fulltext
+     * complex (see https://github.com/jacq-system/herbarium-output/issues/36)
      */
     protected function queryHerbNr(string $value): void
     {
         $pattern = '/^(?<code>[a-zA-Z]+)\s*(?<rest>.*)$/';
-        $this->queryBuilder->andWhere('s.herbNumber LIKE :herbNr');
-        if (preg_match($pattern, $value, $matches)) {
+        if (!preg_match($pattern, $value, $matches)) {
+            //only number
+            $this->queryBuilder->andWhere('s.herbNumber LIKE :herbNr');
+            $this->queryBuilder->setParameter('herbNr', '%' . $value . '%');
+        } else {
             if (empty($this->searchFormSessionService->getFilter('institution'))) {
                 $institution = $this->entityManager->getRepository(Institution::class)->findOneBy(['code' => $matches['code']]);
                 $this->queryInstitution($institution->getId());
             }
-            $this->queryBuilder->setParameter('herbNr', '%' . $matches['rest'] . '%');
-        } else {
-            $this->queryBuilder->setParameter('herbNr', '%' . $value . '%');
+            $rest = trim($matches['rest']);
+            $trailing = '';
+            if (ctype_alpha(substr($rest, -1))) {
+                for ($i = strlen($rest) - 2; $i >= 0; $i--) {
+                    $checkChar = $rest[$i];
+                    if (!ctype_alpha($checkChar) && $checkChar !== '-') {
+                        break;
+                    }
+                }
+                $trailing = substr($rest, $i + 1);
+                $rest = substr($rest, 0, $i + 1);
+            }
+
+            $prefix = '';
+            if (strpos($rest, '-') === 4) {// contents of search is ####-#... so, look also inside "CollNummer" (relevant for source-ID 6 = W)
+                $prefix = substr($rest, 0, 5); // 1234-
+                $rest = substr($rest, 5);
+            }
+
+            $number = (strlen($rest) >= 6) ? $rest : sprintf('%06d', (int)$rest);
+
+            $like = $prefix . '%' . $number . $trailing . '%';
+
+            $this->queryBuilder->setParameter('herbNr', $like);
+
+            if (!empty($prefix)) {
+                $this->queryBuilder->andWhere(
+                    $this->queryBuilder->expr()->orX(
+                        $this->queryBuilder->expr()->like('s.herbNumber', ':herbNr'),
+                        $this->queryBuilder->expr()->like('s.collectionNumber', ':herbNr')
+                    ));
+            } else {
+                $this->queryBuilder->andWhere('s.herbNumber LIKE :herbNr');
+            }
         }
 
     }
