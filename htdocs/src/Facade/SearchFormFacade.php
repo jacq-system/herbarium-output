@@ -535,7 +535,7 @@ class SearchFormFacade
         if ($limit) {
             $this->queryBuilder->setMaxResults($limit);
         }
-        if ($onlyWithCoords){
+        if ($onlyWithCoords) {
             $this->queryCoords();
         }
         return $this->queryBuilder->getQuery()->getResult();
@@ -613,15 +613,26 @@ class SearchFormFacade
 
     }
 
-    public function getKmlExport(): string
+    public function searchForKmlExport(bool $reduced = false): \Generator
     {
-        $text = '';
-        $specimens = $this->searchForExport(null, true);
-        foreach ($specimens as $specimen) {
-            $text .= $this->kmlService->prepareRow($specimen);
+        $this->buildQuery();
+        $this->queryCoords();
+        if (!$reduced) {
+            $this->queryBuilder->setMaxResults(KmlService::EXPORT_LIMIT);
         }
-
-        return $this->kmlService->export($text);
+        $iterableResult = $this->queryBuilder->getQuery()->toIterable();
+        $i = 0;
+        foreach ($iterableResult as $row) {
+            if ($reduced) {
+                yield $this->kmlService->prepareRowReduced($row);
+            } else {
+                yield $this->kmlService->prepareRow($row);
+            }
+            if (++$i % 300 === 0) {
+                $this->entityManager->clear();
+            }
+        }
+        $this->entityManager->clear();
     }
 
 }

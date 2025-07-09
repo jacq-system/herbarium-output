@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
+use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -132,10 +133,61 @@ class SearchFormController extends AbstractController
     }
 
     #[Route('/exportKml', name: 'output_exportKml', methods: ['GET'])]
-    public function exportKml(): Response
+    public function exportKml(?Profiler $profiler): Response
     {
-        $kmlContent = $this->searchFormFacade->getKmlExport();
-        $response = new Response($kmlContent);
+        if ($profiler !== null) {
+            $profiler->disable();
+        }
+        $response = new StreamedResponse(function () {
+            $handle = fopen('php://output', 'w');
+
+            fwrite($handle, <<<KML
+<?xml version="1.0" encoding="UTF-8"?><kml xmlns="https://www.opengis.net/kml/2.2"><Document><description>search results Virtual Herbaria</description>
+KML);
+
+            foreach ($this->searchFormFacade->searchForKmlExport() as $placemark) {
+                fwrite($handle, $placemark . "\n");
+            }
+
+            fwrite($handle, <<<KML
+</Document>
+</kml>
+KML);
+
+            fclose($handle);
+        });
+
+        $response->headers->set('Content-Type', 'application/vnd.google-earth.kml+xml');
+        $response->headers->set('Content-Disposition', 'attachment; filename="specimens_download.kml"');
+
+        return $response;
+    }
+
+    #[Route('/exportKmlLimited', name: 'output_exportKmlLimited', methods: ['GET'])]
+    public function exportKmlLimited(?Profiler $profiler): Response
+    {
+        if ($profiler !== null) {
+            $profiler->disable();
+        }
+        $response = new StreamedResponse(function () {
+            $handle = fopen('php://output', 'w');
+
+            fwrite($handle, <<<KML
+<?xml version="1.0" encoding="UTF-8"?><kml xmlns="https://www.opengis.net/kml/2.2"><Document><description>search results Virtual Herbaria</description>
+KML);
+
+            foreach ($this->searchFormFacade->searchForKmlExport(true) as $placemark) {
+                fwrite($handle, $placemark . "\n");
+            }
+
+            fwrite($handle, <<<KML
+</Document>
+</kml>
+KML);
+
+            fclose($handle);
+        });
+
         $response->headers->set('Content-Type', 'application/vnd.google-earth.kml+xml');
         $response->headers->set('Content-Disposition', 'attachment; filename="specimens_download.kml"');
 

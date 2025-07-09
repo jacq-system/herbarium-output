@@ -6,21 +6,14 @@ use JACQ\Entity\Jacq\Herbarinput\Specimens;
 use JACQ\Service\SpeciesService;
 use JACQ\Service\SpecimenService;
 
-class KmlService
+readonly class KmlService
 {
     public const int EXPORT_LIMIT = 1500;
 
-    protected string $head = '<?xml version="1.0" encoding="UTF-8"?><kml xmlns="https://www.opengis.net/kml/2.2"><Document><description>search results Virtual Herbaria</description>';
-    protected string $foot = '</Document></kml>';
-
-    public function __construct(protected readonly SpecimenService $specimenService, protected readonly SpeciesService $taxonService)
+    public function __construct(protected SpecimenService $specimenService, protected SpeciesService $taxonService)
     {
     }
 
-    public function export(string $text): string
-    {
-        return $this->head . $text. $this->foot;
-    }
 
     public function prepareRow(Specimens $specimen): string
     {
@@ -48,6 +41,18 @@ class KmlService
                 . "      <a href=\"".$this->specimenService->getStableIdentifier($specimen). "\">link</a>\n"
                 . "    ]]>\n"
                 . "  </description>\n"
+                . "  <Point>\n"
+                . "    <coordinates>".$specimen->getLongitude().','.$specimen->getLatitude()."</coordinates>\n"
+                . "  </Point>\n"
+                . "</Placemark>\n";
+        }
+        return '';
+    }
+    public function prepareRowReduced(Specimens $specimen): string
+    {
+        if ($specimen->getLatitude() !== null && $specimen->getLongitude() !== null) {
+            return "<Placemark>\n"
+                . "  <name>" .$specimen->getId() . "</name>\n"
                 . "  <Point>\n"
                 . "    <coordinates>".$specimen->getLongitude().','.$specimen->getLatitude()."</coordinates>\n"
                 . "  </Point>\n"
