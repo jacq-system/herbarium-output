@@ -535,24 +535,10 @@ class SearchFormFacade
         if ($limit) {
             $this->queryBuilder->setMaxResults($limit);
         }
-        if ($onlyWithCoords){
+        if ($onlyWithCoords) {
             $this->queryCoords();
         }
         return $this->queryBuilder->getQuery()->getResult();
-    }
-    public function searchForKmlExport(): \Generator
-    {
-        $this->buildQuery();
-        $this->queryCoords();
-        $iterableResult =  $this->queryBuilder->getQuery()->toIterable();
-        $i = 0;
-        foreach ($iterableResult as $row) {
-            yield $this->kmlService->prepareRow($row);
-            if (++$i % 300 === 0) {
-                $this->entityManager->clear();
-            }
-        }
-        $this->entityManager->clear();
     }
 
     protected function prepareRowForExport(Specimens $specimen): array
@@ -625,6 +611,28 @@ class SearchFormFacade
             $this->specimenService->getStableIdentifier($specimen)
         ];
 
+    }
+
+    public function searchForKmlExport(bool $reduced = false): \Generator
+    {
+        $this->buildQuery();
+        $this->queryCoords();
+        if (!$reduced) {
+            $this->queryBuilder->setMaxResults(KmlService::EXPORT_LIMIT);
+        }
+        $iterableResult = $this->queryBuilder->getQuery()->toIterable();
+        $i = 0;
+        foreach ($iterableResult as $row) {
+            if ($reduced) {
+                yield $this->kmlService->prepareRowReduced($row);
+            } else {
+                yield $this->kmlService->prepareRow($row);
+            }
+            if (++$i % 300 === 0) {
+                $this->entityManager->clear();
+            }
+        }
+        $this->entityManager->clear();
     }
 
 }

@@ -163,6 +163,37 @@ KML);
         return $response;
     }
 
+    #[Route('/exportKmlLimited', name: 'output_exportKmlLimited', methods: ['GET'])]
+    public function exportKmlLimited(?Profiler $profiler): Response
+    {
+        if ($profiler !== null) {
+            $profiler->disable();
+        }
+        $response = new StreamedResponse(function () {
+            $handle = fopen('php://output', 'w');
+
+            fwrite($handle, <<<KML
+<?xml version="1.0" encoding="UTF-8"?><kml xmlns="https://www.opengis.net/kml/2.2"><Document><description>search results Virtual Herbaria</description>
+KML);
+
+            foreach ($this->searchFormFacade->searchForKmlExport(true) as $placemark) {
+                fwrite($handle, $placemark . "\n");
+            }
+
+            fwrite($handle, <<<KML
+</Document>
+</kml>
+KML);
+
+            fclose($handle);
+        });
+
+        $response->headers->set('Content-Type', 'application/vnd.google-earth.kml+xml');
+        $response->headers->set('Content-Disposition', 'attachment; filename="specimens_download.kml"');
+
+        return $response;
+    }
+
     #[Route('/exportExcel', name: 'output_exportExcel', methods: ['GET'])]
     public function exportExcel(): Response
     {

@@ -8,6 +8,7 @@ use JACQ\Service\SpecimenService;
 
 readonly class KmlService
 {
+    public const int EXPORT_LIMIT = 1500;
 
     public function __construct(protected SpecimenService $specimenService, protected SpeciesService $taxonService)
     {
@@ -40,6 +41,18 @@ readonly class KmlService
                 . "      <a href=\"".$this->specimenService->getStableIdentifier($specimen). "\">link</a>\n"
                 . "    ]]>\n"
                 . "  </description>\n"
+                . "  <Point>\n"
+                . "    <coordinates>".$specimen->getLongitude().','.$specimen->getLatitude()."</coordinates>\n"
+                . "  </Point>\n"
+                . "</Placemark>\n";
+        }
+        return '';
+    }
+    public function prepareRowReduced(Specimens $specimen): string
+    {
+        if ($specimen->getLatitude() !== null && $specimen->getLongitude() !== null) {
+            return "<Placemark>\n"
+                . "  <name>" .$specimen->getId() . "</name>\n"
                 . "  <Point>\n"
                 . "    <coordinates>".$specimen->getLongitude().','.$specimen->getLatitude()."</coordinates>\n"
                 . "  </Point>\n"

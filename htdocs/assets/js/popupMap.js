@@ -89,19 +89,53 @@ export default function popupMap() {
         let kmlUrl = document.getElementById('specimensMapTrigger').dataset.kmlsource;
         omnivore.kml(kmlUrl)
             .on('ready', function () {
-                // mapContainer.innerHTML = '';
                 mapInstance.invalidateSize();
                 mapInstance.fitBounds(this.getBounds());
+
                 this.eachLayer(function (layer) {
                     if (layer.feature && layer.feature.properties) {
-                        const { name, description } = layer.feature.properties;
-                        layer.bindPopup(`
-                    <b>${name || 'specimen'}</b><br>
-                    ${description || ''}
-                `);
+                        const { name } = layer.feature.properties;
+
+                        layer.bindPopup('Loading details about specimen...');
+                        layer.on('click', function () {
+                            fetch(`https://services.jacq.org/jacq-services/rest/objects/specimens/${name}`)
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error('Error during data retrieval');
+                                    }
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    const dc = data.dc;
+                                    const dwc = data.dwc;
+                                    const jacq = data.jacq;
+
+                                    const title = jacq['jacq:scientificName'] || '';
+                                    // const image = jacq['jacq:image']; //${image ? `<img src="${image}" alt="specimen" style="margin-top:10px; max-width:100%; height:auto;">` : ''}
+                                    const detailLink = jacq['jacq:stableIdentifier'];
+                                    const locality = dwc['dwc:locality'] || '';
+                                    const collector = dwc['dwc:recordedBy'] || '';
+
+                                    const popupContent = `
+                        <div style="min-width: 250px;">
+                            <b>${title}</b><br>
+                            <em>${locality}</em><br>
+                            <span>Collector: ${collector}</span><br>
+                            <br><a href="${detailLink}" target="_blank" style="display:inline-block;margin-top:8px;">Show detail</a>
+                        </div>
+                    `;
+                                    layer.getPopup().setContent(popupContent).update();
+                                })
+                                .catch(error => {
+                                    console.error(error);
+                                    layer.getPopup().setContent('<span style="color:red;">Error during data retrieval.</span>').update();
+                                });
+                        });
+
                         markerCluster.addLayer(layer);
                     }
                 });
+
                 mapInstance.addLayer(markerCluster);
             })
             .on('error', function () {
