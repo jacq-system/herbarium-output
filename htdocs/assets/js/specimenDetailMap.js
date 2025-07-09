@@ -2,6 +2,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import markerIcon from 'leaflet/dist/images/marker-icon-2x.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import 'leaflet.fullscreen/Control.FullScreen.css';
+import 'leaflet.fullscreen';
 
 export default function specimenMap() {
 
@@ -21,7 +23,9 @@ export default function specimenMap() {
 
     setTimeout(() => {
 
-        const mapInstance = L.map('map').setView([lat, lng], 13);
+        const mapInstance = L.map('map',
+            { fullscreenControl: true}
+        ).setView([lat, lng], 13);
 
         L.Icon.Default.mergeOptions({
             iconUrl: markerIcon,

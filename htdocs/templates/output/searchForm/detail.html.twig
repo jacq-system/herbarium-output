@@ -156,7 +156,7 @@
                         </div>
                         <div class="col s12 m9">
                             {% if specimen.hasCoords() %}
-                                <div id="map" style="height: 200px; width: 80%;"
+                                <div id="map" style="height: 300px; max-width: 600px"
                                      data-gps="{{ specimen.getCoords() }}"></div>
                             {% endif %}
                             <h6>{{ specimen | localityLong | raw }}</h6></div>
