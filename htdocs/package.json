@@ -5,6 +5,7 @@
     "leaflet": "^1.9",
     "leaflet-omnivore": "^0.3",
     "leaflet.markercluster": "^1.5",
+    "leaflet.fullscreen": "^4",
     "materialize-css": "^1",
     "d3": "^7"
   },

@@ -529,11 +529,14 @@ class SearchFormFacade
         return $rows;
     }
 
-    public function searchForExport(?int $limit = null): array
+    public function searchForExport(?int $limit = null, bool $onlyWithCoords = false): array
     {
         $this->buildQuery();
         if ($limit) {
             $this->queryBuilder->setMaxResults($limit);
+        }
+        if ($onlyWithCoords){
+            $this->queryCoords();
         }
         return $this->queryBuilder->getQuery()->getResult();
     }
@@ -613,7 +616,7 @@ class SearchFormFacade
     public function getKmlExport(): string
     {
         $text = '';
-        $specimens = $this->searchForExport(KmlService::EXPORT_LIMIT);
+        $specimens = $this->searchForExport(null, true);
         foreach ($specimens as $specimen) {
             $text .= $this->kmlService->prepareRow($specimen);
         }
