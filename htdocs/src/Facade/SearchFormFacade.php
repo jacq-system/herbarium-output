@@ -540,6 +540,20 @@ class SearchFormFacade
         }
         return $this->queryBuilder->getQuery()->getResult();
     }
+    public function searchForKmlExport(): \Generator
+    {
+        $this->buildQuery();
+        $this->queryCoords();
+        $iterableResult =  $this->queryBuilder->getQuery()->toIterable();
+        $i = 0;
+        foreach ($iterableResult as $row) {
+            yield $this->kmlService->prepareRow($row);
+            if (++$i % 300 === 0) {
+                $this->entityManager->clear();
+            }
+        }
+        $this->entityManager->clear();
+    }
 
     protected function prepareRowForExport(Specimens $specimen): array
     {
@@ -611,17 +625,6 @@ class SearchFormFacade
             $this->specimenService->getStableIdentifier($specimen)
         ];
 
-    }
-
-    public function getKmlExport(): string
-    {
-        $text = '';
-        $specimens = $this->searchForExport(null, true);
-        foreach ($specimens as $specimen) {
-            $text .= $this->kmlService->prepareRow($specimen);
-        }
-
-        return $this->kmlService->export($text);
     }
 
 }
