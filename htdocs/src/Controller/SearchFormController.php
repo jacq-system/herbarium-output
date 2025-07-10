@@ -56,7 +56,7 @@ class SearchFormController extends AbstractController
                 return $this->herbCollectionRepository->getAllAsPairs();
             });
         } else {
-            $collections = $this->herbCollectionRepository->getAllAsPairs((int) $this->sessionService->getFilter('institution'));
+            $collections = $this->herbCollectionRepository->getAllAsPairs((int)$this->sessionService->getFilter('institution'));
         }
 
 
@@ -143,7 +143,8 @@ class SearchFormController extends AbstractController
 
             fwrite($handle, <<<KML
 <?xml version="1.0" encoding="UTF-8"?><kml xmlns="https://www.opengis.net/kml/2.2"><Document><description>search results Virtual Herbaria</description>
-KML);
+KML
+            );
 
             foreach ($this->searchFormFacade->searchForKmlExport() as $placemark) {
                 fwrite($handle, $placemark . "\n");
@@ -152,7 +153,8 @@ KML);
             fwrite($handle, <<<KML
 </Document>
 </kml>
-KML);
+KML
+            );
 
             fclose($handle);
         });
@@ -163,35 +165,17 @@ KML);
         return $response;
     }
 
-    #[Route('/exportKmlLimited', name: 'output_exportKmlLimited', methods: ['GET'])]
-    public function exportKmlLimited(?Profiler $profiler): Response
+    #[Route('/exportGeoJson', name: 'output_exportGeoJson', methods: ['GET'])]
+    public function exportGeoJson(): Response
     {
-        if ($profiler !== null) {
-            $profiler->disable();
-        }
-        $response = new StreamedResponse(function () {
-            $handle = fopen('php://output', 'w');
-
-            fwrite($handle, <<<KML
-<?xml version="1.0" encoding="UTF-8"?><kml xmlns="https://www.opengis.net/kml/2.2"><Document><description>search results Virtual Herbaria</description>
-KML);
-
-            foreach ($this->searchFormFacade->searchForKmlExport(true) as $placemark) {
-                fwrite($handle, $placemark . "\n");
+        return new StreamedResponse(function () {
+            foreach ($this->searchFormFacade->searchForGeoJson() as $chunk) {
+                echo $chunk;
+                flush();
             }
-
-            fwrite($handle, <<<KML
-</Document>
-</kml>
-KML);
-
-            fclose($handle);
-        });
-
-        $response->headers->set('Content-Type', 'application/vnd.google-earth.kml+xml');
-        $response->headers->set('Content-Disposition', 'attachment; filename="specimens_download.kml"');
-
-        return $response;
+        }, 200, [
+            'Content-Type' => 'application/json',
+        ]);
     }
 
     #[Route('/exportExcel', name: 'output_exportExcel', methods: ['GET'])]
