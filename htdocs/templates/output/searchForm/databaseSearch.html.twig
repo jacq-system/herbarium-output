@@ -7,9 +7,9 @@
 <div class="row">
     <div class="s12 m8 col offset-m2">
         <br>
-        <button id="specimensMapTrigger" class="btn waves-effect tooltipped" type="button"  value="Create map" data-position="bottom" data-tooltip="Map view is not limited, it could hang some moment." data-kmlsource="{{ path('output_exportKml') }}">Create map</button>
+        <button id="specimensMapTrigger" class="btn waves-effect tooltipped" type="button"  value="Create map" data-position="bottom" data-tooltip="Map view is not limited, it could hang some moment." data-source="{{ path('output_exportGeoJson') }}">Create map</button>
         <a href="{{ path('output_exportKml') }}" download>
-            <button class="btn waves-effect tooltipped" data-position="bottom" data-tooltip="Download is not limited, it could hang some moment.">Download KML</button>
+            <button class="btn waves-effect tooltipped" data-position="bottom" data-tooltip="Download is limited to {{ constant('App\\Service\\KmlService::EXPORT_LIMIT') }} rows, takes approx 5 sec.">Download KML</button>
         </a>
         <a href="{{ path('output_exportExcel') }}" download>
             <button class="btn waves-effect tooltipped" data-position="bottom" data-tooltip="Download is limited to {{ constant('App\\Service\\ExcelService::EXPORT_LIMIT') }} rows, takes approx 5 sec.">Download XLSX</button>

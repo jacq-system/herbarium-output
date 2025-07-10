@@ -6,21 +6,14 @@ use JACQ\Entity\Jacq\Herbarinput\Specimens;
 use JACQ\Service\SpeciesService;
 use JACQ\Service\SpecimenService;
 
-class KmlService
+readonly class KmlService
 {
     public const int EXPORT_LIMIT = 1500;
 
-    protected string $head = '<?xml version="1.0" encoding="UTF-8"?><kml xmlns="https://www.opengis.net/kml/2.2"><Document><description>search results Virtual Herbaria</description>';
-    protected string $foot = '</Document></kml>';
-
-    public function __construct(protected readonly SpecimenService $specimenService, protected readonly SpeciesService $taxonService)
+    public function __construct(protected SpecimenService $specimenService, protected SpeciesService $taxonService)
     {
     }
 
-    public function export(string $text): string
-    {
-        return $this->head . $text. $this->foot;
-    }
 
     public function prepareRow(Specimens $specimen): string
     {
@@ -54,6 +47,52 @@ class KmlService
                 . "</Placemark>\n";
         }
         return '';
+    }
+    public function prepareRowReduced(Specimens $specimen): string
+    {
+        if ($specimen->getLatitude() !== null && $specimen->getLongitude() !== null) {
+            return "<Placemark>\n"
+                . "  <name>" .$specimen->getId() . "</name>\n"
+                . "  <Point>\n"
+                . "    <coordinates>".$specimen->getLongitude().','.$specimen->getLatitude()."</coordinates>\n"
+                . "  </Point>\n"
+                . "</Placemark>\n";
+        }
+        return '';
+    }
+
+    public function makeGeoJsonRecord(array $record): array
+    {
+        return [
+            'type' => 'Feature',
+            'geometry' => [
+                'type' => 'Point',
+                'coordinates' => [$this->getLongitude($record), $this->getLatitude($record)],
+            ],
+            'properties' => [
+                'id' => $record['id'],
+            ],
+        ];
+    }
+
+    protected function getLatitude(array $row): ?float
+    {
+        if ($row['Coord_S'] > 0 || $row['S_Min'] > 0 || $row['S_Sec'] > 0) {
+            return -($row['Coord_S'] + $row['S_Min'] / 60 + $row['S_Sec'] / 3600);
+        } else if ($row['Coord_N'] > 0 || $row['N_Min'] > 0 || $row['N_Sec'] > 0) {
+            return $row['Coord_N'] + $row['N_Min'] / 60 + $row['N_Sec'] / 3600;
+        }
+        return null;
+    }
+
+    protected function getLongitude(array $row): ?float
+    {
+        if ($row['Coord_W'] > 0 || $row['W_Min'] > 0 || $row['W_Sec'] > 0) {
+            return -($row['Coord_W'] + $row['W_Min'] / 60 + $row['W_Sec'] / 3600);
+        } else if ($row['Coord_E'] > 0 || $row['E_Min'] > 0 || $row['E_Sec'] > 0) {
+            return $row['Coord_E'] + $row['E_Min'] / 60 + $row['E_Sec'] / 3600;
+        }
+        return null;
     }
 
      protected function addLine(?string $value):string

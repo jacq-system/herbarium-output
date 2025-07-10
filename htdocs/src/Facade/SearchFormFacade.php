@@ -7,6 +7,7 @@ use App\Service\ExcelService;
 use App\Service\KmlService;
 use App\Service\SearchFormSessionService;
 use Doctrine\Common\Collections\Order;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use JACQ\Entity\Jacq\Herbarinput\Institution;
@@ -535,7 +536,7 @@ class SearchFormFacade
         if ($limit) {
             $this->queryBuilder->setMaxResults($limit);
         }
-        if ($onlyWithCoords){
+        if ($onlyWithCoords) {
             $this->queryCoords();
         }
         return $this->queryBuilder->getQuery()->getResult();
@@ -613,15 +614,71 @@ class SearchFormFacade
 
     }
 
-    public function getKmlExport(): string
+    public function searchForKmlExport(): \Generator
     {
-        $text = '';
-        $specimens = $this->searchForExport(null, true);
-        foreach ($specimens as $specimen) {
-            $text .= $this->kmlService->prepareRow($specimen);
-        }
+        $this->buildQuery();
+        $this->queryCoords();
+        $this->queryBuilder
+            ->setMaxResults(KmlService::EXPORT_LIMIT)
+            ->resetDQLPart('orderBy');;
 
-        return $this->kmlService->export($text);
+        $iterableResult = $this->queryBuilder->getQuery()->toIterable();
+        $i = 0;
+        foreach ($iterableResult as $row) {
+            yield $this->kmlService->prepareRow($row);
+            if (++$i % 300 === 0) {
+                $this->entityManager->clear();
+            }
+        }
+        $this->entityManager->clear();
+    }
+
+    public function searchForGeoJson(): \Generator
+    {
+        $this->buildQuery();
+        $this->queryCoords();
+        $conn = $this->entityManager->getConnection();
+        yield '{"type":"FeatureCollection","features":[';
+        $first = true;
+        foreach ($this->yieldIdsFromQuery() as $idBatch) {
+            $stmt = $conn->executeQuery(
+                'SELECT specimen_ID as id, Coord_N,N_Min,N_Sec, Coord_S,S_Min,S_Sec, Coord_W,W_Min,W_Sec, Coord_E,E_Min,E_Sec
+         FROM herbarinput.tbl_specimens
+         WHERE specimen_ID IN (?)',
+                [$idBatch],
+                [ArrayParameterType::INTEGER]
+            );
+            foreach ($stmt->iterateAssociative() as $row) {
+                if (!$first) {
+                    yield ',';
+                }
+                $first = false;
+                yield json_encode($this->kmlService->makeGeoJsonRecord($row));
+            }
+        }
+        yield ']}';
+    }
+
+    protected function yieldIdsFromQuery(int $batchSize = 10000): \Generator
+    {
+        $offset = 0;
+
+        while (true) {
+            $batchQb = clone $this->queryBuilder;
+            $batchQb
+                ->setFirstResult($offset)
+                ->setMaxResults($batchSize)
+                ->resetDQLPart('orderBy')
+                ->orderBy('s.id');
+
+            $ids = array_column($batchQb->getQuery()->getArrayResult(), 'id');
+            if (count($ids) === 0) {
+                break;
+            }
+
+            yield $ids;
+            $offset += $batchSize;
+        }
     }
 
 }

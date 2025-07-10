@@ -86,25 +86,63 @@ export default function popupMap() {
 
         let markerCluster = L.markerClusterGroup();
 
-        let kmlUrl = document.getElementById('specimensMapTrigger').dataset.kmlsource;
-        omnivore.kml(kmlUrl)
-            .on('ready', function () {
-                // mapContainer.innerHTML = '';
-                mapInstance.invalidateSize();
-                mapInstance.fitBounds(this.getBounds());
-                this.eachLayer(function (layer) {
-                    if (layer.feature && layer.feature.properties) {
-                        const { name, description } = layer.feature.properties;
-                        layer.bindPopup(`
-                    <b>${name || 'specimen'}</b><br>
-                    ${description || ''}
-                `);
-                        markerCluster.addLayer(layer);
+        const geojsonUrl = element.dataset.source;
+
+        fetch(geojsonUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load GeoJSON');
+                }
+                return response.json();
+            })
+            .then(geojsonData => {
+                const geoJsonLayer = L.geoJSON(geojsonData, {
+                    onEachFeature: function (feature, layer) {
+                        if (feature.properties && feature.properties.id) {
+                            const specimenId = feature.properties.id;
+                            layer.bindPopup('Loading details about specimen...');
+                            layer.on('click', function () {
+                                fetch(`https://services.jacq.org/jacq-services/rest/objects/specimens/${specimenId}`)
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            throw new Error('Error during data retrieval');
+                                        }
+                                        return response.json();
+                                    })
+                                    .then(data => {
+                                        const dc = data.dc;
+                                        const dwc = data.dwc;
+                                        const jacq = data.jacq;
+
+                                        const title = jacq['jacq:scientificName'] || '';
+                                        const detailLink = jacq['jacq:stableIdentifier'];
+                                        const locality = dwc['dwc:locality'] || '';
+                                        const collector = dwc['dwc:recordedBy'] || '';
+
+                                        const popupContent = `
+                                        <div style="min-width: 250px;">
+                                            <b>${title}</b><br>
+                                            <em>${locality}</em><br>
+                                            <span>Collector: ${collector}</span><br>
+                                            <br><a href="${detailLink}" target="_blank" style="display:inline-block;margin-top:8px;">Show detail</a>
+                                        </div>
+                                    `;
+                                        layer.getPopup().setContent(popupContent).update();
+                                    })
+                                    .catch(error => {
+                                        console.error(error);
+                                        layer.getPopup().setContent('<span style="color:red;">Error during data retrieval.</span>').update();
+                                    });
+                            });
+                        }
                     }
                 });
+
+                markerCluster.addLayer(geoJsonLayer);
                 mapInstance.addLayer(markerCluster);
+                mapInstance.fitBounds(markerCluster.getBounds());
             })
-            .on('error', function () {
+            .catch(error => {
                 mapContainer.innerHTML = '<p style="text-align: center; color: red; font-size: 18px; padding-top: 200px;">Error during data loading.</p>';
             });
     });
