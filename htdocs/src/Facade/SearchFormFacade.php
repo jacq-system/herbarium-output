@@ -164,63 +164,102 @@ class SearchFormFacade
             //only number
             $this->queryBuilder->andWhere('s.herbNumber LIKE :herbNr');
             $this->queryBuilder->setParameter('herbNr', '%' . $value . '%');
-        } else {
-            if (empty($this->searchFormSessionService->getFilter('institution'))) {
-                $institution = $this->entityManager->getRepository(Institution::class)->findOneBy(['code' => $matches['code']]);
-                $this->queryInstitution($institution->getId());
-            }
-            $rest = trim($matches['rest']);
-            $trailing = '';
-            if (ctype_alpha(substr($rest, -1))) {
-                for ($i = strlen($rest) - 2; $i >= 0; $i--) {
-                    $checkChar = $rest[$i];
-                    if (!ctype_alpha($checkChar) && $checkChar !== '-') {
-                        break;
-                    }
+            return;
+        }
+        $ids = $this->queryHerbNrSeekCandidates($value, $matches['code'], $matches['rest']);
+        if (count($ids) > 0) {
+            //simple fulltext had found specimen(s)
+            $this->queryBuilder->andWhere('s.id IN (:herbNrIds)');
+            $this->queryBuilder->setParameter('herbNrIds', $ids, ArrayParameterType::INTEGER);
+            return;
+        }
+
+        //fallback to logic from legacy
+        $rest = trim($matches['rest']);
+        $trailing = '';
+        if (ctype_alpha(substr($rest, -1))) {
+            for ($i = strlen($rest) - 2; $i >= 0; $i--) {
+                $checkChar = $rest[$i];
+                if (!ctype_alpha($checkChar) && $checkChar !== '-') {
+                    break;
                 }
-                $trailing = substr($rest, $i + 1);
-                $rest = substr($rest, 0, $i + 1);
             }
+            $trailing = substr($rest, $i + 1);
+            $rest = substr($rest, 0, $i + 1);
+        }
 
-            $prefix = '';
-            if (strpos($rest, '-') === 4) {// contents of search is ####-#... so, look also inside "CollNummer" (relevant for source-ID 6 = W)
-                $prefix = substr($rest, 0, 5); // 1234-
-                $rest = substr($rest, 5);
-            }
+        $prefix = '';
+        if (strpos($rest, '-') === 4) {// contents of search is ####-#... so, look also inside "CollNummer" (relevant for source-ID 6 = W)
+            $prefix = substr($rest, 0, 5); // 1234-
+            $rest = substr($rest, 5);
+        }
 
-            $number = (strlen($rest) >= 6) ? $rest : sprintf('%06d', (int)$rest);
+        $number = (strlen($rest) >= 6) ? $rest : sprintf('%06d', (int)$rest);
 
-            $like = $prefix . '%' . $number . $trailing;
+        $like = $prefix . '%' . $number . $trailing;
 
-            $this->queryBuilder->setParameter('herbNr', $like);
+        $this->queryBuilder->setParameter('herbNr', $like);
 
-            if (!empty($prefix)) {
-                $this->queryBuilder->andWhere(
-                    $this->queryBuilder->expr()->orX(
-                        $this->queryBuilder->expr()->like('s.herbNumber', ':herbNr'),
-                        $this->queryBuilder->expr()->like('s.collectionNumber', ':herbNr')
-                    ));
-            } else {
-                $this->queryBuilder->andWhere('s.herbNumber LIKE :herbNr');
-            }
+        if (!empty($prefix)) {
+            $this->queryBuilder->andWhere(
+                $this->queryBuilder->expr()->orX(
+                    $this->queryBuilder->expr()->like('s.herbNumber', ':herbNr'),
+                    $this->queryBuilder->expr()->like('s.collectionNumber', ':herbNr')
+                ));
+        } else {
+            $this->queryBuilder->andWhere('s.herbNumber LIKE :herbNr');
         }
 
     }
 
+    protected function queryHerbNrSeekCandidates(string $originalValue, string $code, string $rest): array
+    {
+        $subquery = $this->entityManager
+            ->getRepository(Specimens::class)
+            ->createQueryBuilder('s')
+            ->select('s.id');
+
+        $subquery = $subquery->andWhere(
+            $subquery->expr()->orX(
+                's.herbNumber LIKE :herbNrRest',
+                's.herbNumber LIKE :herbNrFull'
+            )
+        )
+            ->setParameter('herbNrRest', $rest . '%')
+            ->setParameter('herbNrFull', $originalValue . '%');
+        if (empty($this->searchFormSessionService->getFilter('institution'))) {
+            $institution = $this->entityManager->getRepository(Institution::class)->findOneBy(['code' => $code]);
+            if ($institution !== null) {
+                $this->queryInstitution($institution->getId());
+                $subquery = $subquery
+                    ->join('s.herbCollection', 'c')
+                    ->join('c.institution', 'i')
+                    ->andWhere('i.id = :institution')
+                    ->setParameter('institution', $institution->getId());
+            }
+        }
+
+        return array_column($subquery->getQuery()->getArrayResult(), 'id');
+    }
+
     protected function queryCollectorNr(string $id): void
     {
+        $conditions = [];
+
+        if (ctype_digit($id)) {
+            $conditions[] = $this->queryBuilder->expr()->eq('s.number', ':id');
+            $this->queryBuilder->setParameter('id', (int) $id);
+        }
+
         $likeParameter = "%" . $id . "%";
+        $conditions[] = $this->queryBuilder->expr()->like('s.altNumber', ':idLike');
+        $conditions[] = $this->queryBuilder->expr()->like('s.seriesNumber', ':idLike');
+
         $this->queryBuilder
-            ->andWhere(
-                $this->queryBuilder->expr()->orX(
-                    $this->queryBuilder->expr()->eq('s.number', ':id'),
-                    $this->queryBuilder->expr()->like('s.altNumber', ':idLike'),
-                    $this->queryBuilder->expr()->like('s.seriesNumber', ':idLike')
-                )
-            )
-            ->setParameter('id', $id)
+            ->andWhere($this->queryBuilder->expr()->orX(...$conditions))
             ->setParameter('idLike', $likeParameter);
     }
+
 
     protected function queryCollector(string $id): void
     {
@@ -232,10 +271,15 @@ class SearchFormFacade
         if (!empty($this->getCollector2Ids($id))) {
             $conditions[] = $this->queryBuilder->expr()->in('s.collector2', $this->getCollector2Ids($id));
         }
+        if ($conditions === []) {
+            $this->queryBuilder->andWhere('1 = 0');
+            return;
+        }
 
         $this->queryBuilder->andWhere(
             $this->queryBuilder->expr()->orX(...$conditions)
         );
+
     }
 
     protected function getCollectorIds(string $id): array
