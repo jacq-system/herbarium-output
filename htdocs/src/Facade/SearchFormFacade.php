@@ -219,14 +219,21 @@ class SearchFormFacade
             ->createQueryBuilder('s')
             ->select('s.id');
 
-        $subquery = $subquery->andWhere(
-            $subquery->expr()->orX(
-                's.herbNumber LIKE :herbNrRest',
-                's.herbNumber LIKE :herbNrFull'
+        if (empty($rest)) {
+            $subquery = $subquery->andWhere('s.herbNumber LIKE :herbNrFull')
+                ->setParameter('herbNrFull', $originalValue . '%');
+        } else {
+
+            $subquery = $subquery->andWhere(
+                $subquery->expr()->orX(
+                    's.herbNumber LIKE :herbNrRest',
+                    's.herbNumber LIKE :herbNrFull'
+                )
             )
-        )
-            ->setParameter('herbNrRest', $rest . '%')
-            ->setParameter('herbNrFull', $originalValue . '%');
+                ->setParameter('herbNrRest', $rest . '%')
+                ->setParameter('herbNrFull', $originalValue . '%');
+        }
+
         if (empty($this->searchFormSessionService->getFilter('institution'))) {
             $institution = $this->entityManager->getRepository(Institution::class)->findOneBy(['code' => $code]);
             if ($institution !== null) {
@@ -239,7 +246,7 @@ class SearchFormFacade
             }
         }
 
-        return array_column($subquery->getQuery()->getArrayResult(), 'id');
+        return $subquery->getQuery()->getSingleColumnResult();
     }
 
     protected function queryCollectorNr(string $id): void
@@ -248,7 +255,7 @@ class SearchFormFacade
 
         if (ctype_digit($id)) {
             $conditions[] = $this->queryBuilder->expr()->eq('s.number', ':id');
-            $this->queryBuilder->setParameter('id', (int) $id);
+            $this->queryBuilder->setParameter('id', (int)$id);
         }
 
         $likeParameter = "%" . $id . "%";
