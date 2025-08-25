@@ -60,7 +60,7 @@ export default function popupMap() {
     //map for all specimens
     const element = document.getElementById('specimensMapTrigger');
     element.addEventListener('click', function () {
-
+        document.body.style.cursor = 'wait';
         const modalInstance = M.Modal.getInstance(document.getElementById('map-modal'));
         modalInstance.open();
 
@@ -141,9 +141,11 @@ export default function popupMap() {
                 markerCluster.addLayer(geoJsonLayer);
                 mapInstance.addLayer(markerCluster);
                 mapInstance.fitBounds(markerCluster.getBounds());
+                document.body.style.cursor = 'default';
             })
             .catch(error => {
                 mapContainer.innerHTML = '<p style="text-align: center; color: red; font-size: 18px; padding-top: 200px;">Error during data loading.</p>';
+                document.body.style.cursor = 'default';
             });
     });
 }
