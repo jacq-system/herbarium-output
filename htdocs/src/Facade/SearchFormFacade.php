@@ -244,18 +244,22 @@ class SearchFormFacade
 
     protected function queryCollectorNr(string $id): void
     {
+        $conditions = [];
+
+        if (ctype_digit($id)) {
+            $conditions[] = $this->queryBuilder->expr()->eq('s.number', ':id');
+            $this->queryBuilder->setParameter('id', (int) $id);
+        }
+
         $likeParameter = "%" . $id . "%";
+        $conditions[] = $this->queryBuilder->expr()->like('s.altNumber', ':idLike');
+        $conditions[] = $this->queryBuilder->expr()->like('s.seriesNumber', ':idLike');
+
         $this->queryBuilder
-            ->andWhere(
-                $this->queryBuilder->expr()->orX(
-                    $this->queryBuilder->expr()->eq('s.number', ':id'),
-                    $this->queryBuilder->expr()->like('s.altNumber', ':idLike'),
-                    $this->queryBuilder->expr()->like('s.seriesNumber', ':idLike')
-                )
-            )
-            ->setParameter('id', $id)
+            ->andWhere($this->queryBuilder->expr()->orX(...$conditions))
             ->setParameter('idLike', $likeParameter);
     }
+
 
     protected function queryCollector(string $id): void
     {
@@ -267,10 +271,15 @@ class SearchFormFacade
         if (!empty($this->getCollector2Ids($id))) {
             $conditions[] = $this->queryBuilder->expr()->in('s.collector2', $this->getCollector2Ids($id));
         }
+        if ($conditions === []) {
+            $this->queryBuilder->andWhere('1 = 0');
+            return;
+        }
 
         $this->queryBuilder->andWhere(
             $this->queryBuilder->expr()->orX(...$conditions)
         );
+
     }
 
     protected function getCollectorIds(string $id): array
