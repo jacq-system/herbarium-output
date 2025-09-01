@@ -20,7 +20,7 @@ jobs:
             id-token: write
         steps:
             -   name: Checkout repository
-                uses: actions/checkout@v4
+                uses: actions/checkout@v5
 
             #install PHP dependencies
             -   name: Setup PHP
@@ -85,14 +85,14 @@ jobs:
 
             #docker image
             -   name: Log in to the Container registry
-                uses: docker/login-action@v3.4.0
+                uses: docker/login-action@v3.5.0
                 with:
                     registry: ${{ env.REGISTRY }}
                     username: ${{ github.actor }}
                     password: ${{ secrets.GITHUB_TOKEN }}
             -   name: Extract metadata (tags, labels) for Docker
                 id: meta
-                uses: docker/metadata-action@v5.7.0
+                uses: docker/metadata-action@v5.8.0
                 with:
                     images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
             -   name: Get git tag
@@ -110,7 +110,7 @@ jobs:
                     build-args: |
                         GIT_TAG=${{ env.TAG }}
             -   name: Generate artifact attestation
-                uses: actions/attest-build-provenance@v2
+                uses: actions/attest-build-provenance@v3
                 with:
                     subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
                     subject-digest: ${{ steps.push.outputs.digest }}
