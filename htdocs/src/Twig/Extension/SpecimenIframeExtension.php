@@ -54,9 +54,6 @@ class SpecimenIframeExtension extends AbstractExtension
             return $this->includeIiif($imageDefinition, $phaidraManifest);
         } elseif ($imageDefinition->isIiifCapable()) {
             return $this->includeIiif($imageDefinition, $this->iiifFacade->resolveManifestUri($specimen));
-        } elseif ($imageDefinition->getServerType() === 'bgbm') {  // but not iiif_capable
-            $bgbm = '?filename=' . rawurlencode(basename((string)$specimen->getId())) . '&sid=' . $specimen->getId();
-            return $this->includeBgbm($bgbm);
         } elseif ($imageDefinition->getServerType() === 'djatoka') {   // but not iiif_capable, so the original one
             $picdetails = $this->imageService->getPicDetails((string)$specimen->getId());
             $transfer = $this->imageService->getPicInfo($picdetails);
@@ -107,22 +104,6 @@ class SpecimenIframeExtension extends AbstractExtension
                     </iframe>
                 </td>
             </tr>
-        </table>";
-    }
-
-    protected function includeBgbm(string $param): string
-    {
-        $baseUrl = $this->router->generate("output_image_endpoint");
-
-        return "<table>
-          <tr>
-            <td>
-              <a href='". $baseUrl."?". $param . "&method=show' target='imgBrowser'>
-                <img src='". $baseUrl."?". $param . "&method=thumb' style='border: 2px;'>
-              </a><br>
-            (<a href='". $baseUrl."?". $param . "&method=show'>Open viewer</a>)
-            </td>
-          </tr>
         </table>";
     }
 
