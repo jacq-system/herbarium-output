@@ -15,4 +15,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // specimenLinks();
     dynamicReferences();
     materializeInit();
+
+    const miradorEl = document.getElementById("mirador");
+    if (miradorEl) {
+        import('./js/specimenDetailMirador')
+            .then(({ default: initMirador }) => {
+                initMirador(miradorEl);
+            })
+            .catch(err => {
+                console.error('Uanble load Mirador:', err);
+            });
+    }
 });

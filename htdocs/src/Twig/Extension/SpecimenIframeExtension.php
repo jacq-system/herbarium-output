@@ -2,7 +2,6 @@
 
 namespace App\Twig\Extension;
 
-use JACQ\Entity\Jacq\Herbarinput\ImageDefinition;
 use JACQ\Entity\Jacq\Herbarinput\Institution;
 use JACQ\Entity\Jacq\Herbarinput\Specimens;
 use JACQ\Enum\JacqRoutesNetwork;
@@ -51,9 +50,9 @@ class SpecimenIframeExtension extends AbstractExtension
             curl_close($ch);
         }
         if ($phaidra) {  // phaidra picture found, use iiif
-            return $this->includeIiif($imageDefinition, $phaidraManifest);
+            return $this->includeIiif($phaidraManifest);
         } elseif ($imageDefinition->isIiifCapable()) {
-            return $this->includeIiif($imageDefinition, $this->iiifFacade->resolveManifestUri($specimen));
+            return $this->includeIiif($this->iiifFacade->resolveManifestUri($specimen));
         } elseif ($imageDefinition->getServerType() === 'djatoka') {   // but not iiif_capable, so the original one
             $picdetails = $this->imageService->getPicDetails((string)$specimen->getId());
             $transfer = $this->imageService->getPicInfo($picdetails);
@@ -90,21 +89,13 @@ class SpecimenIframeExtension extends AbstractExtension
 
     }
 
-    protected function includeIiif(ImageDefinition $imageDefinition, string $manifestUrl): string
+    protected function includeIiif(string $manifestUrl): string
     {
-        return "<table>
-            <tr>
-                <td>
-                    <a href='" . $imageDefinition->getIiifUrl() . "?manifest=" . $manifestUrl . "' target='_blank'>
-                        <img height='15' width='15' src='/recordIcons/logo-iiif.png'>
-                    </a>
-                </td>
-                <td>
-                    <iframe title='Mirador' width='100%' height='800px' src='" . $imageDefinition->getIiifUrl() . "?manifest=" . $manifestUrl . "' allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true'>
-                    </iframe>
-                </td>
-            </tr>
-        </table>";
+        return "
+                <div class='col s12 m12'>
+                    <div id='mirador' style='position: relative;' data-manifestId='" . $manifestUrl . "'></div>
+                </div>
+        ";
     }
 
     protected function includeDjatoka(array $options, ?string $transferInfo, ?string $error): string
