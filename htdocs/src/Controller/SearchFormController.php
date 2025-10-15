@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Facade\SearchFormFacade;
 use App\Service\ExcelService;
 use App\Service\SearchFormSessionService;
+use Doctrine\ORM\EntityNotFoundException;
 use JACQ\Repository\Herbarinput\HerbCollectionRepository;
 use JACQ\Repository\Herbarinput\InstitutionRepository;
 use JACQ\Service\SpecimenService;
@@ -121,7 +122,15 @@ class SearchFormController extends AbstractController
     #[Route('/detail/{specimenId}', name: 'output_specimenDetail', requirements: ['specimenId' => '\d+'], methods: ['GET'])]
     public function detail(int $specimenId): Response
     {
-        $specimen = $this->specimenService->findAccessibleForPublic($specimenId);
+        try {
+            $specimen = $this->specimenService->findAccessibleForPublic($specimenId);
+        } catch (EntityNotFoundException) {
+            $specimen = $this->specimenService->findNonAccessibleForPublic($specimenId);
+            return $this->render('output/searchForm/detail_mids0.html.twig', [
+                'specimen' => $specimen,
+                'pid' => $this->specimenService->getStableIdentifier($specimen)
+            ]);
+        }
         $this->statisticsLogger->info('Specimen [{id},{institution}] detail shown.', [
             'id' => $specimen->getId(),
             'institution' => $specimen->getHerbCollection()->getInstitution()->getAbbreviation()

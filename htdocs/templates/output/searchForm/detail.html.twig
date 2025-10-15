@@ -1,201 +1,188 @@
 {% extends 'output/main.html.twig' %}
 
 {% block main %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col s12 m10 l8 offset-l1 condensed">
+                <div class="row">
+                    <div class="col s12 m3">
+                        <h6>Stable identifiers</h6>
+                    </div>
+                    <div class="col s12 m9"><h6>
+                            {% set stableIdentifiers = specimen.getStableIdentifiers() %}
+                            {% if stableIdentifiers|length > 1 %}
+                                {% for pid in stableIdentifiers %}
+                                    <b><a href="{{ pid.getIdentifier() }}" target="_blank">{{ pid.getIdentifier() }}</a></b>
+                                    ({{ pid.getTimestamp()|date('d-m-Y') }})<br>
+                                {% endfor %}
+                            {% elseif stableIdentifiers|length == 1 %}
+                                {% for pid in stableIdentifiers %}
+                                    <b><a href="{{ pid.getIdentifier() }}" target="_blank">{{ pid.getIdentifier() }}</a></b>
+                                {% endfor %}
+                            {% else %}
+                                {{ constructStableIdentifier(specimen) }}
+                            {% endif %}
+                        </h6></div>
+                </div>
+                <div class="row hide" id="dynamic-references" data-pid="{{ pid }}">
+                    <div class="col s12 m3">
+                        <h6>Related records</h6>
+                    </div>
+                    <div class="col s12 m9"><h6><span id="dynamic-ggbn"></span></h6></div>
+                </div>
+                <div class="row">
+                    <div class="col s12 m3">
+                        <h6>Herbarium #</h6>
+                    </div>
+                    <div class="col s12 m9"><h6>{{ specimen | herbariumNr | raw }}</h6></div>
+                </div>
+                <div class="row">
+                    <div class="col s12 m3">
+                        <h6>Collection #</h6>
+                    </div>
+                    <div class="col s12 m9">
+                        <h6>{{ specimen.getHerbCollection().getName() }} {{ specimen.getCollectionNumber() }}</h6>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s12 m3">
+                        <h6>Stored under taxon name</h6>
+                    </div>
+                    <div class="col s12 m9"><p><b></b></p>
+                        <h6><b>{{ specimen.getSpecies() | taxonName | raw }}</b></h6>
 
-    {% if specimen is null %}
-        <div class="container">
-            <div class="row">
-                {#         TODO this is ackward image #}
-                <img src="{{ asset('recordIcons/not_found.png') }}" alt="image not found">
-            </div>
-        </div>
-    {% elseif specimen.isAccessibleForPublic() == false %}
-        <div class="container">
-
-            <div class="row">
-                {#   TODO this is ackward image and should return http codes, not images.. #}
-                <img src="{{ asset('recordIcons/access_denied.jpg') }}" alt="access denied">
-            </div>
-        </div>
-    {% else %}
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col s12 m10 l8 offset-l1 condensed">
+                        <a href="http://www.tropicos.org/NameSearch.aspx?name={{ specimen.getSpecies().getGenus().getName() }} {{ specimen.getSpecies().getEpithetSpecies() is not null ? specimen.getSpecies().getEpithetSpecies().getName() }}&exact=true"
+                           title="Search in tropicos" target="_blank">
+                            <img alt="tropicos" src="{{ asset('recordIcons/tropicos.png') }}" width="16"
+                                 height="16">
+                        </a>
+                        {{ specimen.getSpecies() | taxonAuthority | raw | nl2br }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s12 m3">
+                        <h6>Family</h6>
+                    </div>
+                    <div class="col s12 m9"><h6>{{ specimen.getSpecies().getGenus().getFamily().getName() }}</h6></div>
+                </div>
+                <div class="row">
+                    <div class="col s12 m3">
+                        <h6>Det./rev./conf./assigned</h6>
+                    </div>
+                    <div class="col s12 m9"><h6>{{ specimen.getDetermination() }}</h6></div>
+                </div>
+                <div class="row">
+                    <div class="col s12 m3">
+                        <h6>Ident. history</h6>
+                    </div>
+                    <div class="col s12 m9"><h6>{{ specimen.getTaxonAlternative() }}</h6>
+                    </div>
+                </div>
+                {% for typus in specimen.getTypus() %}
                     <div class="row">
                         <div class="col s12 m3">
-                            <h6>Stable identifiers</h6>
+                            <h6>{{ typus.getRank().getLatinName() }} of </h6>
                         </div>
-                        <div class="col s12 m9"><h6>
-                                {% set stableIdentifiers = specimen.getStableIdentifiers() %}
-                                {% if stableIdentifiers|length > 1 %}
-                                    {% for pid in stableIdentifiers %}
-                                        <b><a href="{{ pid.getIdentifier() }}" target="_blank">{{ pid.getIdentifier() }}</a></b>
-                                        ({{ pid.getTimestamp()|date('d-m-Y') }})<br>
-                                    {% endfor %}
-                                {% elseif stableIdentifiers|length == 1 %}
-                                    {% for pid in stableIdentifiers %}
-                                        <b><a href="{{ pid.getIdentifier() }}" target="_blank">{{ pid.getIdentifier() }}</a></b>
-                                    {% endfor %}
-                                {% else %}
-                                    {{ constructStableIdentifier(specimen) }}
-                                {% endif %}
-                                </h6></div>
-                    </div>
-                    <div class="row hide" id="dynamic-references" data-pid="{{ pid }}">
-                        <div class="col s12 m3">
-                            <h6>Related records</h6>
+                        <div class="col s12 m9"><h6>{{ typus.getSpecies() | taxonName | raw }}</h6>
+                            <p>
+                                {% for proto in getProtologs(typus.getSpecies()) %}
+                                    {{ proto }}<br>
+                                {% endfor %}
+                            </p>
+                            <p>
+                                Typified by: {{ typus.getPerson() }} {{ typus.getDate() }}
+                            </p>
                         </div>
-                        <div class="col s12 m9"><h6><span id="dynamic-ggbn"></span></h6></div>
                     </div>
+                {% endfor %}
+                {% if specimen.getSpecies().isSynonym() %}
                     <div class="row">
                         <div class="col s12 m3">
-                            <h6>Herbarium #</h6>
+                            <h6>Current Name</h6>
                         </div>
-                        <div class="col s12 m9"><h6>{{ specimen | herbariumNr | raw }}</h6></div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12 m3">
-                            <h6>Collection #</h6>
-                        </div>
-                        <div class="col s12 m9">
-                            <h6>{{ specimen.getHerbCollection().getName() }} {{ specimen.getCollectionNumber() }}</h6>
+                        <div class="col s12 m9"><h6>{{ specimen.getSpecies().getValidName() | taxonName | raw }}</h6>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col s12 m3">
-                            <h6>Stored under taxon name</h6>
-                        </div>
-                        <div class="col s12 m9"><p><b></b></p>
-                            <h6><b>{{ specimen.getSpecies() | taxonName | raw }}</b></h6>
-
-                            <a href="http://www.tropicos.org/NameSearch.aspx?name={{ specimen.getSpecies().getGenus().getName()}} {{ specimen.getSpecies().getEpithetSpecies() is not null ? specimen.getSpecies().getEpithetSpecies().getName() }}&exact=true"
-                               title="Search in tropicos" target="_blank">
-                                <img alt="tropicos" src="{{ asset('recordIcons/tropicos.png') }}" width="16"
-                                     height="16">
-                            </a>
-                            {{ specimen.getSpecies() | taxonAuthority | raw | nl2br }}
-                        </div>
+                {% endif %}
+                <div class="row">
+                    <div class="col s12 m3">
+                        <h6>Collector</h6>
                     </div>
-                    <div class="row">
-                        <div class="col s12 m3">
-                            <h6>Family</h6>
-                        </div>
-                        <div class="col s12 m9"><h6>{{ specimen.getSpecies().getGenus().getFamily().getName() }}</h6></div>
+                    <div class="col s12 m9"><h6>
+                            {% include 'output/searchForm/collector_links.html.twig' with { 'specimen': specimen } %}
+                            {% include 'output/searchForm/collector_cetaf.html.twig' with { 'collector': specimen.getCollector() } %}
+                        </h6>
                     </div>
-                    <div class="row">
-                        <div class="col s12 m3">
-                            <h6>Det./rev./conf./assigned</h6>
-                        </div>
-                        <div class="col s12 m9"><h6>{{ specimen.getDetermination() }}</h6></div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12 m3">
-                            <h6>Ident. history</h6>
-                        </div>
-                        <div class="col s12 m9"><h6>{{ specimen.getTaxonAlternative() }}</h6>
-                        </div>
-                    </div>
-                    {% for typus in specimen.getTypus() %}
-                                <div class="row">
-                                    <div class="col s12 m3">
-                                        <h6>{{ typus.getRank().getLatinName() }} of </h6>
-                                    </div>
-                                    <div class="col s12 m9"><h6>{{ typus.getSpecies() | taxonName | raw }}</h6>
-                                        <p>
-                                            {% for proto in getProtologs(typus.getSpecies()) %}
-                                            {{ proto }}<br>
-                                            {% endfor %}
-                                        </p>
-                                        <p>
-                                        Typified by: {{ typus.getPerson() }} {{ typus.getDate() }}
-                                        </p>
-                                    </div>
-                                </div>
-                    {% endfor %}
-                    {% if specimen.getSpecies().isSynonym() %}
-                        <div class="row">
-                            <div class="col s12 m3">
-                                <h6>Current Name</h6>
-                            </div>
-                            <div class="col s12 m9"><h6>{{ specimen.getSpecies().getValidName() | taxonName | raw }}</h6></div>
-                        </div>
-                    {% endif %}
-                    <div class="row">
-                        <div class="col s12 m3">
-                            <h6>Collector</h6>
-                        </div>
-                        <div class="col s12 m9"><h6>
-                                {% include 'output/searchForm/collector_links.html.twig' with { 'specimen': specimen } %}
-                                {% include 'output/searchForm/collector_cetaf.html.twig' with { 'collector': specimen.getCollector() } %}
-                            </h6>
-                        </div>
-                    </div>
-                    {% if specimen.hasRelatedSpecimens %}
-                    <div class="row" id="specimenLinks" data-source="{{ path('output_specimenLinksD3', {'specimenId': specimen.getId() }) }}">
+                </div>
+                {% if specimen.hasRelatedSpecimens %}
+                    <div class="row" id="specimenLinks"
+                         data-source="{{ path('output_specimenLinksD3', {'specimenId': specimen.getId() }) }}">
                         <div class="col s12 m3">
                             <h6>Linked Specimens and Material</h6>
                         </div>
-{#                        <div class="col s12 m6" id="linksPlot"></div>#}
-                        <div class="col s12 m3"><h6>
-                                    {% for relatedSpecimen in getRelatedSpecimens(specimen) %}
-                                        <p><a href='{{ path('output_specimenDetail', {'specimenId': relatedSpecimen['specimen'].getId() }) }}'>{{ relatedSpecimen['specimen'] | herbariumNr | raw }}</a> {% if relatedSpecimen['relation'] is not empty %}({{ relatedSpecimen['relation'] }}){% endif %}</p>
+                        {#                        <div class="col s12 m6" id="linksPlot"></div> #}
+                        <div class="col s12 m3">
+                            <h6>
+                                {% for relatedSpecimen in getRelatedSpecimens(specimen) %}
+                                    <p>
+                                        <a href='{{ path('output_specimenDetail', {'specimenId': relatedSpecimen['specimen'].getId() }) }}'>{{ relatedSpecimen['specimen'] | herbariumNr | raw }}</a> {% if relatedSpecimen['relation'] is not empty %}({{ relatedSpecimen['relation'] }}){% endif %}
+                                    </p>
                                 {% endfor %}
                             </h6>
                         </div>
                     </div>
-                        {% endif %}
-                    <div class="row">
-                        <div class="col s12 m3">
-                            <h6>Date</h6>
-                        </div>
-                        <div class="col s12 m9"><h6>{{ specimen.getDate() }}</h6></div>
+                {% endif %}
+                <div class="row">
+                    <div class="col s12 m3">
+                        <h6>Date</h6>
                     </div>
-                    <div class="row">
-                        <div class="col s12 m3">
-                            <h6>Location</h6>
-                        </div>
-                        <div class="col s12 m9">
-                            {% if specimen.hasCoords() %}
-                                <div id="map" style="height: 300px; max-width: 600px"
-                                     data-gps="{{ specimen.getCoords() }}"></div>
-                            {% endif %}
-                            <h6>{{ specimen | localityLong | raw }}</h6></div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12 m3">
-                            <h6>Label</h6>
-                        </div>
-                        <div class="col s12 m9"><h6>{{ specimen.getLocality() | nl2br | raw }}
-                                    {% if specimen.getAltitudeMin() is not empty %}
-                                        Alt. {{ specimen.getAltitudeMin() }} m
-                                        {% if specimen.getAltitudeMax() is not empty %} - {{ specimen.getAltitudeMax() }} m
-                                        {% endif %}
-                                    {% endif %}
-                                </h6></div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12 m3">
-                            <h6>Habitat</h6>
-                        </div>
-                        <div class="col s12 m9"><h6>{{ specimen.getHabitat() | nl2br }}</h6></div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12 m3">
-                            <h6>Habitus</h6>
-                        </div>
-                        <div class="col s12 m9"><h6>{{ specimen.getHabitus() }}</h6></div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12 m3">
-                            <h6>Annotations</h6>
-                        </div>
-                        <div class="col s12 m9"><h6>{{ specimen | annotation | raw }}</h6></div>
-                    </div>
+                    <div class="col s12 m9"><h6>{{ specimen.getDate() }}</h6></div>
                 </div>
-                <div class="col s12 l8 offset-l1" style='height: 800px'>
-                    {{ specimen | photoIframe | raw }}
+                <div class="row">
+                    <div class="col s12 m3">
+                        <h6>Location</h6>
+                    </div>
+                    <div class="col s12 m9">
+                        {% if specimen.hasCoords() %}
+                            <div id="map" style="height: 300px; max-width: 600px"
+                                 data-gps="{{ specimen.getCoords() }}"></div>
+                        {% endif %}
+                        <h6>{{ specimen | localityLong | raw }}</h6></div>
+                </div>
+                <div class="row">
+                    <div class="col s12 m3">
+                        <h6>Label</h6>
+                    </div>
+                    <div class="col s12 m9"><h6>{{ specimen.getLocality() | nl2br | raw }}
+                            {% if specimen.getAltitudeMin() is not empty %}
+                                Alt. {{ specimen.getAltitudeMin() }} m
+                                {% if specimen.getAltitudeMax() is not empty %} - {{ specimen.getAltitudeMax() }} m
+                                {% endif %}
+                            {% endif %}
+                        </h6></div>
+                </div>
+                <div class="row">
+                    <div class="col s12 m3">
+                        <h6>Habitat</h6>
+                    </div>
+                    <div class="col s12 m9"><h6>{{ specimen.getHabitat() | nl2br }}</h6></div>
+                </div>
+                <div class="row">
+                    <div class="col s12 m3">
+                        <h6>Habitus</h6>
+                    </div>
+                    <div class="col s12 m9"><h6>{{ specimen.getHabitus() }}</h6></div>
+                </div>
+                <div class="row">
+                    <div class="col s12 m3">
+                        <h6>Annotations</h6>
+                    </div>
+                    <div class="col s12 m9"><h6>{{ specimen | annotation | raw }}</h6></div>
                 </div>
             </div>
+            <div class="col s12 l8 offset-l1" style='height: 800px'>
+                {{ specimen | photoIframe | raw }}
+            </div>
         </div>
-    {% endif %}
+    </div>
 {% endblock %}

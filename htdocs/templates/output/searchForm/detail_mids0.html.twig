@@ -1,0 +1,42 @@
+{% extends 'output/main.html.twig' %}
+
+{% block main %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col s12 m10 l8 offset-l1 condensed">
+                <div class="row">
+                    <div class="col s12 m3">
+                        <h6>Stable identifiers</h6>
+                    </div>
+                    <div class="col s12 m9"><h6>
+                            {% set stableIdentifiers = specimen.getStableIdentifiers() %}
+                            {% if stableIdentifiers|length > 1 %}
+                                {% for pid in stableIdentifiers %}
+                                    <b><a href="{{ pid.getIdentifier() }}" target="_blank">{{ pid.getIdentifier() }}</a></b>
+                                    ({{ pid.getTimestamp()|date('d-m-Y') }})<br>
+                                {% endfor %}
+                            {% elseif stableIdentifiers|length == 1 %}
+                                {% for pid in stableIdentifiers %}
+                                    <b><a href="{{ pid.getIdentifier() }}" target="_blank">{{ pid.getIdentifier() }}</a></b>
+                                {% endfor %}
+                            {% else %}
+                                {{ constructStableIdentifier(specimen) }}
+                            {% endif %}
+                        </h6></div>
+                </div>
+                <div class="row">
+                    <div class="col s12 m3">
+                        <h6>Herbarium #</h6>
+                    </div>
+                    <div class="col s12 m9"><h6>{{ specimen | herbariumNr | raw }}</h6></div>
+                </div>
+                <div class="row">
+                    <div class="col s12 m3">
+                        <h6>Data accessibility</h6>
+                    </div>
+                    <div class="col s12 m9"><h6>publicly unavailable</h6></div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
