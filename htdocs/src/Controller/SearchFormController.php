@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -125,10 +126,15 @@ class SearchFormController extends AbstractController
         try {
             $specimen = $this->specimenService->findAccessibleForPublic($specimenId);
         } catch (EntityNotFoundException) {
-            $specimen = $this->specimenService->findNonAccessibleForPublic($specimenId);
+            try {
+                $specimen = $this->specimenService->findNonAccessibleForPublic($specimenId);
+            } catch (EntityNotFoundException) {
+                throw new NotFoundHttpException(sprintf('Specimen %s not found.', $specimenId));
+            }
+
             return $this->render('output/searchForm/detail_mids0.html.twig', [
                 'specimen' => $specimen,
-                'pid' => $this->specimenService->getStableIdentifier($specimen)
+                'pid' => $this->specimenService->getStableIdentifier($specimen),
             ]);
         }
         $this->statisticsLogger->info('Specimen [{id},{institution}] detail shown.', [
