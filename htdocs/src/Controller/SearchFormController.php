@@ -129,7 +129,7 @@ class SearchFormController extends AbstractController
             try {
                 $specimen = $this->specimenService->findNonAccessibleForPublic($specimenId);
             } catch (EntityNotFoundException) {
-                throw new NotFoundHttpException(sprintf('Specimen %s not found.', $specimenId));
+                return $this->render('output/searchForm/detail_404.html.twig', [], new Response(status: Response::HTTP_NOT_FOUND));
             }
 
             return $this->render('output/searchForm/detail_mids0.html.twig', [
