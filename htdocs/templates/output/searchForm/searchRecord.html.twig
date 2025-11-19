@@ -30,7 +30,9 @@
         {{ specimen.getSpecies() | taxonAuthority | raw }}
     </td>
     <td>{% include 'output/searchForm/collector_links.html.twig' with { 'specimen': specimen } %}</td>
-    <td>{{ specimen.getDate() }}</td>
+    <td>
+        {{ specimen.getDate() }}{{ specimen.getDate2() ? ' – ' ~ specimen.getDate2() : '' }}
+    </td>
     <td>{{ specimen | locality | raw }}</td>
     <td>{% set first = true %}
         {% for typus in specimen.getTypus() %}
