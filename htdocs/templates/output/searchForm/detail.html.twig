@@ -136,7 +136,12 @@
                     <div class="col s12 m3">
                         <h6>Date</h6>
                     </div>
-                    <div class="col s12 m9"><h6>{{ specimen.getDate() }}</h6></div>
+                    <div class="col s12 m9">
+                        <h6>
+                            {{ specimen.getDate() }}
+                            {{ specimen.getDate2() ? ' – ' ~ specimen.getDate2() : '' }}
+                        </h6>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col s12 m3">
@@ -161,6 +166,18 @@
                             {% endif %}
                         </h6></div>
                 </div>
+                {% if specimen.getLocalityEng() is not null %}
+                    <div class="row">
+                        <div class="col s12 m3">
+                            <h6>Label alternate</h6>
+                        </div>
+                        <div class="col s12 m9">
+                            <h6>
+                                {{ specimen.getLocalityEng() | nl2br | raw }}
+                            </h6>
+                        </div>
+                    </div>
+                {% endif %}
                 <div class="row">
                     <div class="col s12 m3">
                         <h6>Habitat</h6>

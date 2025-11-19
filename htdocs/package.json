@@ -7,7 +7,7 @@
     "leaflet.markercluster": "^1.5",
     "leaflet.fullscreen": "^4",
     "materialize-css": "^1",
-    "mirador-dl-plugin": "v1.0.0-rc.1",
+    "mirador-dl-plugin": "^1",
     "d3": "^7"
   },
   "devDependencies": {
