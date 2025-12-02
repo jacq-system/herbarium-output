@@ -22,7 +22,14 @@
                             {% else %}
                                 {{ constructStableIdentifier(specimen) }}
                             {% endif %}
-                        </h6></div>
+                        </h6>
+                        {% if specimen.pidDissco is not empty %}
+                            <p><img loading="lazy" src="{{ asset('logo/institutions/dissco-logo.png') }}" height="20" alt="DiSSCO Logo"> <a href="{{specimen.pidDissco}}">{{specimen.pidDissco}}</a></p>
+                        {% endif %}
+                        {% if specimen.pidGbif is not empty %}
+                            <p><img loading="lazy" src="{{ asset('logo/institutions/GBIF-2015-dotorg-stacked.png') }}" height="20" alt="GBIF Logo"> <a href="{{specimen.pidGbif}}">{{specimen.pidGbif}}</a></p>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="row hide" id="dynamic-references" data-pid="{{ pid }}">
                     <div class="col s12 m3">
