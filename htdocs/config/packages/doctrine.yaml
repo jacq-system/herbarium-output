@@ -45,11 +45,11 @@ when@prod:
             result_cache_driver:
                 type: pool
                 pool: doctrine.result_cache_pool
-        dbal:
-            connections:
-                default:
-                    options:
-                        1009: '/etc/mysql/ssl/ca-cert.pem' # PDO::MYSQL_ATTR_SSL_CA
+#        dbal:
+#            connections:
+#                default:
+#                    options:
+#                        1009: '/etc/mysql/ssl/ca-cert.pem' # PDO::MYSQL_ATTR_SSL_CA
 
     framework:
         cache:
