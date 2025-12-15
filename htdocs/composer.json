@@ -17,11 +17,11 @@
     "ext-iconv": "*",
     "ext-openssl": "*",
     "ext-fileinfo": "*",
-    "doctrine/doctrine-bundle": "^2",
-    "doctrine/doctrine-migrations-bundle": "^3",
+    "doctrine/doctrine-bundle": "^3",
+    "doctrine/doctrine-migrations-bundle": "^4",
     "jacq-system/orm-model": "^1.0",
     "jms/serializer-bundle": "^5",
-    "phpoffice/phpspreadsheet": "^3",
+    "phpoffice/phpspreadsheet": "^5",
     "symfony/asset": "^7",
     "symfony/cache": "^7",
     "symfony/console": "^7",
@@ -29,7 +29,7 @@
     "symfony/flex": "^2",
     "symfony/framework-bundle": "^7",
     "symfony/http-client": "^7",
-    "symfony/monolog-bundle": "^3",
+    "symfony/monolog-bundle": "^4",
     "symfony/rate-limiter": "^7",
     "symfony/runtime": "^7",
     "symfony/security-bundle": "^7",
@@ -93,7 +93,7 @@
   "extra": {
     "symfony": {
       "allow-contrib": false,
-      "require": "7.1.*",
+      "require": "7.*",
       "docker": false
     }
   }
