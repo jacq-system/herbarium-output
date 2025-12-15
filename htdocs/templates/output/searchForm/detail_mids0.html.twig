@@ -9,15 +9,15 @@
                         <h6>Stable identifiers</h6>
                     </div>
                     <div class="col s12 m9"><h6>
-                            {% set stableIdentifiers = specimen.getStableIdentifiers() %}
+                            {% set stableIdentifiers = specimen.getVisibleStableIdentifiers() %}
                             {% if stableIdentifiers|length > 1 %}
                                 {% for pid in stableIdentifiers %}
-                                    <b><a href="{{ pid.getIdentifier() }}" target="_blank">{{ pid.getIdentifier() }}</a></b>
-                                    ({{ pid.getTimestamp()|date('d-m-Y') }})<br>
+                                    <b><a href="{{ pid.identifier }}" target="_blank">{{ pid.identifier }}</a></b>
+                                    ({{ pid.createdAt|date('d-m-Y') }})<br>
                                 {% endfor %}
                             {% elseif stableIdentifiers|length == 1 %}
                                 {% for pid in stableIdentifiers %}
-                                    <b><a href="{{ pid.getIdentifier() }}" target="_blank">{{ pid.getIdentifier() }}</a></b>
+                                    <b><a href="{{ pid.identifier }}" target="_blank">{{ pid.identifier }}</a></b>
                                 {% endfor %}
                             {% else %}
                                 {{ constructStableIdentifier(specimen) }}
