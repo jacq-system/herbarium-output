@@ -28,15 +28,15 @@ class SpecimenIframeExtension extends AbstractExtension
 
     public function getPhotoIframe(Specimens $specimen): string
     {
-        if (!$specimen->hasImageObservation() && !$specimen->hasImage()) {
+        if (!$specimen->imageObservation && !$specimen->image) {
             return '';
         }
-        $sourceId = $specimen->getHerbCollection()->getInstitution()->getId();
-        $imageDefinition = $specimen->getHerbCollection()->getInstitution()->getImageDefinition();
+        $sourceId = $specimen->herbCollection->institution->id;
+        $imageDefinition = $specimen->herbCollection->institution->imageDefinition;
         $phaidra = false;
         if ($sourceId === Institution::WU) {
             // ask phaidra server if it has the desired picture. If not, use old method
-            $picname = sprintf("WU%0" . $imageDefinition->getHerbNummerNrDigits() . ".0f", str_replace('-', '', $specimen->getHerbNumber() ?? ''));
+            $picname = sprintf("WU%0" . $imageDefinition->herbNummerNrDigits . ".0f", str_replace('-', '', $specimen->herbNumber ?? ''));
             $ch = curl_init("https://app05a.phaidra.org/viewer/" . $picname);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             $curl_response = curl_exec($ch);
@@ -44,17 +44,17 @@ class SpecimenIframeExtension extends AbstractExtension
                 $info = curl_getinfo($ch);
                 if ($info['http_code'] == 200) {
                     $phaidra = true;
-                    $phaidraManifest = $this->jacqNetworkService->generateUrl(JacqRoutesNetwork::services_rest_iiif_manifest, (string) $specimen->getId());
+                    $phaidraManifest = $this->jacqNetworkService->generateUrl(JacqRoutesNetwork::services_rest_iiif_manifest, (string) $specimen->id);
                 }
             }
             curl_close($ch);
         }
         if ($phaidra) {  // phaidra picture found, use iiif
             return $this->includeIiif($phaidraManifest);
-        } elseif ($imageDefinition->isIiifCapable()) {
+        } elseif ($imageDefinition->iiifCapable) {
             return $this->includeIiif($this->iiifFacade->resolveManifestUri($specimen));
-        } elseif ($imageDefinition->getServerType() === 'djatoka') {   // but not iiif_capable, so the original one
-            $picdetails = $this->imageService->getPicDetails((string)$specimen->getId());
+        } elseif ($imageDefinition->serverType === 'djatoka') {   // but not iiif_capable, so the original one
+            $picdetails = $this->imageService->getPicDetails((string)$specimen->id);
             $transfer = $this->imageService->getPicInfo($picdetails);
 
             $djatokaOptions = [];
@@ -63,15 +63,15 @@ class SpecimenIframeExtension extends AbstractExtension
             if ($transfer) {
                 if (!empty($transfer['error'])) {
                     $djatokaError = "Picture server list error. Falling back to original image name.";
-                    $djatokaOptions[] = 'filename=' . rawurlencode(basename($picdetails['filename'])) . '&sid=' . $specimen->getId();
+                    $djatokaOptions[] = 'filename=' . rawurlencode(basename($picdetails['filename'])) . '&sid=' . $specimen->id;
                     $this->logger->info('Specimen {id} had transfer error {e}.', [
-                        'id' => $specimen->getId(),
+                        'id' => $specimen->id,
                         'e'=>$transfer['error']
                     ]);
                 } else {
                     if (count($transfer['pics'] ?? array()) > 0) {
                         foreach ($transfer['pics'] as $v) {
-                            $djatokaOptions[] = 'filename=' . rawurlencode(basename($v)) . '&sid=' . $specimen->getId();
+                            $djatokaOptions[] = 'filename=' . rawurlencode(basename($v)) . '&sid=' . $specimen->id;
                         }
                     } else {
                         $djatokaError = "no pictures found";

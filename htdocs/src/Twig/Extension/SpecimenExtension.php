@@ -57,7 +57,7 @@ class SpecimenExtension extends AbstractExtension
     { //TODO do not keep in database whole HTML including path to assets, the db view is also not necessary for this function..
         $text = '';
         $sql = "SELECT serviceID, hyper FROM herbar_view.view_taxon_link_service WHERE taxonID = :taxon";
-        $result = $this->entityManager->getConnection()->executeQuery($sql, ['taxon' => $taxon->getId()])->fetchAllAssociative();
+        $result = $this->entityManager->getConnection()->executeQuery($sql, ['taxon' => $taxon->id])->fetchAllAssociative();
 
         foreach ($result as $rowtax) {
             $text .= '<br/>';
@@ -94,25 +94,25 @@ class SpecimenExtension extends AbstractExtension
     {
         $text = '';
         $switch = false;
-        if ($specimen->getCountry()?->getNameEng() !== null) {
-            $text .= "<img src='/flags/" . strtolower($specimen->getCountry()->getIsoCode2()) . ".png'> " . $specimen->getCountry()->getNameEng();
+        if ($specimen->country?->nameEng !== null) {
+            $text .= "<img src='/flags/" . strtolower($specimen->country->isoCode2) . ".png'> " . $specimen->country->nameEng;
             $switch = true;
         }
-        if ($specimen->getProvince() !== null) {
+        if ($specimen->province !== null) {
             if ($switch) {
                 $text .= ". ";
             }
-            $text .= $specimen->getProvince()->getName();
+            $text .= $specimen->province->name;
             $switch = true;
         }
-        if (!empty($specimen->getLocality())) {
+        if (!empty($specimen->locality)) {
             if ($switch) {
                 $text .= ". ";
             }
-            if (mb_strlen(trim($specimen->getLocality())) > 200) {
-                $text .= mb_substr(trim($specimen->getLocality()), 0, 200) . "...";
+            if (mb_strlen(trim($specimen->locality)) > 200) {
+                $text .= mb_substr(trim($specimen->locality), 0, 200) . "...";
             } else {
-                $text .= trim($specimen->getLocality());
+                $text .= trim($specimen->locality);
             }
         }
         return $text;
@@ -122,15 +122,15 @@ class SpecimenExtension extends AbstractExtension
     {
         $text = '';
         $switch = false;
-        if ($specimen->getCountry()?->getNameEng() !== null) {
-            $text .= "<img src='/flags/" . strtolower($specimen->getCountry()->getIsoCode2()) . ".png'> " . $specimen->getCountry()->getNameEng();
+        if ($specimen->country?->nameEng !== null) {
+            $text .= "<img src='/flags/" . strtolower($specimen->country->isoCode2) . ".png'> " . $specimen->country->nameEng;
             $switch = true;
         }
-        if ($specimen->getProvince() !== null) {
+        if ($specimen->province !== null) {
             if ($switch) {
                 $text .= " / ";
             }
-            $text .= $specimen->getProvince()->getName();
+            $text .= $specimen->province->name;
         }
 
         if ($specimen->hasCoords()) {
@@ -148,20 +148,20 @@ class SpecimenExtension extends AbstractExtension
     public function getHerbariumNumber(Specimens $specimen): string
     {
 
-        $sourceId = $specimen->getHerbCollection()->getInstitution()->getId();
+        $sourceId = $specimen->herbCollection->institution->id;
         if ($sourceId === 29) {
-            return ($specimen->getHerbNumber()) ?: ('B (JACQ-ID' . $specimen->getId() . ')');
+            return ($specimen->herbNumber) ?: ('B (JACQ-ID' . $specimen->id . ')');
         } elseif ($sourceId === 50) {
-            return ($specimen->getHerbNumber()) ?: ('Willing (JACQ-ID ' . $specimen->getId() . ')');
+            return ($specimen->herbNumber) ?: ('Willing (JACQ-ID ' . $specimen->id . ')');
         } else {
-            return $specimen->getHerbCollection()->getInstitution()->getCode() . " " . $specimen->getHerbNumber();
+            return $specimen->herbCollection->institution->code . " " . $specimen->herbNumber;
         }
 
     }
 
     public function getAnnotation(Specimens $specimen): string
     {
-        $sourceId = $specimen->getHerbCollection()->getId();
+        $sourceId = $specimen->herbCollection->id;
         if ($sourceId == '35') {
             return (preg_replace("#<a .*a>#", "", $specimen->getAnnotation(true) ?? ''));
         }
@@ -183,8 +183,8 @@ class SpecimenExtension extends AbstractExtension
     {
         $relations = [];
         foreach ($specimen->getAllDirectRelations() as $relation) {
-            if ($relation->getSpecimen1()->getId() === $specimen->getId()) {
-                $relations[] = ["relation"=>$relation->getLinkQualifier()?->getName(), "specimen"=>$relation->getSpecimen2()];
+            if ($relation->getSpecimen1()->id === $specimen->id) {
+                $relations[] = ["relation"=>$relation->getLinkQualifier()?->name, "specimen"=>$relation->getSpecimen2()];
             } else {
                 $relations[] = ["relation"=>$relation->getLinkQualifier()?->getNameReverse(), "specimen"=>$relation->getSpecimen1()];
             }

@@ -35,7 +35,7 @@ jobs:
                 run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
             -   name: Cache composer dependencies
-                uses: actions/cache@v4
+                uses: actions/cache@v5
                 with:
                     path: ${{ steps.composer-cache.outputs.dir }}
                     key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -51,7 +51,7 @@ jobs:
                     node-version: '22'
 
             -   name: Cache node_modules
-                uses: actions/cache@v4
+                uses: actions/cache@v5
                 with:
                     path: ~/.npm
                     key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
@@ -76,7 +76,7 @@ jobs:
                 run: php bin/console cache:warmup --env=prod
 
             -   name: Upload built assets
-                uses: actions/upload-artifact@v5
+                uses: actions/upload-artifact@v6
                 with:
                     name: built-assets
                     path: |

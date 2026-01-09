@@ -48,7 +48,7 @@
                         <h6>Collection #</h6>
                     </div>
                     <div class="col s12 m9">
-                        <h6>{{ specimen.getHerbCollection().getName() }} {{ specimen.getCollectionNumber() }}</h6>
+                        <h6>{{ specimen.herbCollection.name }} {{ specimen.collectionNumber }}</h6>
                     </div>
                 </div>
                 <div class="row">
@@ -56,58 +56,58 @@
                         <h6>Stored under taxon name</h6>
                     </div>
                     <div class="col s12 m9"><p><b></b></p>
-                        <h6><b>{{ specimen.getSpecies() | taxonName | raw }}</b></h6>
+                        <h6><b>{{ specimen.species | taxonName | raw }}</b></h6>
 
-                        <a href="http://www.tropicos.org/NameSearch.aspx?name={{ specimen.getSpecies().getGenus().getName() }} {{ specimen.getSpecies().getEpithetSpecies() is not null ? specimen.getSpecies().getEpithetSpecies().getName() }}&exact=true"
+                        <a href="http://www.tropicos.org/NameSearch.aspx?name={{ specimen.species.genus.name }} {{ specimen.species.epithetSpecies is not null ? specimen.species.epithetSpecies.name }}&exact=true"
                            title="Search in tropicos" target="_blank">
                             <img alt="tropicos" src="{{ asset('recordIcons/tropicos.png') }}" width="16"
                                  height="16">
                         </a>
-                        {{ specimen.getSpecies() | taxonAuthority | raw | nl2br }}
+                        {{ specimen.species | taxonAuthority | raw | nl2br }}
                     </div>
                 </div>
                 <div class="row">
                     <div class="col s12 m3">
                         <h6>Family</h6>
                     </div>
-                    <div class="col s12 m9"><h6>{{ specimen.getSpecies().getGenus().getFamily().getName() }}</h6></div>
+                    <div class="col s12 m9"><h6>{{ specimen.species.genus.family.name }}</h6></div>
                 </div>
                 <div class="row">
                     <div class="col s12 m3">
                         <h6>Det./rev./conf./assigned</h6>
                     </div>
-                    <div class="col s12 m9"><h6>{{ specimen.getDetermination() }}</h6></div>
+                    <div class="col s12 m9"><h6>{{ specimen.determination }}</h6></div>
                 </div>
                 <div class="row">
                     <div class="col s12 m3">
                         <h6>Ident. history</h6>
                     </div>
-                    <div class="col s12 m9"><h6>{{ specimen.getTaxonAlternative() }}</h6>
+                    <div class="col s12 m9"><h6>{{ specimen.taxonAlternative }}</h6>
                     </div>
                 </div>
-                {% for typus in specimen.getTypus() %}
+                {% for typus in specimen.typus %}
                     <div class="row">
                         <div class="col s12 m3">
-                            <h6>{{ typus.getRank().getLatinName() }} of </h6>
+                            <h6>{{ typus.rank.latinName }} of </h6>
                         </div>
-                        <div class="col s12 m9"><h6>{{ typus.getSpecies() | taxonName | raw }}</h6>
+                        <div class="col s12 m9"><h6>{{ typus.species | taxonName | raw }}</h6>
                             <p>
-                                {% for proto in getProtologs(typus.getSpecies()) %}
+                                {% for proto in getProtologs(typus.species) %}
                                     {{ proto }}<br>
                                 {% endfor %}
                             </p>
                             <p>
-                                Typified by: {{ typus.getPerson() }} {{ typus.getDate() }}
+                                Typified by: {{ typus.person }} {{ typus.date }}
                             </p>
                         </div>
                     </div>
                 {% endfor %}
-                {% if specimen.getSpecies().isSynonym() %}
+                {% if specimen.species.isSynonym() %}
                     <div class="row">
                         <div class="col s12 m3">
                             <h6>Current Name</h6>
                         </div>
-                        <div class="col s12 m9"><h6>{{ specimen.getSpecies().getValidName() | taxonName | raw }}</h6>
+                        <div class="col s12 m9"><h6>{{ specimen.species.validName | taxonName | raw }}</h6>
                         </div>
                     </div>
                 {% endif %}
@@ -117,13 +117,13 @@
                     </div>
                     <div class="col s12 m9"><h6>
                             {% include 'output/searchForm/collector_links.html.twig' with { 'specimen': specimen } %}
-                            {% include 'output/searchForm/collector_cetaf.html.twig' with { 'collector': specimen.getCollector() } %}
+                            {% include 'output/searchForm/collector_cetaf.html.twig' with { 'collector': specimen.collector } %}
                         </h6>
                     </div>
                 </div>
                 {% if specimen.hasRelatedSpecimens %}
                     <div class="row" id="specimenLinks"
-                         data-source="{{ path('output_specimenLinksD3', {'specimenId': specimen.getId() }) }}">
+                         data-source="{{ path('output_specimenLinksD3', {'specimenId': specimen.id }) }}">
                         <div class="col s12 m3">
                             <h6>Linked Specimens and Material</h6>
                         </div>
@@ -132,7 +132,7 @@
                             <h6>
                                 {% for relatedSpecimen in getRelatedSpecimens(specimen) %}
                                     <p>
-                                        <a href='{{ path('output_specimenDetail', {'specimenId': relatedSpecimen['specimen'].getId() }) }}'>{{ relatedSpecimen['specimen'] | herbariumNr | raw }}</a> {% if relatedSpecimen['relation'] is not empty %}({{ relatedSpecimen['relation'] }}){% endif %}
+                                        <a href='{{ path('output_specimenDetail', {'specimenId': relatedSpecimen['specimen'].id }) }}'>{{ relatedSpecimen['specimen'] | herbariumNr | raw }}</a> {% if relatedSpecimen['relation'] is not empty %}({{ relatedSpecimen['relation'] }}){% endif %}
                                     </p>
                                 {% endfor %}
                             </h6>
@@ -145,8 +145,8 @@
                     </div>
                     <div class="col s12 m9">
                         <h6>
-                            {{ specimen.getDate() }}
-                            {{ specimen.getDate2() ? ' – ' ~ specimen.getDate2() : '' }}
+                            {{ specimen.date }}
+                            {{ specimen.date2 ? ' – ' ~ specimen.date2 : '' }}
                         </h6>
                     </div>
                 </div>
@@ -165,15 +165,15 @@
                     <div class="col s12 m3">
                         <h6>Label</h6>
                     </div>
-                    <div class="col s12 m9"><h6>{{ specimen.getLocality() | nl2br | raw }}
-                            {% if specimen.getAltitudeMin() is not empty %}
-                                Alt. {{ specimen.getAltitudeMin() }} m
-                                {% if specimen.getAltitudeMax() is not empty %} - {{ specimen.getAltitudeMax() }} m
+                    <div class="col s12 m9"><h6>{{ specimen.locality | nl2br | raw }}
+                            {% if specimen.altitudeMin is not empty %}
+                                Alt. {{ specimen.altitudeMin }} m
+                                {% if specimen.altitudeMax is not empty %} - {{ specimen.altitudeMax }} m
                                 {% endif %}
                             {% endif %}
                         </h6></div>
                 </div>
-                {% if specimen.getLocalityEng() is not null %}
+                {% if specimen.localityEng is not null %}
                     <div class="row">
                         <div class="col s12 m3">
                             <h6>Label alternate</h6>
@@ -189,13 +189,13 @@
                     <div class="col s12 m3">
                         <h6>Habitat</h6>
                     </div>
-                    <div class="col s12 m9"><h6>{{ specimen.getHabitat() | nl2br }}</h6></div>
+                    <div class="col s12 m9"><h6>{{ specimen.habitat | nl2br }}</h6></div>
                 </div>
                 <div class="row">
                     <div class="col s12 m3">
                         <h6>Habitus</h6>
                     </div>
-                    <div class="col s12 m9"><h6>{{ specimen.getHabitus() }}</h6></div>
+                    <div class="col s12 m9"><h6>{{ specimen.habitus }}</h6></div>
                 </div>
                 <div class="row">
                     <div class="col s12 m3">

@@ -19,9 +19,9 @@ readonly class KmlService
     {
         $collectorText = $this->specimenService->getCollectionText($specimen);
 
-        $location = $specimen->getCountry()?->getNameEng();
-        if (!empty($specimen->getProvince()?->getName())) {
-            $location .= " / " . trim($specimen->getProvince()->getName());
+        $location = $specimen->country?->nameEng;
+        if (!empty($specimen->province?->name)) {
+            $location .= " / " . trim($specimen->province->name);
         }
         if ($specimen->getLatitude() !== null && $specimen->getLongitude() !== null) {
             $location .= " / " . round($specimen->getLatitude(), 2) . "° / " . round($specimen->getLongitude(), 2) . "°";
@@ -29,14 +29,14 @@ readonly class KmlService
 
         if ($specimen->getLatitude() !== null && $specimen->getLongitude() !== null) {
            return "<Placemark>\n"
-                . "  <name>" . htmlspecialchars($this->taxonService->taxonNameWithHybrids($specimen->getSpecies(), true), ENT_NOQUOTES) . "</name>\n"
+                . "  <name>" . htmlspecialchars($this->taxonService->taxonNameWithHybrids($specimen->species, true), ENT_NOQUOTES) . "</name>\n"
                 . "  <description>\n"
                 . "    <![CDATA[\n"
-                . "      " . $this->addLine($specimen->getHerbCollection()->getName() . " " . $specimen->getHerbNumber() . " [dbID " . $specimen->getId() . "]")
+                . "      " . $this->addLine($specimen->herbCollection->name . " " . $specimen->herbNumber . " [dbID " . $specimen->id . "]")
                 . "      " . $this->addLine($collectorText)
                 . "      " . $this->addLine($specimen->getDate())
                 . "      " . $this->addLine($location)
-                . "      " . $this->addLine($specimen->getLocality())
+                . "      " . $this->addLine($specimen->locality)
                 . "      " . $this->addLine($this->specimenService->getStableIdentifier($specimen))
                 . "      <a href=\"".$this->specimenService->getStableIdentifier($specimen). "\">link</a>\n"
                 . "    ]]>\n"
@@ -52,7 +52,7 @@ readonly class KmlService
     {
         if ($specimen->getLatitude() !== null && $specimen->getLongitude() !== null) {
             return "<Placemark>\n"
-                . "  <name>" .$specimen->getId() . "</name>\n"
+                . "  <name>" .$specimen->id . "</name>\n"
                 . "  <Point>\n"
                 . "    <coordinates>".$specimen->getLongitude().','.$specimen->getLatitude()."</coordinates>\n"
                 . "  </Point>\n"

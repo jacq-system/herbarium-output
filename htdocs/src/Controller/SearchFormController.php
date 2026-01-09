@@ -138,8 +138,8 @@ class SearchFormController extends AbstractController
             ]);
         }
         $this->statisticsLogger->info('Specimen [{id},{institution}] detail shown.', [
-            'id' => $specimen->getId(),
-            'institution' => $specimen->getHerbCollection()->getInstitution()->getAbbreviation()
+            'id' => $specimen->id,
+            'institution' => $specimen->herbCollection->institution->abbreviation
         ]);
         return $this->render('output/searchForm/detail.html.twig', [
             'specimen' => $specimen,
