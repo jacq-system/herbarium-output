@@ -1,24 +1,24 @@
 <tr>
     <td>
-        {% if specimen.isObservation() or specimen.hasImageObservation() or specimen.hasImage() %}
+        {% if specimen.observation or specimen.imageObservation or specimen.image %}
 
-            {% if specimen.isObservation() and not specimen.hasImageObservation() %} {#  has no link #}
+            {% if specimen.observation and not specimen.imageObservation %} {#  has no link #}
                 <img height="15" alt='' src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}"
                      width="15"/>
             {% else %}
-                {% if (specimen.getHerbCollection().getInstitution().getImageDefinition() is not null and specimen.getHerbCollection().getInstitution().getImageDefinition().isIiifCapable()) or (specimen.getPhaidraImages() is not empty) %}
+                {% if (specimen.herbCollection.institution.imageDefinition is not null and specimen.herbCollection.institution.imageDefinition.iiifCapable) or (specimen.phaidraImages is not empty) %}
 
-                    <a href='{{ specimen.getHerbCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ getManifestUrl(specimen) }}'
+                    <a href='{{ specimen.herbCollection.institution.imageDefinition.iiifUrl }}?manifest={{ getManifestUrl(specimen) }}'
                        target='imgBrowser'>
                         <img height='15' width="15" alt=''
                              src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}">
                     </a><br>
-                    <a href='{{ specimen.getHerbCollection().getInstitution().getImageDefinition().getIiifUrl() }}?manifest={{ getManifestUrl(specimen) }}'
+                    <a href='{{ specimen.herbCollection.institution.imageDefinition.iiifUrl }}?manifest={{ getManifestUrl(specimen) }}'
                        target='_blank'>
                         <img height='15' width='15' alt='' src='{{ asset('recordIcons') }}/logo-iiif.png'>
                     </a>
                 {% else %}
-                    <a href='{{ path('output_image_endpoint', { 'filename': specimen.getId() }) }}&method=show'
+                    <a href='{{ path('output_image_endpoint', { 'filename': specimen.id }) }}&method=show'
                        target='imgBrowser'><img height='15' width="15" alt=''
                                                 src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}"></a>
                 {% endif %}
@@ -26,29 +26,29 @@
         {% endif %}
     </td>
     <td>
-        <a href='{{ path('output_specimenDetail', {'specimenId': specimen.getId() }) }}'>{{ getScientificName(specimen) }}</a>
-        {{ specimen.getSpecies() | taxonAuthority | raw }}
+        <a href='{{ path('output_specimenDetail', {'specimenId': specimen.id }) }}'>{{ getScientificName(specimen) }}</a>
+        {{ specimen.species | taxonAuthority | raw }}
     </td>
     <td>{% include 'output/searchForm/collector_links.html.twig' with { 'specimen': specimen } %}</td>
     <td>
-        {{ specimen.getDate() }}{{ specimen.getDate2() ? ' – ' ~ specimen.getDate2() : '' }}
+        {{ specimen.date }}{{ specimen.date2 ? ' – ' ~ specimen.date2 : '' }}
     </td>
     <td>{{ specimen | locality | raw }}</td>
     <td>{% set first = true %}
-        {% for typus in specimen.getTypus() %}
+        {% for typus in specimen.typus %}
             {% if not first %}
                 <br>
             {% endif %}
-            <span class="red-text"><b>{{ typus.getRank().getLatinName() }}</b></span>
+            <span class="red-text"><b>{{ typus.rank.latinName }}</b></span>
             {% set first = false %}
         {% endfor %}</td>
-    {% if specimen.getHerbCollection().getInstitution().getId() == '29' %}
-        <td title="{{ specimen.getHerbCollection().getName() }}">
-            {{ specimen.getHerbNumber() }}
+    {% if specimen.herbCollection.institution.id == '29' %}
+        <td title="{{ specimen.herbCollection.name }}">
+            {{ specimen.herbNumber }}
         </td>
     {% else %}
-        <td title="{{ specimen.getHerbCollection().getName() }}">
-            {{ specimen.getHerbCollection().getCollShortPrj()|upper }} {{ specimen.getHerbNumber() }}
+        <td title="{{ specimen.herbCollection.name }}">
+            {{ specimen.herbCollection.collShortPrj|upper }} {{ specimen.herbNumber }}
         </td>
     {% endif %}
     <td>{% if specimen.getLongitude() is not null or specimen.getLatitude() is not null %}

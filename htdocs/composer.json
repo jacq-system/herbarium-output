@@ -19,33 +19,33 @@
     "ext-fileinfo": "*",
     "doctrine/doctrine-bundle": "^3",
     "doctrine/doctrine-migrations-bundle": "^4",
-    "jacq-system/orm-model": "^1.0",
+    "jacq-system/orm-model": "^0.2",
     "jms/serializer-bundle": "^5",
     "phpoffice/phpspreadsheet": "^5",
-    "symfony/asset": "^7",
-    "symfony/cache": "^7",
-    "symfony/console": "^7",
-    "symfony/dotenv": "^7",
+    "symfony/asset": "^8",
+    "symfony/cache": "^8",
+    "symfony/console": "^8",
+    "symfony/dotenv": "^8",
     "symfony/flex": "^2",
-    "symfony/framework-bundle": "^7",
-    "symfony/http-client": "^7",
+    "symfony/framework-bundle": "^8",
+    "symfony/http-client": "^8",
     "symfony/monolog-bundle": "^4",
-    "symfony/rate-limiter": "^7",
-    "symfony/runtime": "^7",
-    "symfony/security-bundle": "^7",
-    "symfony/twig-bundle": "^7",
-    "symfony/validator": "^7",
+    "symfony/rate-limiter": "^8",
+    "symfony/runtime": "^8",
+    "symfony/security-bundle": "^8",
+    "symfony/twig-bundle": "^8",
+    "symfony/validator": "^8",
     "symfony/webpack-encore-bundle": "^2",
-    "symfony/yaml": "^7"
+    "symfony/yaml": "^8"
   },
   "require-dev": {
     "phpunit/phpunit": "^9",
-    "symfony/browser-kit": "^7",
-    "symfony/css-selector": "^7",
+    "symfony/browser-kit": "^8",
+    "symfony/css-selector": "^8",
     "symfony/maker-bundle": "^1",
-    "symfony/phpunit-bridge": "^7",
-    "symfony/stopwatch": "^7",
-    "symfony/web-profiler-bundle": "^7"
+    "symfony/phpunit-bridge": "^8",
+    "symfony/stopwatch": "^8",
+    "symfony/web-profiler-bundle": "^8"
   },
   "config": {
     "allow-plugins": {
@@ -93,7 +93,7 @@
   "extra": {
     "symfony": {
       "allow-contrib": false,
-      "require": "7.*",
+      "require": "8.*",
       "docker": false
     }
   }

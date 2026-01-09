@@ -237,12 +237,12 @@ class SearchFormFacade
         if (empty($this->searchFormSessionService->getFilter('institution'))) {
             $institution = $this->entityManager->getRepository(Institution::class)->findOneBy(['code' => $code]);
             if ($institution !== null) {
-                $this->queryInstitution($institution->getId());
+                $this->queryInstitution($institution->id);
                 $subquery = $subquery
                     ->join('s.herbCollection', 'c')
                     ->join('c.institution', 'i')
                     ->andWhere('i.id = :institution')
-                    ->setParameter('institution', $institution->getId());
+                    ->setParameter('institution', $institution->id);
             }
         }
 
@@ -595,71 +595,71 @@ class SearchFormFacade
 
     protected function prepareRowForExport(Specimens $specimen): array
     {
-        $infraInfo = $specimen->getSpecies()->getInfraEpithet();
+        $infraInfo = $specimen->species->getInfraEpithet();
 
         $specimen->getLatitude() ? $latDMS = $this->geoService->decimalToDMS($specimen->getLatitude()) . ' ' . $specimen->getHemisphereLatitude() : $latDMS = null;
         $specimen->getLongitude() ? $lonDMS = $this->geoService->decimalToDMS($specimen->getLongitude()) . ' ' . $specimen->getHemisphereLongitude() : $lonDMS = null;
 
         return [
-            $specimen->getId(),
-            $specimen->isObservation() ? 1 : '',
-            $specimen->hasImage() ? 1 : '',
-            $specimen->hasImageObservation() ? 1 : '',
-            $specimen->getHerbCollection()->getInstitution()->getCode(),
-            $specimen->getHerbNumber(),
-            $specimen->getHerbCollection()->getCollShort(),
-            $specimen->getCollectionNumber(),
+            $specimen->id,
+            $specimen->observation ? 1 : '',
+            $specimen->image ? 1 : '',
+            $specimen->imageObservation ? 1 : '',
+            $specimen->herbCollection->institution->code,
+            $specimen->herbNumber,
+            $specimen->herbCollection->collShort,
+            $specimen->collectionNumber,
             $this->typusService->getTypusText($specimen),
-            $specimen->getTypified(),
+            $specimen->typified,
             $this->specimenService->getScientificName($specimen),
-            $specimen->getIdentificationStatus()?->getName(),
-            $specimen->getSpecies()->getGenus()->getName(),
-            $specimen->getSpecies()->getEpithetSpecies()?->getName(),
-            $specimen->getSpecies()->getAuthorSpecies()?->getName(),
-            $specimen->getSpecies()->getRank()->getAbbreviation(),
+            $specimen->identificationStatus?->name,
+            $specimen->species->genus->name,
+            $specimen->species->epithetSpecies?->name,
+            $specimen->species->authorSpecies?->name,
+            $specimen->species->rank->abbreviation,
             $infraInfo['epithet'],
             $infraInfo['author'],
-            $specimen->getSpecies()->getGenus()->getFamily()->getName(),
-            $specimen->getGarden(),
-            $specimen->getVoucher()?->getName(),
+            $specimen->species->genus->family->name,
+            $specimen->garden,
+            $specimen->voucher?->name,
             $this->specimenService->getCollectionText($specimen),
-            $specimen->getCollector()?->getName(),
-            $specimen->getNumber(),
-            $specimen->getCollector2()?->getName(),
-            $specimen->getAltNumber(),
-            $specimen->getSeries()?->getName(),
-            $specimen->getSeriesNumber(),
+            $specimen->collector?->name,
+            $specimen->number,
+            $specimen->collector2?->name,
+            $specimen->altNumber,
+            $specimen->series?->name,
+            $specimen->seriesNumber,
             $specimen->getDate(),
             $specimen->getDate2(),
-            $specimen->getCountry()?->getNameEng(),
-            $specimen->getProvince()?->getName(),
-            $specimen->getRegion(),
+            $specimen->country?->nameEng,
+            $specimen->province?->name,
+            $specimen->region,
             $specimen->getLatitude() ? number_format(round($specimen->getLatitude(), 9), 9) . '°' : '',
             $latDMS,
             $specimen->getHemisphereLatitude(),
-            ($specimen->getHemisphereLatitude() === 'N') ? $specimen->getDegreeN() : $specimen->getDegreeS(),
-            ($specimen->getHemisphereLatitude() === 'N') ? $specimen->getMinuteN() : $specimen->getMinuteS(),
-            ($specimen->getHemisphereLatitude() === 'N') ? $specimen->getSecondN() : $specimen->getSecondS(),
+            ($specimen->getHemisphereLatitude() === 'N') ? $specimen->degreeN : $specimen->degreeS,
+            ($specimen->getHemisphereLatitude() === 'N') ? $specimen->minuteN : $specimen->minuteS,
+            ($specimen->getHemisphereLatitude() === 'N') ? $specimen->secondN : $specimen->secondS,
             $specimen->getLongitude() ? number_format(round($specimen->getLongitude(), 9), 9) . '°' : '',
             $lonDMS,
             $specimen->getHemisphereLongitude(),
-            ($specimen->getHemisphereLongitude() === 'E') ? $specimen->getDegreeE() : $specimen->getDegreeW(),
-            ($specimen->getHemisphereLongitude() === 'E') ? $specimen->getMinuteE() : $specimen->getMinuteW(),
-            ($specimen->getHemisphereLongitude() === 'E') ? $specimen->getSecondE() : $specimen->getSecondW(),
-            $specimen->getExactness(),
-            $specimen->getAltitudeMin(),
-            $specimen->getAltitudeMax(),
-            $specimen->getQuadrant(),
-            $specimen->getQuadrantSub(),
-            $specimen->getLocality(),
-            $specimen->getDetermination(),
-            $specimen->getTaxonAlternative(),
+            ($specimen->getHemisphereLongitude() === 'E') ? $specimen->degreeE : $specimen->degreeW,
+            ($specimen->getHemisphereLongitude() === 'E') ? $specimen->minuteE : $specimen->minuteW,
+            ($specimen->getHemisphereLongitude() === 'E') ? $specimen->secondE : $specimen->secondW,
+            $specimen->exactness,
+            $specimen->altitudeMin,
+            $specimen->altitudeMax,
+            $specimen->quadrant,
+            $specimen->quadrantSub,
+            $specimen->locality,
+            $specimen->determination,
+            $specimen->taxonAlternative,
             /**
              * formerly was the "=" character removed, now only prepend apostrophe -> force cell as a string to prevent a starting "=" be interpreted as a formula
              */
             ((str_starts_with((string)$specimen->getAnnotation(), '=')) ? "'" : "") . $specimen->getAnnotation(),
-            ((str_starts_with((string)$specimen->getHabitat(), '=')) ? "'" : "") . $specimen->getHabitat(),
-            ((str_starts_with((string)$specimen->getHabitus(), '=')) ? "'" : "") . $specimen->getHabitus(),
+            ((str_starts_with((string)$specimen->habitat, '=')) ? "'" : "") . $specimen->habitat,
+            ((str_starts_with((string)$specimen->habitus, '=')) ? "'" : "") . $specimen->habitus,
             $this->specimenService->getStableIdentifier($specimen)
         ];
 

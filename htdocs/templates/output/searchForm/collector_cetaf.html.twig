@@ -1,11 +1,11 @@
 {% if collector is not null %}
-    {% if collector.getWikidataId is not empty %}
-        &nbsp;<a href="https://services.bgbm.org/botanypilot/person/q/{{ collector.getWikidataId|split('/')|last }}" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;
-    {% elseif collector.getHuhId is not empty %}
-        &nbsp;<a href="https://services.bgbm.org/botanypilot/person/h/{{ collector.getHuhId|split('/')|last }}" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;
-    {% elseif collector.getViafId is not empty %}
-        &nbsp;<a href="https://services.bgbm.org/botanypilot/person/v/{{ collector.getViafId|split('/')|last }}" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;
-    {% elseif collector.getOrcidId is not empty %}
-        &nbsp;<a href="https://services.bgbm.org/botanypilot/person/o/{{ collector.getOrcidId|split('/')|last }}" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;
+    {% if collector.wikidataId is not empty %}
+        &nbsp;<a href="https://services.bgbm.org/botanypilot/person/q/{{ collector.wikidataId|split('/')|last }}" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;
+    {% elseif collector.huhId is not empty %}
+        &nbsp;<a href="https://services.bgbm.org/botanypilot/person/h/{{ collector.huhId|split('/')|last }}" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;
+    {% elseif collector.viafId is not empty %}
+        &nbsp;<a href="https://services.bgbm.org/botanypilot/person/v/{{ collector.viafId|split('/')|last }}" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;
+    {% elseif collector.orcidId is not empty %}
+        &nbsp;<a href="https://services.bgbm.org/botanypilot/person/o/{{ collector.orcidId|split('/')|last }}" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;
     {% endif %}
 {% endif %}

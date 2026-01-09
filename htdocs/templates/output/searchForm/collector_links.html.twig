@@ -1,37 +1,37 @@
-{% set collector = specimen.getCollector() %}
+{% set collector = specimen.collector %}
 {% if collector is not null %}
-    {% if collector.getWikidataId() is not empty %}
-        <a href="{{ collector.getWikidataId() }}" title="wikidata" target="_blank" class="leftnavi">
+    {% if collector.wikidataId is not empty %}
+        <a href="{{ collector.wikidataId }}" title="wikidata" target="_blank" class="leftnavi">
             <img src="/logo/institutions/wikidata.png" alt="wikidata" width="20px">
         </a>&nbsp;
     {% endif %}
-    {% if collector.getHuhId() is not empty %}
-        <a href="{{ collector.getHuhId() }}" title="Index of Botanists (HUH)" target="_blank" class="leftnavi">
+    {% if collector.huhId is not empty %}
+        <a href="{{ collector.huhId }}" title="Index of Botanists (HUH)" target="_blank" class="leftnavi">
             <img src="/logo/institutions/huh.png" alt="Index of Botanists (HUH)" height="20px">
         </a>&nbsp;
     {% endif %}
-    {% if collector.getViafId() is not empty %}
-        <a href="{{ collector.getViafId() }}" title="VIAF" target="_blank" class="leftnavi">
+    {% if collector.viafId is not empty %}
+        <a href="{{ collector.viafId }}" title="VIAF" target="_blank" class="leftnavi">
             <img src="/logo/institutions/viaf.png" alt="VIAF" width="20px">
         </a>&nbsp;
     {% endif %}
-    {% if collector.getOrcidId() is not empty %}
-        <a href="{{ collector.getOrcidId() }}" title="ORCID" target="_blank" class="leftnavi">
+    {% if collector.orcidId is not empty %}
+        <a href="{{ collector.orcidId }}" title="ORCID" target="_blank" class="leftnavi">
             <img src="/logo/institutions/orcid.logo.icon.svg" alt="ORCID" width="20px">
         </a>&nbsp;
     {% endif %}
 {% endif %}
 
-{% set bloodhound = getBloodHoundId(specimen.getCollector()) %}
+{% set bloodhound = getBloodHoundId(specimen.collector) %}
 {% if bloodhound is not null %}
     <a href="{{ bloodhound }}" target='_blank' title='Bionomia'><img src='/logo/institutions/bionomia_logo.png' alt='Bionomia' width='20px'></a>
 {% endif %}
 
 {{ getCollectionText(specimen) }}
 
-{% if specimen.getNcbiAccession is not empty %}
-    &mdash; {{ specimen.getNcbiAccession }}
-    <a href="http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term={{ specimen.getNcbiAccession }}" target="_blank">
+{% if specimen.ncbiAccession is not empty %}
+    &mdash; {{ specimen.ncbiAccession }}
+    <a href="http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term={{ specimen.ncbiAccession }}" target="_blank">
         <img src="/logo/institutions/ncbi.gif" alt="NCBI" width="14" height="16">
     </a>
 {% endif %}
