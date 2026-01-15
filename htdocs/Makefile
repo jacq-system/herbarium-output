@@ -1,4 +1,4 @@
-#	RUN INSIDE THE CONTAINER, that is: docker exec -it app-sjacq bash
+#	RUN INSIDE THE CONTAINER, that is: docker exec -it output bash
 
 code_management:
 	vendor/bin/phpcs --standard=ruleset.xml App # analyze with codesniffer https://github.com/slevomat/coding-standard
