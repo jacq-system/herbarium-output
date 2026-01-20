@@ -4,6 +4,7 @@ namespace App\Twig\Extension;
 
 use JACQ\Entity\Jacq\Herbarinput\Collector;
 use JACQ\Entity\Jacq\Herbarinput\Species;
+use JACQ\Entity\Jacq\Herbarinput\SpecimenLink;
 use JACQ\Entity\Jacq\Herbarinput\Specimens;
 use JACQ\Service\GeoService;
 use JACQ\Service\Legacy\IiifFacade;
@@ -183,10 +184,11 @@ class SpecimenExtension extends AbstractExtension
     {
         $relations = [];
         foreach ($specimen->getAllDirectRelations() as $relation) {
-            if ($relation->getSpecimen1()->id === $specimen->id) {
-                $relations[] = ["relation"=>$relation->getLinkQualifier()?->name, "specimen"=>$relation->getSpecimen2()];
+            /** @var SpecimenLink $relation */
+            if ($relation->specimen1->id === $specimen->id) {
+                $relations[] = ["relation"=>$relation->linkQualifier?->name, "specimen"=>$relation->specimen2];
             } else {
-                $relations[] = ["relation"=>$relation->getLinkQualifier()?->getNameReverse(), "specimen"=>$relation->getSpecimen1()];
+                $relations[] = ["relation"=>$relation->linkQualifier?->nameReverse, "specimen"=>$relation->specimen1];
             }
         }
         return $relations;

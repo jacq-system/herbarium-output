@@ -47,7 +47,6 @@ class SpecimenIframeExtension extends AbstractExtension
                     $phaidraManifest = $this->jacqNetworkService->generateUrl(JacqRoutesNetwork::services_rest_iiif_manifest, (string) $specimen->id);
                 }
             }
-            curl_close($ch);
         }
         if ($phaidra) {  // phaidra picture found, use iiif
             return $this->includeIiif($phaidraManifest);
