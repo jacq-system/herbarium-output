@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use JACQ\Repository\Herbarinput\CountryRepository;
+use JACQ\Repository\Herbarinput\InstitutionRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -9,6 +11,9 @@ use Symfony\Component\Routing\Attribute\Route;
 class HomeController extends AbstractController
 {
 
+    public function __construct(protected readonly CountryRepository $countryRepository, protected readonly InstitutionRepository $institutionRepository)
+    {
+    }
 
     #[Route('/', name: 'output_index')]
     public function index(): Response
@@ -19,7 +24,10 @@ class HomeController extends AbstractController
     #[Route('/collections', name: 'output_collections')]
     public function collections(): Response
     {
-        return $this->render('output/home/collections.html.twig');
+        $countries = $this->countryRepository->findWithInstitutions();
+        $institutions = $this->institutionRepository->getWithCoords();
+
+        return $this->render('output/home/collections.html.twig', ["countries" => $countries, "institutions" => $institutions]);
     }
 
     #[Route('/systems', name: 'output_systems')]

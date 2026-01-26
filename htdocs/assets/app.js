@@ -6,6 +6,7 @@ import {searchFormSubmit} from "./js/searchFormSubmit";
 import specimenMap, {dynamicReferences} from "./js/specimenDetailMap";
 import materializeInit from "./js/materializeInit";
 import specimenLinks from "./js/specimenDetailLinks";
+import institutionMap from "./js/institutionMap";
 document.addEventListener('DOMContentLoaded', function () {
 
     statistics();
@@ -15,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // specimenLinks();
     dynamicReferences();
     materializeInit();
+    institutionMap();
 
     const miradorEl = document.getElementById("mirador");
     if (miradorEl) {
