@@ -354,14 +354,8 @@ class SearchFormFacade
 
     protected function queryType(): void
     {
-        /**
-         * @note https://github.com/jacq-system/jacq-legacy/issues/4
-         */
         $this->queryBuilder
-            ->andWhere(
-                's.isTypus IS NOT NULL'
-            );
-
+            ->innerJoin('s.typus', 'typus');
     }
 
     protected function queryImages(): void
