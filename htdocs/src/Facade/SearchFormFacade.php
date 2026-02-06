@@ -539,6 +539,11 @@ class SearchFormFacade
 
         $totalPages = ceil($totalRecordCount / $recordsPerPage);
 
+        if ($currentPage > $totalPages) {
+            $currentPage = 1;
+            $this->searchFormSessionService->setSetting('page', 1);
+        }
+
         $pages[] = 1;
         if ($currentPage > 1) {
 

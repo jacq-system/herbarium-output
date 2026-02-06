@@ -15,6 +15,9 @@ L.Icon.Default.mergeOptions({
 let mapInstance = null;
 export default function institutionMap() {
     const mapContainer = document.getElementById('map-institutions');
+    if (!mapContainer) {
+        return null;
+    }
 
     mapInstance = L.map('map-institutions').setView([50.0755, 14.4378], 2);
 
