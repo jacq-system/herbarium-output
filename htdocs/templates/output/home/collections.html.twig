@@ -44,9 +44,14 @@
                             <li>{% if institution.createdAt > date('-6 months') %}
                                     ! NEW !
                                 {% endif %}
-                                <a href="{{ institution.IHLink }}" target="_blank">
+                                {% if institution.IHLink %}
+                                    <a href="{{ institution.IHLink }}" target="_blank">
+                                        {{ institution.IHDescription }}
+                                    </a>
+                                {% else %}
                                     {{ institution.IHDescription }}
-                                </a>
+                                {% endif %}
+
                             </li>
                         {% endfor %}
                     </ul>
