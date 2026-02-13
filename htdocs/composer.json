@@ -19,7 +19,7 @@
     "ext-fileinfo": "*",
     "doctrine/doctrine-bundle": "^3",
     "doctrine/doctrine-migrations-bundle": "^4",
-    "jacq-system/orm-model": "^0.2",
+    "jacq-system/orm-model": "^0.3",
     "jms/serializer-bundle": "^5",
     "phpoffice/phpspreadsheet": "^5",
     "symfony/asset": "^8",
