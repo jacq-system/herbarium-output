@@ -1,28 +1,30 @@
 <tr>
     <td>
-        {% if specimen.observation or specimen.imageObservation or specimen.image %}
+        {% set icon = getImageIconsData(specimen) %}
 
-            {% if specimen.observation and not specimen.imageObservation %} {#  has no link #}
-                <img height="15" alt='' src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}"
-                     width="15"/>
+        {% if icon %}
+
+            {% if icon.hasObservationOnly %}
+                <img height="15"
+                     width="15"
+                     src="{{ asset('recordIcons/' ~ specimen.getImageIconFilename()) }}">
+
+            {% elseif icon.iiifCapable or icon.hasPhaidra %}
+                <a href="{{ icon.iiifUrl ~ '?manifest=' ~ getManifestUrl(specimen) }}" target="imgBrowser">
+                    <img height="15" width="15" src="{{ asset('recordIcons/' ~ specimen.getImageIconFilename()) }}">
+                </a>
+
+                <a href="{{ icon.iiifUrl ~ '?manifest=' ~ getManifestUrl(specimen) }}" target="_blank">
+                    <img height="15" width="15" src="{{ asset('recordIcons/logo-iiif.png') }}">
+                </a>
+
             {% else %}
-                {% if (specimen.herbCollection.institution.imageDefinition is not null and specimen.herbCollection.institution.imageDefinition.iiifCapable) or (specimen.phaidraImages is not empty) %}
-
-                    <a href='{{ specimen.herbCollection.institution.imageDefinition.iiifUrl }}?manifest={{ getManifestUrl(specimen) }}'
-                       target='imgBrowser'>
-                        <img height='15' width="15" alt=''
-                             src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}">
-                    </a><br>
-                    <a href='{{ specimen.herbCollection.institution.imageDefinition.iiifUrl }}?manifest={{ getManifestUrl(specimen) }}'
-                       target='_blank'>
-                        <img height='15' width='15' alt='' src='{{ asset('recordIcons') }}/logo-iiif.png'>
-                    </a>
-                {% else %}
-                    <a href='{{ path('output_image_endpoint', { 'filename': specimen.id }) }}&method=show'
-                       target='imgBrowser'><img height='15' width="15" alt=''
-                                                src="{{ asset('recordIcons') }}/{{ specimen.getImageIconFilename() }}"></a>
-                {% endif %}
+                <a href="{{ path('output_image_endpoint', { filename: specimen.id }) }}&method=show"
+                   target="imgBrowser">
+                    <img height="15" width="15" src="{{ asset('recordIcons/' ~ specimen.getImageIconFilename()) }}">
+                </a>
             {% endif %}
+
         {% endif %}
     </td>
     <td>

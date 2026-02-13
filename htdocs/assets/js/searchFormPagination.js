@@ -1,4 +1,4 @@
-import {hideProgressBar, searchFormSubmit, searchResults, showProgressBar} from './searchFormSubmit';
+import {searchResults} from './searchFormSubmit';
 export default function paginationInit() {
     const form = document.getElementById('searchForm');
 

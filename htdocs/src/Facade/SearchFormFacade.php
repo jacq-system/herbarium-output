@@ -354,14 +354,8 @@ class SearchFormFacade
 
     protected function queryType(): void
     {
-        /**
-         * @note https://github.com/jacq-system/jacq-legacy/issues/4
-         */
         $this->queryBuilder
-            ->andWhere(
-                's.isTypus IS NOT NULL'
-            );
-
+            ->innerJoin('s.typus', 'typus');
     }
 
     protected function queryImages(): void
@@ -538,6 +532,11 @@ class SearchFormFacade
         $currentPage = (int)$this->searchFormSessionService->getSetting('page', 1);
 
         $totalPages = ceil($totalRecordCount / $recordsPerPage);
+
+        if ($currentPage > $totalPages) {
+            $currentPage = 1;
+            $this->searchFormSessionService->setSetting('page', 1);
+        }
 
         $pages[] = 1;
         if ($currentPage > 1) {

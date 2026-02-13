@@ -2,24 +2,25 @@
 
 namespace App\Twig\Extension;
 
+use Doctrine\ORM\EntityManagerInterface;
 use JACQ\Entity\Jacq\Herbarinput\Collector;
 use JACQ\Entity\Jacq\Herbarinput\Species;
 use JACQ\Entity\Jacq\Herbarinput\SpecimenLink;
 use JACQ\Entity\Jacq\Herbarinput\Specimens;
+use JACQ\Repository\Herbarinput\CollectorRepository;
+use JACQ\Repository\Herbarinput\ImageDefinitionRepository;
 use JACQ\Service\GeoService;
 use JACQ\Service\Legacy\IiifFacade;
-use JACQ\Repository\Herbarinput\CollectorRepository;
-use JACQ\Service\SpecimenService;
 use JACQ\Service\SpeciesService;
+use JACQ\Service\SpecimenService;
 use JACQ\Service\TypusService;
-use Doctrine\ORM\EntityManagerInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 
 class SpecimenExtension extends AbstractExtension
 {
-    public function __construct(protected readonly IiifFacade $iiifFacade, protected readonly EntityManagerInterface $entityManager, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService, protected readonly SpeciesService $taxonService, protected readonly CollectorRepository $collectorRepository, readonly GeoService $geoService)
+    public function __construct(protected readonly IiifFacade $iiifFacade, protected readonly EntityManagerInterface $entityManager, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService, protected readonly SpeciesService $taxonService, protected readonly CollectorRepository $collectorRepository, readonly GeoService $geoService, protected readonly ImageDefinitionRepository $imageDefinitionRepository)
     {
     }
 
@@ -45,6 +46,7 @@ class SpecimenExtension extends AbstractExtension
             new TwigFunction('constructStableIdentifier', [$this, 'constructStableIdentifier']),
             new TwigFunction('getProtologs', [$this, 'getProtologs']),
             new TwigFunction('getRelatedSpecimens', [$this, 'getRelatedSpecimenRelations']),
+            new TwigFunction('getImageIconsData', [$this, 'getImageIconsData']),
 
         ];
     }
@@ -136,7 +138,7 @@ class SpecimenExtension extends AbstractExtension
 
         if ($specimen->hasCoords()) {
             $coords = $this->geoService->DMSToDecimal($specimen->getDMSCoords());
-            $text .= " | " . round($coords->getLat(),5) . ", " . round($coords->getLng(),5);
+            $text .= " | " . round($coords->getLat(), 5) . ", " . round($coords->getLng(), 5);
         }
         return $text;
     }
@@ -186,12 +188,29 @@ class SpecimenExtension extends AbstractExtension
         foreach ($specimen->getAllDirectRelations() as $relation) {
             /** @var SpecimenLink $relation */
             if ($relation->specimen1->id === $specimen->id) {
-                $relations[] = ["relation"=>$relation->linkQualifier?->name, "specimen"=>$relation->specimen2];
+                $relations[] = ["relation" => $relation->linkQualifier?->name, "specimen" => $relation->specimen2];
             } else {
-                $relations[] = ["relation"=>$relation->linkQualifier?->nameReverse, "specimen"=>$relation->specimen1];
+                $relations[] = ["relation" => $relation->linkQualifier?->nameReverse, "specimen" => $relation->specimen1];
             }
         }
         return $relations;
+    }
+
+    public function getImageIconsData(Specimens $specimen): array
+    {
+        if (!$specimen->observation && !$specimen->imageObservation && !$specimen->image) {
+            return [];
+        }
+
+        $imageDefinition = $this->imageDefinitionRepository
+            ->getImageDefiniton($specimen->herbCollection->institution);
+
+        return [
+            'iiifUrl' => $imageDefinition?->iiifUrl,
+            'iiifCapable' => $imageDefinition?->iiifCapable ?? false,
+            'hasPhaidra' => !empty($this->specimenService->getPhaidraImages($specimen)),
+            'hasObservationOnly' => $specimen->observation && !$specimen->imageObservation,
+        ];
     }
 
 }

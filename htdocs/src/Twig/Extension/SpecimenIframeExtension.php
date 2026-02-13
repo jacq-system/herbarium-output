@@ -5,6 +5,7 @@ namespace App\Twig\Extension;
 use JACQ\Entity\Jacq\Herbarinput\Institution;
 use JACQ\Entity\Jacq\Herbarinput\Specimens;
 use JACQ\Enum\JacqRoutesNetwork;
+use JACQ\Repository\Herbarinput\ImageDefinitionRepository;
 use JACQ\Service\Legacy\IiifFacade;
 use JACQ\Service\ImageService;
 use JACQ\Service\JacqNetworkService;
@@ -15,7 +16,7 @@ use Twig\TwigFilter;
 
 class SpecimenIframeExtension extends AbstractExtension
 {
-    public function __construct(protected readonly RouterInterface $router, protected readonly IIIFFacade $iiifFacade, protected readonly ImageService $imageService, protected LoggerInterface $logger, protected readonly JacqNetworkService $jacqNetworkService)
+    public function __construct(protected readonly RouterInterface $router, protected readonly IIIFFacade $iiifFacade, protected readonly ImageService $imageService, protected LoggerInterface $logger, protected readonly JacqNetworkService $jacqNetworkService, protected ImageDefinitionRepository $imageDefinitionRepository)
     {
     }
 
@@ -32,7 +33,7 @@ class SpecimenIframeExtension extends AbstractExtension
             return '';
         }
         $sourceId = $specimen->herbCollection->institution->id;
-        $imageDefinition = $specimen->herbCollection->institution->imageDefinition;
+        $imageDefinition = $this->imageDefinitionRepository->getImageDefiniton($specimen->herbCollection->institution);
         $phaidra = false;
         if ($sourceId === Institution::WU) {
             // ask phaidra server if it has the desired picture. If not, use old method
