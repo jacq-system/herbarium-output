@@ -156,7 +156,7 @@ class SearchFormController extends AbstractController
             $handle = fopen('php://output', 'w');
 
             fwrite($handle, <<<KML
-<?xml version="1.0" encoding="UTF-8"?><kml xmlns="https://www.opengis.net/kml/2.2"><Document><description>search results Virtual Herbaria</description>
+<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><description>search results Virtual Herbaria</description>
 KML
             );
 
