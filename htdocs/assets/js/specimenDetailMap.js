@@ -2,7 +2,6 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import markerIcon from 'leaflet/dist/images/marker-icon-2x.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import 'leaflet.fullscreen/Control.FullScreen.css';
 import 'leaflet.fullscreen';
 
 export default function specimenMap() {
