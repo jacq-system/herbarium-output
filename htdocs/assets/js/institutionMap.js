@@ -19,7 +19,7 @@ export default function institutionMap() {
         return null;
     }
 
-    mapInstance = L.map('map-institutions').setView([50.0755, 14.4378], 3);
+    mapInstance = L.map('map-institutions').setView([20.0755, 14.4378], 2);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
