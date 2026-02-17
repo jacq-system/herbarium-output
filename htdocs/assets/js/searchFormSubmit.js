@@ -47,6 +47,7 @@ export function searchResults(form) {
         })
         .catch((error) => {
             console.error('Error:', error);
+            hideProgressBar();
             targetElement.innerHTML = '<p>Sorry, an error occurred.</p>';
         });
 

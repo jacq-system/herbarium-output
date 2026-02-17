@@ -52,7 +52,7 @@ async function manifestExists(url) {
     try {
         const res = await fetch(url, { method: "HEAD" });
 
-        if (res.status === 405) {
+        if (!res.ok && res.status !== 404) {
             const fallback = await fetch(url, { method: "GET" });
             return fallback.ok;
         }
