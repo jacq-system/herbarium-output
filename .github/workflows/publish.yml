@@ -76,7 +76,7 @@ jobs:
                 run: php bin/console cache:warmup --env=prod
 
             -   name: Upload built assets
-                uses: actions/upload-artifact@v6
+                uses: actions/upload-artifact@v7
                 with:
                     name: built-assets
                     path: |
@@ -100,7 +100,7 @@ jobs:
                 run: echo "TAG=${GITHUB_REF##*/}" >> $GITHUB_ENV
             -   name: Build and push Docker image
                 id: push
-                uses: docker/build-push-action@v6.18.0
+                uses: docker/build-push-action@v6.19.2
                 with:
                     context: .
                     push: true
@@ -110,7 +110,7 @@ jobs:
                     build-args: |
                         GIT_TAG=${{ env.TAG }}
             -   name: Generate artifact attestation
-                uses: actions/attest-build-provenance@v3
+                uses: actions/attest-build-provenance@v4
                 with:
                     subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
                     subject-digest: ${{ steps.push.outputs.digest }}
