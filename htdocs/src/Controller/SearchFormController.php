@@ -237,7 +237,9 @@ class SearchFormController extends AbstractController
     {
         $parameters = $this->fromSessionFactory->create();
         $specimenSearchQuery = $this->searchQueryFactory->createForPublic();
-        $queryBuilder = $specimenSearchQuery->build($parameters);
+        $queryBuilder = $specimenSearchQuery->build($parameters)
+            ->resetDQLPart('orderBy')
+            ->orderBy('specimen.id');
 
         return new StreamedResponse(function () use ($queryBuilder) {
             try {
