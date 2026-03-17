@@ -28,7 +28,7 @@
         {% endif %}
     </td>
     <td>
-        <a href='{{ path('output_specimenDetail', {'specimenId': specimen.id }) }}'>{{ getScientificName(specimen) }}</a>
+        <a href='{{ path('output_specimenDetail', {'specimenId': specimen.id }) }}'>{{ specimen.species.materializedName.scientificName }}</a>
         {{ specimen.species | taxonAuthority | raw }}
     </td>
     <td>{% include 'output/searchForm/collector_links.html.twig' with { 'specimen': specimen } %}</td>
