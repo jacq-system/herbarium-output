@@ -42,7 +42,6 @@ class SpecimenExtension extends AbstractExtension
             new TwigFunction('getBloodHoundId', [$this, 'getBloodHoundId']),
             new TwigFunction('getCollectionText', [$this, 'getCollectionText']),
             new TwigFunction('getManifestUrl', [$this, 'getManifestUrl']),
-            new TwigFunction('getScientificName', [$this, 'getScientificName']),
             new TwigFunction('constructStableIdentifier', [$this, 'constructStableIdentifier']),
             new TwigFunction('getProtologs', [$this, 'getProtologs']),
             new TwigFunction('getRelatedSpecimens', [$this, 'getRelatedSpecimenRelations']),
@@ -83,13 +82,6 @@ class SpecimenExtension extends AbstractExtension
     public function getCollectionText(Specimens $specimen): ?string
     {
         return $this->specimenService->getCollectionText($specimen);
-
-    }
-
-    public function getScientificName(Specimens $specimen): string
-    {
-
-        return $this->specimenService->getScientificName($specimen);
 
     }
 

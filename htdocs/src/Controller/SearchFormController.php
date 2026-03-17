@@ -2,13 +2,18 @@
 
 namespace App\Controller;
 
-use App\Facade\SearchFormFacade;
-use App\Service\ExcelService;
-use App\Service\SearchFormSessionService;
 use Doctrine\ORM\EntityNotFoundException;
+use JACQ\Application\Specimen\Export\ExcelService;
+use JACQ\Application\Specimen\Export\GeojsonService;
+use JACQ\Application\Specimen\Export\KmlService;
+use JACQ\Application\Specimen\Search\SpecimenBatchProvider;
+use JACQ\Application\Specimen\Search\SpecimenSearchParameters;
+use JACQ\Application\Specimen\Search\SpecimenSearchQueryFactory;
 use JACQ\Repository\Herbarinput\HerbCollectionRepository;
 use JACQ\Repository\Herbarinput\InstitutionRepository;
 use JACQ\Service\SpecimenService;
+use JACQ\UI\Http\SearchFormSessionService;
+use JACQ\UI\Http\SpecimenSearchParametersFromSessionFactory;
 use PhpOffice\PhpSpreadsheet\Writer\Csv;
 use PhpOffice\PhpSpreadsheet\Writer\Ods;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -19,7 +24,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
-use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -28,8 +32,9 @@ class SearchFormController extends AbstractController
 {
 
     public const array RECORDS_PER_PAGE = array(10, 30, 50, 100);
+    public const int PAGINATION_RANGE = 3;
 
-    public function __construct(protected readonly HerbCollectionRepository $herbCollectionRepository, protected readonly InstitutionRepository $institutionRepository, protected readonly SearchFormFacade $searchFormFacade, protected readonly SearchFormSessionService $sessionService, protected readonly SpecimenService $specimenService, protected readonly ExcelService $excelService, protected LoggerInterface $statisticsLogger, protected LoggerInterface $appLogger, private CacheInterface $cache)
+    public function __construct(protected readonly HerbCollectionRepository $herbCollectionRepository, protected readonly InstitutionRepository $institutionRepository, protected readonly SearchFormSessionService $sessionService, protected readonly SpecimenService $specimenService, protected LoggerInterface $statisticsLogger, protected LoggerInterface $appLogger, private CacheInterface $cache, protected SpecimenSearchParametersFromSessionFactory $fromSessionFactory, protected SpecimenSearchQueryFactory $searchQueryFactory, protected SpecimenBatchProvider $specimenBatchProvider, protected KmlService $kmlService, protected ExcelService $excelService, protected GeojsonService $geojsonService)
     {
     }
 
@@ -64,9 +69,16 @@ class SearchFormController extends AbstractController
         return $this->render('output/searchForm/database.html.twig', ["institutions" => $institutions, 'collections' => $collections, 'sessionService' => $this->sessionService]);
     }
 
+    protected function getOffset()
+    {
+        $page = (int)$this->sessionService->getSetting('page', 1);
+        return ($page - 1) * (int)$this->sessionService->getSetting('recordsPerPage', self::RECORDS_PER_PAGE[0]);
+    }
+
     #[Route('/databaseSearch', name: 'output_databaseSearch', methods: ['POST'])]
     public function databaseSearch(Request $request): Response
     {
+        //set up search criteria
         $postData = $request->request->all();
         $allEmpty = true;
         foreach ($postData as $value) {
@@ -80,15 +92,64 @@ class SearchFormController extends AbstractController
         }
         $this->sessionService->setFilters($postData);
 
-        $pagination = $this->searchFormFacade->providePaginationInfo();
+        if ($this->sessionService->getSort() === null) {
+            $this->sessionService->setSort('sciname');
+        }
+
+        $parameters = $this->fromSessionFactory->create();
+        $specimenSearchQuery = $this->searchQueryFactory->createForPublic();
+        $queryBuilder = $specimenSearchQuery->build($parameters);
+
+        $pagination = $this->providePaginationInfo($parameters);
 
         return $this->render('output/searchForm/databaseSearch.html.twig', [
-            'records' => $this->searchFormFacade->search(),
+            'records' => $this->specimenBatchProvider->iterate($queryBuilder, $this->getOffset(), (int)$this->sessionService->getSetting('recordsPerPage', self::RECORDS_PER_PAGE[0])),
             'recordsCount' => $pagination["totalRecords"],
             'totalPages' => $pagination['totalPages'],
             'pages' => $pagination['pages'],
             'recordsPerPage' => self::RECORDS_PER_PAGE,
             'sessionService' => $this->sessionService]);
+    }
+
+    protected function providePaginationInfo(SpecimenSearchParameters $parameters): array
+    {
+        $specimenSearchQuery = $this->searchQueryFactory->createForPublic();
+        $totalRecordCount = $specimenSearchQuery->countResults($parameters);
+        $recordsPerPage = (int)$this->sessionService->getSetting('recordsPerPage', self::RECORDS_PER_PAGE[0]);
+        $currentPage = (int)$this->sessionService->getSetting('page', 1);
+
+        $totalPages = ceil($totalRecordCount / $recordsPerPage);
+
+        if ($currentPage > $totalPages) {
+            $currentPage = 1;
+            $this->sessionService->setSetting('page', 1);
+        }
+
+        $pages[] = 1;
+        if ($currentPage > 1) {
+
+            if ($currentPage > self::PAGINATION_RANGE + 2) {
+                $pages[] = '...';
+            }
+        }
+
+        $start = max(2, $currentPage - self::PAGINATION_RANGE);
+        $end = min($totalPages - 1, $currentPage + self::PAGINATION_RANGE);
+
+        for ($i = $start; $i <= $end; $i++) {
+            $pages[] = $i;
+        }
+
+        if ($currentPage < $totalPages) {
+            if ($currentPage < $totalPages - self::PAGINATION_RANGE - 1) {
+                $pages[] = '...';
+            }
+        }
+        if ($totalPages > 1) {
+            $pages[] = $totalPages;
+        }
+        return ["totalRecords" => $totalRecordCount, "totalPages" => $totalPages, "pages" => $pages];
+
     }
 
     #[Route('/databaseSearchSettings', name: 'output_databaseSearchSettings', methods: ['GET'])]
@@ -147,59 +208,64 @@ class SearchFormController extends AbstractController
     }
 
     #[Route('/exportKml', name: 'output_exportKml', methods: ['GET'])]
-    public function exportKml(?Profiler $profiler): Response
+    public function exportKml(): Response
     {
-        if ($profiler !== null) {
-            $profiler->disable();
-        }
-        $response = new StreamedResponse(function () {
-            $handle = fopen('php://output', 'w');
+        $parameters = $this->fromSessionFactory->create();
+        $specimenSearchQuery = $this->searchQueryFactory->createForPublic();
+        $queryBuilder = $specimenSearchQuery->build($parameters);
 
-            fwrite($handle, <<<KML
-<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><description>search results Virtual Herbaria</description>
-KML
-            );
-
-            foreach ($this->searchFormFacade->searchForKmlExport() as $placemark) {
-                fwrite($handle, $placemark . "\n");
+        return new StreamedResponse(function () use ($queryBuilder) {
+            try {
+                foreach ($this->kmlService->KmlRecords($queryBuilder, $this->getOffset()) as $chunk) {
+                    echo $chunk;
+                }
+            } catch (\Throwable $e) {
+                error_log($e->getMessage());
+                throw $e;
             }
-
-            fwrite($handle, <<<KML
-</Document>
-</kml>
-KML
-            );
-
-            fclose($handle);
-        });
-
-        $response->headers->set('Content-Type', 'application/vnd.google-earth.kml+xml');
-        $response->headers->set('Content-Disposition', 'attachment; filename="specimens_download.kml"');
-
-        return $response;
+        },
+            200,
+            [
+                'Content-Type' => 'application/vnd.google-earth.kml+xml',
+                'Content-Disposition' => 'attachment; filename="specimens_download.kml"',
+            ]
+        );
     }
 
     #[Route('/exportGeoJson', name: 'output_exportGeoJson', methods: ['GET'])]
     public function exportGeoJson(): Response
     {
-        return new StreamedResponse(function () {
-            foreach ($this->searchFormFacade->searchForGeoJson() as $chunk) {
-                echo $chunk;
-                flush();
+        $parameters = $this->fromSessionFactory->create();
+        $specimenSearchQuery = $this->searchQueryFactory->createForPublic();
+        $queryBuilder = $specimenSearchQuery->build($parameters);
+
+        return new StreamedResponse(function () use ($queryBuilder) {
+            try {
+                foreach ($this->geojsonService->GeojsonRecords($queryBuilder, $this->getOffset(), 1000 * 1000) as $chunk) {
+                    echo $chunk;
+                }
+            } catch (\Throwable $e) {
+                error_log($e->getMessage());
+                throw $e;
             }
-        }, 200, [
-            'Content-Type' => 'application/json',
-        ]);
+        },
+            200,
+            [
+                'Content-Type' => 'application/json',
+            ]
+        );
     }
 
     #[Route('/exportExcel', name: 'output_exportExcel', methods: ['GET'])]
     public function exportExcel(): Response
     {
-        $spreadsheet = $this->excelService->prepareExcel();
-        $filledSpreadsheet = $this->excelService->easyFillExcel($spreadsheet, ExcelService::HEADER, $this->searchFormFacade->getSpecimenDataforExport());
+        $parameters = $this->fromSessionFactory->create();
+        $specimenSearchQuery = $this->searchQueryFactory->createForPublic();
+        $queryBuilder = $specimenSearchQuery->build($parameters);
+        $spreadsheet = $this->excelService->createSpecimenExport($queryBuilder, $this->getOffset());
 
-        $response = new StreamedResponse(function () use ($filledSpreadsheet) {
-            $writer = new Xlsx($filledSpreadsheet);
+        $response = new StreamedResponse(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
             $writer->save('php://output');
         });
 
@@ -213,11 +279,13 @@ KML
     #[Route('/exportCsv', name: 'output_exportCsv', methods: ['GET'])]
     public function exportCsv(): Response
     {
-        $spreadsheet = $this->excelService->prepareExcel();
-        $filledSpreadsheet = $this->excelService->easyFillExcel($spreadsheet, ExcelService::HEADER, $this->searchFormFacade->getSpecimenDataforExport());
+        $parameters = $this->fromSessionFactory->create();
+        $specimenSearchQuery = $this->searchQueryFactory->createForPublic();
+        $queryBuilder = $specimenSearchQuery->build($parameters);
+        $spreadsheet = $this->excelService->createSpecimenExport($queryBuilder, $this->getOffset());
 
-        $response = new StreamedResponse(function () use ($filledSpreadsheet) {
-            $writer = new Csv($filledSpreadsheet);
+        $response = new StreamedResponse(function () use ($spreadsheet) {
+            $writer = new Csv($spreadsheet);
             $writer->save('php://output');
         });
 
@@ -231,11 +299,13 @@ KML
     #[Route('/exportOds', name: 'output_exportOds', methods: ['GET'])]
     public function exportOds(): Response
     {
-        $spreadsheet = $this->excelService->prepareExcel();
-        $filledSpreadsheet = $this->excelService->easyFillExcel($spreadsheet, ExcelService::HEADER, $this->searchFormFacade->getSpecimenDataforExport());
+        $parameters = $this->fromSessionFactory->create();
+        $specimenSearchQuery = $this->searchQueryFactory->createForPublic();
+        $queryBuilder = $specimenSearchQuery->build($parameters);
+        $spreadsheet = $this->excelService->createSpecimenExport($queryBuilder, $this->getOffset());
 
-        $response = new StreamedResponse(function () use ($filledSpreadsheet) {
-            $writer = new Ods($filledSpreadsheet);
+        $response = new StreamedResponse(function () use ($spreadsheet) {
+            $writer = new Ods($spreadsheet);
             $writer->save('php://output');
         });
 

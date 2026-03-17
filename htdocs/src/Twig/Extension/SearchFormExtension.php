@@ -2,7 +2,8 @@
 
 namespace App\Twig\Extension;
 
-use App\Service\SearchFormSessionService;
+
+use JACQ\UI\Http\SearchFormSessionService;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 
@@ -22,9 +23,6 @@ class SearchFormExtension extends AbstractExtension
     public function getSortableChar(string $column): string
     {
         $sort = $this->searchFormSessionService->getSort();
-        if ($sort === null && $column === 'taxon') {
-            return ' ↓';
-        }
         if ($sort !== null && key($sort) === $column) {
             if ($sort[$column] === 'ASC') {
                 return ' ↓';
