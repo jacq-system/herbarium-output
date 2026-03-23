@@ -211,7 +211,7 @@ class SearchFormController extends AbstractController
     public function exportKml(): Response
     {
         $parameters = $this->fromSessionFactory->create();
-        $specimenSearchQuery = $this->searchQueryFactory->createForPublic();
+        $specimenSearchQuery = $this->searchQueryFactory->createForPublicWithCoords();
         $queryBuilder = $specimenSearchQuery->build($parameters);
 
         return new StreamedResponse(function () use ($queryBuilder) {
@@ -236,7 +236,7 @@ class SearchFormController extends AbstractController
     public function exportGeoJson(): Response
     {
         $parameters = $this->fromSessionFactory->create();
-        $specimenSearchQuery = $this->searchQueryFactory->createForPublic();
+        $specimenSearchQuery = $this->searchQueryFactory->createForPublicWithCoords();
         $queryBuilder = $specimenSearchQuery->build($parameters)
             ->resetDQLPart('orderBy')
             ->orderBy('specimen.id');
