@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Controller;
 
@@ -6,6 +8,7 @@ use JACQ\Exception\InvalidStateException;
 use JACQ\Service\ImageService;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,23 +18,22 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ImageController extends AbstractController
 {
+    public const array RECORDS_PER_PAGE = [10, 30, 50, 100];
 
-    public const array RECORDS_PER_PAGE = array(10, 30, 50, 100);
-
-    public function __construct(protected ImageService $imageService, protected LoggerInterface $appLogger)
+    public function __construct(protected ImageService $imageService, protected LoggerInterface $appLogger, private string $projectDir)
     {
     }
 
     #[Route('/image', name: 'output_image_endpoint', methods: ['GET'])]
     public function showImage(#[MapQueryParameter] string $filename, #[MapQueryParameter] ?string $sid, #[MapQueryParameter] string $method, #[MapQueryParameter] ?string $format): Response
     {
-        if ($_SERVER['REMOTE_ADDR'] == '94.177.9.139' && !empty($sid) && $method == 'download' && strrpos($filename, '_') == strpos($filename, '_')) {
+        if ('94.177.9.139' == $_SERVER['REMOTE_ADDR'] && !empty($sid) && 'download' == $method && strrpos($filename, '_') == strpos($filename, '_')) {
             // kulturpool is calling...
             // Redirect to new location
-            $this->redirectToRoute("services_rest_images_europeana", ["specimenID" => $sid], 303);
+            $this->redirectToRoute('services_rest_images_europeana', ['specimenID' => $sid], 303);
         }
 
-        //TODO only due Djatoka in the getPicDetails() is needed to have this format, otherwise could be derived from the streamed response headers, see bellow
+        // TODO only due Djatoka in the getPicDetails() is needed to have this format, otherwise could be derived from the streamed response headers, see bellow
         $contentType = match ($format) {
             'jpeg2000' => 'image/jp2',
             'tiff' => 'image/tiff',
@@ -55,7 +57,7 @@ class ImageController extends AbstractController
                     $url = $this->imageService->getSourceUrl($picDetails, $contentType, 2);
                     break;
                 case 'europeana':   // NOTE: not supported on non-djatoka servers (yet)
-                    if (strtolower(substr($picDetails['requestFileName'], 0, 3)) == 'wu_' && $this->imageService->checkPhaidra((int)$picDetails['specimenID'])) {
+                    if ('wu_' == strtolower(substr($picDetails['requestFileName'], 0, 3)) && $this->imageService->checkPhaidra((int) $picDetails['specimenID'])) {
                         // Phaidra (only WU)
                         $picDetails['imgserver_type'] = 'phaidra';
                     } else {
@@ -74,32 +76,32 @@ class ImageController extends AbstractController
                     return $this->json($this->imageService->getPicInfo($picDetails));
                 case 'show':        // detail, ajax/results.php
                     $url = $this->imageService->getExternalImageViewerUrl($picDetails);
+
                     return new RedirectResponse($url, 303, ['X-Content-Type-Options' => 'nosniff']);
             }
 
             $streamContext = stream_context_create([
                 'http' => ['follow_location' => true,
                     'timeout' => 60],
-                'ssl' => ["verify_peer" => false,
-                    "verify_peer_name" => false]
+                'ssl' => ['verify_peer' => false,
+                    'verify_peer_name' => false],
             ]);
 
             $imageStream = @fopen($url, 'rb', false, $streamContext);
-            if ($imageStream === false) {
+            if (false === $imageStream) {
                 $this->appLogger->warning('Image [{filename}] not found.', [
                     'url' => $url,
                     'filename' => $filename,
                     'sid' => $sid,
                     'method' => $method,
-                    'format' => $format
+                    'format' => $format,
                 ]);
                 throw new InvalidStateException('Unable to open image stream from '.$url.' route');
             }
 
-
             $headers = get_headers($url, true);
 
-//                    $contentType = $headers['Content-Type'] ?? 'image/jpeg'; // Fallback na JPEG
+            //                    $contentType = $headers['Content-Type'] ?? 'image/jpeg'; // Fallback na JPEG
             $contentLength = $headers['Content-Length'] ?? null;
             $response = new StreamedResponse(function () use ($imageStream) {
                 fpassthru($imageStream);
@@ -112,29 +114,23 @@ class ImageController extends AbstractController
             }
 
             return $response;
+        }
+        switch ($method) {
+            case 'download':
+            case 'thumb':
+                $filePath = $this->projectDir.'/public/recordIcons/404.png';
 
-        } else {
-            switch ($method) {
-                case 'download':
-                case 'thumb':
-                    $filePath = $this->getParameter('kernel.project_dir') . '/public/recordIcons/404.png';
+                if (!file_exists($filePath) || 'image/png' !== mime_content_type($filePath)) {
+                    throw $this->createNotFoundException('Sorry, this image does not exist.');
+                }
+                $response = new BinaryFileResponse($filePath);
+                $response->headers->set('Content-Type', 'image/png');
 
-                    if (!file_exists($filePath) || mime_content_type($filePath) !== 'image/png') {
-                        throw $this->createNotFoundException('Sorry, this image does not exist.');
-                    }
-
-                    return new Response(file_get_contents($filePath), 200, [
-                        'Content-Type' => 'image/png',
-                        'Content-Length' => filesize($filePath),
-                    ]);
-                case 'thumbs':
-                    return new JsonResponse(['error' => 'not found'], 404);
-                default:
-                    return new Response('not found', 404);
-
-            }
+                return $response;
+            case 'thumbs':
+                return new JsonResponse(['error' => 'not found'], 404);
+            default:
+                return new Response('not found', 404);
         }
     }
-
-
 }

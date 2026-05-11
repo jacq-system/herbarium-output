@@ -1,7 +1,8 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Twig\Extension;
-
 
 use JACQ\UI\Http\SearchFormSessionService;
 use Twig\Extension\AbstractExtension;
@@ -9,7 +10,7 @@ use Twig\TwigFilter;
 
 class SearchFormExtension extends AbstractExtension
 {
-    public function __construct(readonly private SearchFormSessionService $searchFormSessionService)
+    public function __construct(private readonly SearchFormSessionService $searchFormSessionService)
     {
     }
 
@@ -23,16 +24,14 @@ class SearchFormExtension extends AbstractExtension
     public function getSortableChar(string $column): string
     {
         $sort = $this->searchFormSessionService->getSort();
-        if ($sort !== null && key($sort) === $column) {
-            if ($sort[$column] === 'ASC') {
+        if (null !== $sort && key($sort) === $column) {
+            if ('ASC' === $sort[$column]) {
                 return ' ↓';
-            } else {
-                return ' ↑';
             }
+
+            return ' ↑';
         }
 
-        return "";
+        return '';
     }
-
-
 }

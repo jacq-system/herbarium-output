@@ -1,0 +1,30 @@
+name: PHP Stan Level 7
+
+on:
+  push:
+    branches:
+      - main
+    tags-ignore:
+      - '*'
+  pull_request:
+
+jobs:
+  phpstan:
+    name: PHPStan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run PHPStan
+        run: composer phpstan
