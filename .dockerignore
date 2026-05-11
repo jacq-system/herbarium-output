@@ -1,0 +1,9 @@
+htdocs/assets
+htdocs/node_modules
+htdocs/tests
+htdocs/npm.sh
+htdocs/Makefile
+htdocs/composer.lock
+htdocs/package-lock.json
+htdocs/webpack.config.js
+
