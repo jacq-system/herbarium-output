@@ -1,10 +1,12 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Controller;
 
-use JACQ\Service\StatisticsService;
 use JACQ\Enum\CoreObjectsEnum;
 use JACQ\Enum\TimeIntervalEnum;
+use JACQ\Service\StatisticsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
@@ -12,7 +14,6 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ToolsController extends AbstractController
 {
-
     public function __construct(protected readonly StatisticsService $statisticsService)
     {
     }
@@ -32,14 +33,15 @@ class ToolsController extends AbstractController
 
         $periodSum = [];
         foreach ($data['results'] as $institution) {
-            for ($i = $periodMin; $i <= $periodMax; $i++) {
+            for ($i = $periodMin; $i <= $periodMax; ++$i) {
                 if (!isset($periodSum[$i])) {
                     $periodSum[$i] = 0;
                 }
                 $periodSum[$i] += $institution['stat'][$i];
             }
         }
-        return $this->render('output/tools/statistics_results.html.twig', ["results" => $data['results'], "periodMin" => $periodMin, "periodMax" => $periodMax, 'suma' => $periodSum]);
+
+        return $this->render('output/tools/statistics_results.html.twig', ['results' => $data['results'], 'periodMin' => $periodMin, 'periodMax' => $periodMax, 'suma' => $periodSum]);
     }
 
     #[Route('/tools', name: 'tools_overview')]
@@ -47,5 +49,4 @@ class ToolsController extends AbstractController
     {
         return $this->render('output/tools/default.html.twig');
     }
-
 }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Twig\Extension;
 
@@ -15,18 +17,26 @@ class StatisticsExtension extends AbstractExtension
         ];
     }
 
+    /**
+     * @param list<int> $numbers
+     */
     public function calculateMedian(array $numbers): float
     {
-        sort($numbers);
-        $count = count($numbers);
+        sort($numbers, SORT_NUMERIC);
 
-        if ($count % 2 === 1) {
-            return $numbers[intval($count / 2)];
-        } else {
-            return ($numbers[$count / 2 - 1] + $numbers[$count / 2]) / 2;
+        $count = count($numbers);
+        $mid = intdiv($count, 2);
+
+        if (1 === $count % 2) {
+            return (float) $numbers[$mid];
         }
+
+        return ($numbers[$mid - 1] + $numbers[$mid]) / 2;
     }
 
+    /**
+     * @param list<int> $numbers
+     */
     public function calculateAvg(array $numbers): float
     {
         $sum = array_sum($numbers);

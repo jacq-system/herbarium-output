@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Controller;
 
@@ -10,7 +12,6 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class HomeController extends AbstractController
 {
-
     public function __construct(protected readonly CountryRepository $countryRepository, protected readonly InstitutionRepository $institutionRepository)
     {
     }
@@ -27,7 +28,7 @@ class HomeController extends AbstractController
         $countries = $this->countryRepository->findWithInstitutions();
         $institutions = $this->institutionRepository->getWithCoords();
 
-        return $this->render('output/home/collections.html.twig', ["countries" => $countries, "institutions" => $institutions]);
+        return $this->render('output/home/collections.html.twig', ['countries' => $countries, 'institutions' => $institutions]);
     }
 
     #[Route('/systems', name: 'output_systems')]
@@ -47,5 +48,4 @@ class HomeController extends AbstractController
     {
         return $this->json($this->getParameter('app.version'));
     }
-
 }

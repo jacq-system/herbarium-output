@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Twig\Extension;
 
@@ -20,7 +22,7 @@ use Twig\TwigFunction;
 
 class SpecimenExtension extends AbstractExtension
 {
-    public function __construct(protected readonly IiifFacade $iiifFacade, protected readonly EntityManagerInterface $entityManager, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService, protected readonly SpeciesService $taxonService, protected readonly CollectorRepository $collectorRepository, readonly GeoService $geoService, protected readonly ImageDefinitionRepository $imageDefinitionRepository)
+    public function __construct(protected readonly IiifFacade $iiifFacade, protected readonly EntityManagerInterface $entityManager, protected readonly SpecimenService $specimenService, protected readonly TypusService $typusService, protected readonly SpeciesService $taxonService, protected readonly CollectorRepository $collectorRepository, public readonly GeoService $geoService, protected readonly ImageDefinitionRepository $imageDefinitionRepository)
     {
     }
 
@@ -46,7 +48,6 @@ class SpecimenExtension extends AbstractExtension
             new TwigFunction('getProtologs', [$this, 'getProtologs']),
             new TwigFunction('getRelatedSpecimens', [$this, 'getRelatedSpecimenRelations']),
             new TwigFunction('getImageIconsData', [$this, 'getImageIconsData']),
-
         ];
     }
 
@@ -56,18 +57,18 @@ class SpecimenExtension extends AbstractExtension
     }
 
     public function getTaxonAuthority(Species $taxon): string
-    { //TODO do not keep in database whole HTML including path to assets, the db view is also not necessary for this function..
+    { // TODO do not keep in database whole HTML including path to assets, the db view is also not necessary for this function..
         $text = '';
-        $sql = "SELECT serviceID, hyper FROM herbar_view.view_taxon_link_service WHERE taxonID = :taxon";
+        $sql = 'SELECT serviceID, hyper FROM herbar_view.view_taxon_link_service WHERE taxonID = :taxon';
         $result = $this->entityManager->getConnection()->executeQuery($sql, ['taxon' => $taxon->id])->fetchAllAssociative();
 
         foreach ($result as $rowtax) {
             $text .= '<br/>';
-            if ($rowtax['serviceID'] == 1) {
-                $text .= $rowtax["hyper"] . "&nbsp;";
-                $text .= str_replace("IPNI (K)", "Plants of the World Online / POWO (K)", str_replace("serviceID1_logo", "serviceID49_logo", str_replace("http://ipni.org/ipni/idPlantNameSearch.do?id=", "http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:", $rowtax["hyper"])));
+            if (1 == $rowtax['serviceID']) {
+                $text .= $rowtax['hyper'].'&nbsp;';
+                $text .= str_replace('IPNI (K)', 'Plants of the World Online / POWO (K)', str_replace('serviceID1_logo', 'serviceID49_logo', str_replace('http://ipni.org/ipni/idPlantNameSearch.do?id=', 'http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:', (string) $rowtax['hyper'])));
             } else {
-                $text .= $rowtax["hyper"];
+                $text .= $rowtax['hyper'];
             }
         }
 
@@ -82,34 +83,34 @@ class SpecimenExtension extends AbstractExtension
     public function getCollectionText(Specimens $specimen): ?string
     {
         return $this->specimenService->getCollectionText($specimen);
-
     }
 
     public function getLocality(Specimens $specimen): string
     {
         $text = '';
         $switch = false;
-        if ($specimen->country?->nameEng !== null) {
-            $text .= "<img src='/flags/" . strtolower($specimen->country->isoCode2) . ".png'> " . $specimen->country->nameEng;
+        if (null !== $specimen->country?->nameEng) {
+            $text .= "<img src='/flags/".strtolower($specimen->country->isoCode2).".png'> ".$specimen->country->nameEng;
             $switch = true;
         }
-        if ($specimen->province !== null) {
+        if (null !== $specimen->province) {
             if ($switch) {
-                $text .= ". ";
+                $text .= '. ';
             }
             $text .= $specimen->province->name;
             $switch = true;
         }
         if (!empty($specimen->locality)) {
             if ($switch) {
-                $text .= ". ";
+                $text .= '. ';
             }
             if (mb_strlen(trim($specimen->locality)) > 200) {
-                $text .= mb_substr(trim($specimen->locality), 0, 200) . "...";
+                $text .= mb_substr(trim($specimen->locality), 0, 200).'...';
             } else {
                 $text .= trim($specimen->locality);
             }
         }
+
         return $text;
     }
 
@@ -117,21 +118,22 @@ class SpecimenExtension extends AbstractExtension
     {
         $text = '';
         $switch = false;
-        if ($specimen->country?->nameEng !== null) {
-            $text .= "<img src='/flags/" . strtolower($specimen->country->isoCode2) . ".png'> " . $specimen->country->nameEng;
+        if (null !== $specimen->country?->nameEng) {
+            $text .= "<img src='/flags/".strtolower($specimen->country->isoCode2).".png'> ".$specimen->country->nameEng;
             $switch = true;
         }
-        if ($specimen->province !== null) {
+        if (null !== $specimen->province) {
             if ($switch) {
-                $text .= " / ";
+                $text .= ' / ';
             }
             $text .= $specimen->province->name;
         }
 
         if ($specimen->hasCoords()) {
             $coords = $this->geoService->DMSToDecimal($specimen->getDMSCoords());
-            $text .= " | " . round($coords->getLat(), 5) . ", " . round($coords->getLng(), 5);
+            $text .= ' | '.round($coords->getLat(), 5).', '.round($coords->getLng(), 5);
         }
+
         return $text;
     }
 
@@ -142,26 +144,24 @@ class SpecimenExtension extends AbstractExtension
 
     public function getHerbariumNumber(Specimens $specimen): string
     {
-
         $sourceId = $specimen->herbCollection->institution->id;
-        if ($sourceId === 29) {
-            return ($specimen->herbNumber) ?: ('B (JACQ-ID' . $specimen->id . ')');
-        } elseif ($sourceId === 50) {
-            return ($specimen->herbNumber) ?: ('Willing (JACQ-ID ' . $specimen->id . ')');
-        } else {
-            return $specimen->herbCollection->institution->code . " " . $specimen->herbNumber;
+        if (29 === $sourceId) {
+            return ($specimen->herbNumber) ?: ('B (JACQ-ID'.$specimen->id.')');
+        } elseif (50 === $sourceId) {
+            return ($specimen->herbNumber) ?: ('Willing (JACQ-ID '.$specimen->id.')');
         }
 
+        return $specimen->herbCollection->institution->code.' '.$specimen->herbNumber;
     }
 
     public function getAnnotation(Specimens $specimen): string
     {
         $sourceId = $specimen->herbCollection->id;
-        if ($sourceId == '35') {
-            return (preg_replace("#<a .*a>#", "", $specimen->getAnnotation(true) ?? ''));
+        if ('35' == $sourceId) {
+            return preg_replace('#<a .*a>#', '', $specimen->getAnnotation(true) ?? '');
         }
-        return $specimen->getAnnotation(true) ?? '';
 
+        return $specimen->getAnnotation(true) ?? '';
     }
 
     public function getTaxonName(Species $species): string
@@ -169,25 +169,35 @@ class SpecimenExtension extends AbstractExtension
         return $this->taxonService->taxonNameWithHybrids($species, true);
     }
 
+    /**
+     * @return mixed[]
+     */
     public function getProtologs(Species $species): array
     {
         return $this->typusService->getProtologs($species);
     }
 
+    /**
+     * @return mixed[]
+     */
     public function getRelatedSpecimenRelations(Specimens $specimen): array
     {
         $relations = [];
         foreach ($specimen->getAllDirectRelations() as $relation) {
             /** @var SpecimenLink $relation */
             if ($relation->specimen1->id === $specimen->id) {
-                $relations[] = ["relation" => $relation->linkQualifier?->name, "specimen" => $relation->specimen2];
+                $relations[] = ['relation' => $relation->linkQualifier?->name, 'specimen' => $relation->specimen2];
             } else {
-                $relations[] = ["relation" => $relation->linkQualifier?->nameReverse, "specimen" => $relation->specimen1];
+                $relations[] = ['relation' => $relation->linkQualifier?->nameReverse, 'specimen' => $relation->specimen1];
             }
         }
+
         return $relations;
     }
 
+    /**
+     * @return mixed[]
+     */
     public function getImageIconsData(Specimens $specimen): array
     {
         if (!$specimen->observation && !$specimen->imageObservation && !$specimen->image) {
@@ -199,10 +209,9 @@ class SpecimenExtension extends AbstractExtension
 
         return [
             'iiifUrl' => $imageDefinition?->iiifUrl,
-            'iiifCapable' => $imageDefinition?->iiifCapable ?? false,
+            'iiifCapable' => $imageDefinition->iiifCapable ?? false,
             'hasPhaidra' => !empty($this->specimenService->getPhaidraImages($specimen)),
             'hasObservationOnly' => $specimen->observation && !$specimen->imageObservation,
         ];
     }
-
 }

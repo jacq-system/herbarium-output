@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Controller;
 
@@ -30,8 +32,7 @@ use Symfony\Contracts\Cache\ItemInterface;
 
 class SearchFormController extends AbstractController
 {
-
-    public const array RECORDS_PER_PAGE = array(10, 30, 50, 100);
+    public const array RECORDS_PER_PAGE = [10, 30, 50, 100];
     public const int PAGINATION_RANGE = 3;
 
     public function __construct(protected readonly HerbCollectionRepository $herbCollectionRepository, protected readonly InstitutionRepository $institutionRepository, protected readonly SearchFormSessionService $sessionService, protected readonly SpecimenService $specimenService, protected LoggerInterface $statisticsLogger, protected LoggerInterface $appLogger, private CacheInterface $cache, protected SpecimenSearchParametersFromSessionFactory $fromSessionFactory, protected SpecimenSearchQueryFactory $searchQueryFactory, protected SpecimenBatchProvider $specimenBatchProvider, protected KmlService $kmlService, protected ExcelService $excelService, protected GeojsonService $geojsonService)
@@ -44,6 +45,7 @@ class SearchFormController extends AbstractController
         $this->sessionService->setSetting('page', 1);
         if ($reset) {
             $this->sessionService->reset();
+
             return $this->redirectToRoute('output_database');
         }
         $getData = $request->query->all();
@@ -53,36 +55,38 @@ class SearchFormController extends AbstractController
 
         $institutions = $this->cache->get('institutions_pairs_code_name', function (ItemInterface $item) {
             $item->expiresAfter(36000);
+
             return $this->institutionRepository->getAllPairsCodeName();
         });
 
         if (empty($this->sessionService->getFilter('institution'))) {
             $collections = $this->cache->get('herb_collections_pairs', function (ItemInterface $item) {
                 $item->expiresAfter(36000);
+
                 return $this->herbCollectionRepository->getAllAsPairs();
             });
         } else {
-            $collections = $this->herbCollectionRepository->getAllAsPairs((int)$this->sessionService->getFilter('institution'));
+            $collections = $this->herbCollectionRepository->getAllAsPairs((int) $this->sessionService->getFilter('institution'));
         }
 
-
-        return $this->render('output/searchForm/database.html.twig', ["institutions" => $institutions, 'collections' => $collections, 'sessionService' => $this->sessionService]);
+        return $this->render('output/searchForm/database.html.twig', ['institutions' => $institutions, 'collections' => $collections, 'sessionService' => $this->sessionService]);
     }
 
-    protected function getOffset()
+    protected function getOffset(): int
     {
-        $page = (int)$this->sessionService->getSetting('page', 1);
-        return ($page - 1) * (int)$this->sessionService->getSetting('recordsPerPage', self::RECORDS_PER_PAGE[0]);
+        $page = (int) $this->sessionService->getSetting('page', 1);
+
+        return ($page - 1) * (int) $this->sessionService->getSetting('recordsPerPage', self::RECORDS_PER_PAGE[0]);
     }
 
     #[Route('/databaseSearch', name: 'output_databaseSearch', methods: ['POST'])]
     public function databaseSearch(Request $request): Response
     {
-        //set up search criteria
+        // set up search criteria
         $postData = $request->request->all();
         $allEmpty = true;
         foreach ($postData as $value) {
-            if ($value !== null && $value !== '') {
+            if (null !== $value && '' !== $value) {
                 $allEmpty = false;
                 break;
             }
@@ -92,7 +96,7 @@ class SearchFormController extends AbstractController
         }
         $this->sessionService->setFilters($postData);
 
-        if ($this->sessionService->getSort() === null) {
+        if (null === $this->sessionService->getSort()) {
             $this->sessionService->setSort('sciname');
         }
 
@@ -103,20 +107,23 @@ class SearchFormController extends AbstractController
         $pagination = $this->providePaginationInfo($parameters);
 
         return $this->render('output/searchForm/databaseSearch.html.twig', [
-            'records' => $this->specimenBatchProvider->iterate($queryBuilder, $this->getOffset(), (int)$this->sessionService->getSetting('recordsPerPage', self::RECORDS_PER_PAGE[0])),
-            'recordsCount' => $pagination["totalRecords"],
+            'records' => $this->specimenBatchProvider->iterate($queryBuilder, $this->getOffset(), (int) $this->sessionService->getSetting('recordsPerPage', self::RECORDS_PER_PAGE[0])),
+            'recordsCount' => $pagination['totalRecords'],
             'totalPages' => $pagination['totalPages'],
             'pages' => $pagination['pages'],
             'recordsPerPage' => self::RECORDS_PER_PAGE,
             'sessionService' => $this->sessionService]);
     }
 
+    /**
+     * @return mixed[]
+     */
     protected function providePaginationInfo(SpecimenSearchParameters $parameters): array
     {
         $specimenSearchQuery = $this->searchQueryFactory->createForPublic();
         $totalRecordCount = $specimenSearchQuery->countResults($parameters);
-        $recordsPerPage = (int)$this->sessionService->getSetting('recordsPerPage', self::RECORDS_PER_PAGE[0]);
-        $currentPage = (int)$this->sessionService->getSetting('page', 1);
+        $recordsPerPage = (int) $this->sessionService->getSetting('recordsPerPage', self::RECORDS_PER_PAGE[0]);
+        $currentPage = (int) $this->sessionService->getSetting('page', 1);
 
         $totalPages = ceil($totalRecordCount / $recordsPerPage);
 
@@ -127,7 +134,6 @@ class SearchFormController extends AbstractController
 
         $pages[] = 1;
         if ($currentPage > 1) {
-
             if ($currentPage > self::PAGINATION_RANGE + 2) {
                 $pages[] = '...';
             }
@@ -136,7 +142,7 @@ class SearchFormController extends AbstractController
         $start = max(2, $currentPage - self::PAGINATION_RANGE);
         $end = min($totalPages - 1, $currentPage + self::PAGINATION_RANGE);
 
-        for ($i = $start; $i <= $end; $i++) {
+        for ($i = $start; $i <= $end; ++$i) {
             $pages[] = $i;
         }
 
@@ -148,27 +154,28 @@ class SearchFormController extends AbstractController
         if ($totalPages > 1) {
             $pages[] = $totalPages;
         }
-        return ["totalRecords" => $totalRecordCount, "totalPages" => $totalPages, "pages" => $pages];
 
+        return ['totalRecords' => $totalRecordCount, 'totalPages' => $totalPages, 'pages' => $pages];
     }
 
     #[Route('/databaseSearchSettings', name: 'output_databaseSearchSettings', methods: ['GET'])]
     public function databaseSearchSettings(#[MapQueryParameter] string $feature, #[MapQueryParameter] string $value): Response
     {
         switch ($feature) {
-            case "page":
+            case 'page':
                 $this->sessionService->setSetting('page', $value);
                 break;
-            case "recordsPerPage":
+            case 'recordsPerPage':
                 $this->sessionService->setSetting('recordsPerPage', $value);
                 $this->sessionService->setSetting('page', 1);
                 break;
-            case "sort":
+            case 'sort':
                 $this->sessionService->setSort($value);
                 break;
             default:
                 break;
         }
+
         return new Response();
     }
 
@@ -199,11 +206,12 @@ class SearchFormController extends AbstractController
         }
         $this->statisticsLogger->info('Specimen [{id},{institution}] detail shown.', [
             'id' => $specimen->id,
-            'institution' => $specimen->herbCollection->institution->abbreviation
+            'institution' => $specimen->herbCollection->institution->abbreviation,
         ]);
+
         return $this->render('output/searchForm/detail.html.twig', [
             'specimen' => $specimen,
-            'pid' => $this->specimenService->getStableIdentifier($specimen)
+            'pid' => $this->specimenService->getStableIdentifier($specimen),
         ]);
     }
 
@@ -327,5 +335,4 @@ class SearchFormController extends AbstractController
 
         return $this->json($d3Data);
     }
-
 }
