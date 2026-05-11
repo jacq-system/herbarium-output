@@ -24,7 +24,9 @@ jobs:
           coverage: none
 
       - name: Install dependencies
+        working-directory: htdocs
         run: composer install --no-interaction --prefer-dist
 
       - name: Run PHPUnit
+        working-directory: htdocs
         run: composer fixer
