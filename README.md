@@ -6,4 +6,4 @@ Public presentation of JACQ.org system.
 
 
 ## Code quality checks
-Please see Makefile
+Please see [Makefile](htdocs/Makefile).
