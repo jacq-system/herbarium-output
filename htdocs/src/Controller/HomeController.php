@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use Doctrine\Common\Collections\Order;
 use JACQ\Repository\Herbarinput\CountryRepository;
 use JACQ\Repository\Herbarinput\InstitutionRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,7 +20,13 @@ class HomeController extends AbstractController
     #[Route('/', name: 'output_index')]
     public function index(): Response
     {
-        return $this->render('output/home/index.html.twig');
+        $institutions = $this->institutionRepository->createQueryBuilder('i')
+            ->where('i.code IS NOT NULL')
+            ->orderBy('i.code', Order::Ascending->value)
+            ->getQuery()
+            ->getResult();
+
+        return $this->render('output/home/index.html.twig', ['institutions' => $institutions]);
     }
 
     #[Route('/collections', name: 'output_collections')]

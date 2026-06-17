@@ -4,6 +4,18 @@
 
     <div class="container">
         <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BATU, BEOU, BOZ, BP, BRNM, BRNU, CBH, CHER, DR, ERE, FT, GAT, GJO, GZU, HAJB, HAL, HBG, HERZ, JE, KFTA, KIEL, KL, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MHES, MJG, MNVD, NBSI, NS, NSK, OLD, PAV, PI, PIAGR, PR, PRC, ROPV, SARAT, SIENA, SPP, SZU, TBI, TGM, TGU, TMRC, TO, TUB, UBT, ULM, UPA, W, WU and WUP.</p>
+        <!-- <p>
+            {% for institution in institutions %}
+                {% if not loop.first %}
+                    {% if loop.last %}
+                        and
+                    {% else %}
+                        ,
+                    {% endif %}
+                {% endif %}
+                {{ institution.code }}
+            {% endfor %}
+        </p> -->
         <p>Listed Acronyms follow the <a href="http://sweetgum.nybg.org/science/ih/" target="_blank">Index Herbariorum Abbreviations</a>. For requests and comments on specimens like identifications, typification, and comments please contact the corresponding Director/Curator listed in the Index Herbariorum.</p>
         <div class="divider"></div>
         <ul class="collapsible">
@@ -284,6 +296,9 @@
                     <div id="partners">
                         <div>
                             <a href="https://www.eosc.cz/en" target="_blank"><img loading="lazy" src="{{ asset('logo/institutions/eosc_cz.png') }}"  height="60" alt="EOSC CZ Logo"></a>
+                        </div>
+                        <div>
+                            <a href="https://cuni.cz/UKEN-1.html" target="_blank"><img loading="lazy" src="{{ asset('logo/institutions/UK-logo-horizontal-EN_hd.png') }}"  height="60" alt="CUNI CZ Logo"></a>
                         </div>
                     </div>
                 </div>
