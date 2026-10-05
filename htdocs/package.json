@@ -8,6 +8,7 @@
     "leaflet.fullscreen": "^5",
     "materialize-css": "^1",
     "mirador-dl-plugin": "^1",
+    "mirador": "^4",
     "d3": "^7"
   },
   "devDependencies": {
