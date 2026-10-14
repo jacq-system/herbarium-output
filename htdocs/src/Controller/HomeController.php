@@ -23,7 +23,7 @@ class HomeController extends AbstractController
         $institutions = $this->institutionRepository->createQueryBuilder('i')
             ->where('i.code IS NOT NULL')
             ->andWhere('i.IHLink IS NOT NULL')
-            ->orderBy('i.code', Order::Ascending->value)
+            ->orderBy('i.code', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
 
